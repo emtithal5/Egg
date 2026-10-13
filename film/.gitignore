@@ -1,0 +1,6 @@
+# large intermediates (regenerable with tools/build.py)
+out/audio/*.wav
+out/video_clean.mp4
+out/stills/
+out/render.log
+__pycache__/
