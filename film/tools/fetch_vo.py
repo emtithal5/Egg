@@ -3,6 +3,9 @@ import json, re, sys, subprocess, pathlib
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 script = json.load(open(ROOT / "script/script.json"))
 cues = {c["id"]: c["text"] for s in script["scenes"] for c in s["cues"]}
+# short version (v2) cues share the same download folder
+v2 = json.load(open(ROOT / "script/script_v2.json"))
+cues.update({c["id"]: c["text"] for p in v2["parts"] for c in p["cues"]})
 def norm(t): return re.sub(r"\[[^\]]*\]|\s+", "", t)
 by_text = {norm(t): cid for cid, t in cues.items()}
 out = ROOT / "audio/vo"

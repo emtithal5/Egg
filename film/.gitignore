@@ -4,3 +4,8 @@ out/video_clean.mp4
 out/stills/
 out/render.log
 __pycache__/
+assets/models/
+out_v2/audio/*.wav
+out_v2/video_clean.mp4
+out_v2/stills/
+out_v2/render.log
