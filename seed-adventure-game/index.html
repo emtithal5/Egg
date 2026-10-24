@@ -1,3 +1,10 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+</head>
+<body>
 <title>مغامرة البذرة في وادي الحياة</title>
 <meta name="description" content="لعبة منصات تعليمية لدورة حياة نبات الطماطم والنباتات الحولية والمعمرة — الصف الخامس، منهج كامبردج، سلطنة عُمان">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -602,7 +609,7 @@ function sendStarsToHud(x, y, n) {
   for (let i = 0; i < n; i++) hudStars.push({ x, y, sx: x, sy: y, tx, ty, t: -i * 0.25, dur: 0.9 });
 }
 function confetti() {
-  for (let i = 0; i < 4; i++) particles.push({ x: Math.random() * W, y: -30, vx: (Math.random() - .5) * 60, vy: 120 + Math.random() * 160, life: 6, max: 6, size: 14 + Math.random() * 16, rot: Math.random() * 6, vr: (Math.random() - .5) * 3, kind: "star", hue: Math.random(), fall: true });
+  for (let i = 0; i < 1; i++) particles.push({ x: Math.random() < 0.5 ? Math.random() * 170 : W - Math.random() * 170, y: -30, vx: (Math.random() - .5) * 40, vy: 110 + Math.random() * 120, life: 9, max: 9, size: 12 + Math.random() * 12, rot: Math.random() * 6, vr: (Math.random() - .5) * 3, kind: "star", hue: Math.random(), fall: true });
 }
 function drawStar(c, x, y, r, rot, fill, stroke) {
   c.save(); c.translate(x, y); c.rotate(rot); c.beginPath();
@@ -612,7 +619,7 @@ function drawStar(c, x, y, r, rot, fill, stroke) {
 function updateFx(dt) {
   fx.setTransform(SCALE * DPR, 0, 0, SCALE * DPR, 0, 0);
   fx.clearRect(0, 0, W, H);
-  if (mode === "end" && !reduceMotion && Math.random() < 0.5) confetti();
+  if (mode === "end" && !reduceMotion && Math.random() < 0.12) confetti();
   particles = particles.filter(p => (p.life -= dt) > 0 && p.y < H + 60);
   for (const p of particles) {
     if (!p.fall) { p.vy += 900 * dt; p.vx *= 0.985; }
@@ -1471,3 +1478,6 @@ window.__seedGame = {
 };
 })();
 </script>
+
+</body>
+</html>
