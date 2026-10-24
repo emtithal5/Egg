@@ -1,0 +1,1473 @@
+<title>مغامرة البذرة في وادي الحياة</title>
+<meta name="description" content="لعبة منصات تعليمية لدورة حياة نبات الطماطم والنباتات الحولية والمعمرة — الصف الخامس، منهج كامبردج، سلطنة عُمان">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lalezar&family=Tajawal:wght@500;700;800;900&family=Amiri:wght@700&display=swap">
+<style>
+/* Layout: one 16:9 stage (1600×900 logical) letterboxed and scaled to the window; HUD and dialogs live inside the stage. */
+:root {
+  --night: #13301f;      /* letterbox + deep panels */
+  --leaf: #1f6b3d;       /* primary green */
+  --leaf-dark: #154d2c;
+  --gold: #f4c542;       /* stars, borders */
+  --parch: #fff7e3;      /* cards */
+  --parch-edge: #f0dcae;
+  --ink: #2b2118;
+  --tomato: #e5482d;
+  --sky: #9fd9f2;
+  --wrong: #c8442e;
+  --hint: #fff1c7;
+  --display: "Lalezar", "Tajawal", "Geeza Pro", "Segoe UI", system-ui, sans-serif;
+  --body: "Tajawal", "Geeza Pro", "Segoe UI", "Noto Sans Arabic", system-ui, sans-serif;
+  --sign: "Amiri", "Times New Roman", serif;
+  color-scheme: light;
+}
+[hidden] { display: none !important; }
+html, body { height: 100%; }
+body {
+  background: radial-gradient(ellipse at center, #1d4a30 0%, var(--night) 70%);
+  color: var(--ink);
+  font-family: var(--body);
+  overflow: hidden;
+  padding-left: max(0px, env(safe-area-inset-left, 0px));
+  padding-right: max(0px, env(safe-area-inset-right, 0px));
+  -webkit-user-select: none; user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+#app { position: fixed; inset: 0; overflow: hidden; touch-action: none; }
+#stage {
+  position: absolute; left: 0; top: 0; width: 1600px; height: 900px;
+  transform-origin: 0 0; overflow: hidden; direction: rtl;
+  border-radius: 6px; box-shadow: 0 20px 60px rgba(0,0,0,.45);
+  background: var(--sky);
+}
+#world, #fx { position: absolute; inset: 0; width: 1600px; height: 900px; display: block; }
+#fx { pointer-events: none; z-index: 40; }
+button { font-family: var(--body); cursor: pointer; }
+button:focus-visible { outline: 4px solid var(--gold); outline-offset: 3px; }
+
+/* ---------- HUD ---------- */
+#hud { position: absolute; top: 16px; right: 20px; left: 20px; display: flex; justify-content: space-between; align-items: flex-start; z-index: 20; pointer-events: none; }
+.hud-panel {
+  pointer-events: auto; display: flex; align-items: center; gap: 22px;
+  background: rgba(255,247,227,.92); border: 3px solid var(--gold); border-radius: 22px;
+  padding: 10px 22px 8px; box-shadow: 0 6px 18px rgba(0,0,0,.18);
+}
+.hud-title { font-family: var(--display); font-size: 30px; color: var(--leaf-dark); line-height: 1; padding-top: 4px; }
+.hud-sep { width: 2px; align-self: stretch; background: var(--parch-edge); }
+#hearts { display: flex; gap: 6px; }
+#hearts svg { width: 34px; height: 34px; transition: transform .25s, opacity .25s; }
+#hearts svg.lost { opacity: .25; transform: scale(.8); filter: grayscale(1); }
+#starBox { display: flex; align-items: center; gap: 8px; font-weight: 900; font-size: 30px; color: #a86d00; font-variant-numeric: tabular-nums; }
+#starBox svg { width: 36px; height: 36px; }
+#progress { display: flex; flex-direction: column; gap: 6px; min-width: 260px; }
+#progressLabel { font-size: 18px; font-weight: 800; color: var(--leaf-dark); }
+#progressBar { display: grid; grid-template-columns: repeat(8, 1fr); gap: 5px; }
+#progressBar span { height: 14px; border-radius: 7px; background: #e7d7b0; transition: background .4s; }
+#progressBar span.done { background: linear-gradient(90deg, #6cc04a, var(--leaf)); }
+#progressBar span.now { background: var(--gold); animation: pulse 1.2s ease-in-out infinite; }
+@keyframes pulse { 50% { opacity: .45; } }
+.hud-btns { pointer-events: auto; display: flex; gap: 10px; direction: ltr; }
+.icon-btn {
+  width: 64px; height: 64px; border-radius: 50%; border: 3px solid var(--gold);
+  background: rgba(255,247,227,.94); display: grid; place-items: center; box-shadow: 0 5px 14px rgba(0,0,0,.18);
+}
+.icon-btn svg { width: 34px; height: 34px; }
+.icon-btn:active { transform: scale(.94); }
+
+/* ---------- touch controls ---------- */
+.ctrl { position: absolute; z-index: 20; display: flex; gap: 22px; direction: ltr; }
+#ctrlMove { left: 28px; bottom: 40px; }
+#ctrlJump { right: 34px; bottom: 74px; }
+.pad {
+  width: 118px; height: 118px; border-radius: 50%; border: 4px solid rgba(255,255,255,.85);
+  background: rgba(21,77,44,.55); display: grid; place-items: center; touch-action: none;
+  box-shadow: 0 8px 18px rgba(0,0,0,.25); backdrop-filter: blur(2px);
+}
+.pad svg { width: 56px; height: 56px; }
+.pad.on { background: rgba(244,197,66,.85); transform: scale(.95); }
+#btnJump { width: 138px; height: 138px; flex-direction: column; gap: 0; color: #fff; font-weight: 900; font-size: 22px; }
+#btnJump svg { width: 50px; height: 50px; }
+
+#signature {
+  position: absolute; z-index: 21; right: 30px; bottom: 14px; font-family: var(--sign); font-size: 26px;
+  color: #fff; text-shadow: 0 2px 6px rgba(0,0,0,.7); display: flex; align-items: center; gap: 8px; pointer-events: none; opacity: .92;
+}
+#signature svg { width: 26px; height: 26px; }
+
+/* ---------- speech bubble ---------- */
+#bubble {
+  position: absolute; z-index: 25; max-width: 560px; min-width: 220px; transform: translate(-50%, -100%);
+  background: #fff; border: 4px solid var(--leaf); border-radius: 28px; padding: 16px 24px 14px;
+  font-size: 27px; font-weight: 700; line-height: 1.55; color: var(--ink); box-shadow: 0 10px 24px rgba(0,0,0,.22);
+  pointer-events: none; text-wrap: pretty;
+}
+#bubble::after {
+  content: ""; position: absolute; bottom: -20px; left: 50%; transform: translateX(-50%);
+  border: 16px solid transparent; border-top: 18px solid var(--leaf); border-bottom: 0;
+}
+#bubble b { color: var(--leaf); }
+
+/* ---------- fact card ---------- */
+#fact {
+  position: absolute; z-index: 22; top: 120px; left: 50%; transform: translateX(-50%); width: 900px;
+  background: var(--parch); border: 4px solid var(--gold); border-radius: 26px; padding: 16px 30px 14px;
+  box-shadow: 0 12px 30px rgba(0,0,0,.25); display: flex; gap: 20px; align-items: center; cursor: pointer;
+  animation: drop .45s cubic-bezier(.2,1.4,.4,1);
+}
+#fact .fact-badge { flex: 0 0 auto; width: 70px; height: 70px; border-radius: 50%; background: var(--leaf); display: grid; place-items: center; }
+#fact .fact-badge svg { width: 40px; height: 40px; }
+#fact h3 { font-family: var(--display); font-weight: 400; font-size: 30px; color: var(--leaf-dark); margin: 0 0 2px; }
+#fact p { margin: 0; font-size: 24px; font-weight: 700; line-height: 1.55; }
+@keyframes drop { from { transform: translate(-50%, -40px); opacity: 0; } }
+
+#tip {
+  position: absolute; z-index: 22; bottom: 200px; left: 50%; transform: translateX(-50%);
+  background: rgba(19,48,31,.85); color: #fff; border-radius: 40px; padding: 12px 30px 10px; font-size: 25px; font-weight: 700;
+  border: 3px solid var(--gold); white-space: nowrap;
+}
+
+/* ---------- intro ---------- */
+#intro { position: absolute; inset: 0; z-index: 30; pointer-events: none; }
+#introTitle {
+  position: absolute; top: 46px; left: 50%; transform: translateX(-50%); text-align: center; white-space: nowrap;
+  font-family: var(--display); font-size: 88px; line-height: 1.1; color: #fff;
+  text-shadow: 0 5px 0 var(--leaf-dark), 0 10px 26px rgba(0,0,0,.45); transition: opacity .8s, transform .8s;
+}
+#introTitle small { display: block; font-family: var(--body); font-weight: 800; font-size: 30px; color: #fff4c4; text-shadow: 0 2px 8px rgba(0,0,0,.6); margin-top: 6px; }
+#btnStart {
+  position: absolute; left: 50%; bottom: 120px; transform: translateX(-50%); pointer-events: auto;
+  font-family: var(--display); font-size: 48px; color: #fff; padding: 18px 64px 10px; border-radius: 60px; border: 5px solid #fff3c4;
+  background: linear-gradient(180deg, #ff7a4f, var(--tomato)); box-shadow: 0 10px 0 #a52c17, 0 18px 30px rgba(0,0,0,.35);
+  animation: bob 1.6s ease-in-out infinite;
+}
+#btnStart:active { transform: translate(-50%, 6px); box-shadow: 0 4px 0 #a52c17; }
+@keyframes bob { 50% { transform: translate(-50%, -8px); } }
+#btnSkip {
+  position: absolute; left: 30px; top: 30px; pointer-events: auto; font-size: 22px; font-weight: 800; color: var(--leaf-dark);
+  background: rgba(255,247,227,.92); border: 3px solid var(--gold); border-radius: 30px; padding: 8px 22px 6px;
+}
+
+/* ---------- question modal ---------- */
+.modal { position: absolute; inset: 0; z-index: 35; display: grid; place-items: center; background: rgba(12,32,20,.45); }
+.qcard {
+  width: 1000px; background: var(--parch); border: 6px solid var(--gold); border-radius: 36px; overflow: hidden;
+  box-shadow: 0 24px 60px rgba(0,0,0,.4); animation: pop .4s cubic-bezier(.2,1.5,.4,1);
+}
+@keyframes pop { from { transform: scale(.8); opacity: 0; } }
+.qhead { background: linear-gradient(180deg, #2a8a50, var(--leaf)); color: #fff; padding: 18px 34px 12px; display: flex; align-items: center; gap: 18px; }
+.qhead .gate-num { font-weight: 900; font-size: 22px; background: rgba(255,255,255,.18); border-radius: 20px; padding: 4px 16px 2px; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.qhead h2 { font-family: var(--display); font-weight: 400; font-size: 44px; margin: 0; line-height: 1.2; }
+.qbody { padding: 26px 40px 30px; display: flex; flex-direction: column; gap: 18px; }
+#qText { font-size: 36px; font-weight: 800; line-height: 1.5; margin: 0; text-wrap: balance; }
+#qOpts { display: grid; gap: 14px; }
+.opt {
+  display: flex; align-items: center; gap: 20px; text-align: right; width: 100%; min-height: 86px; padding: 10px 22px;
+  background: #fff; border: 4px solid var(--parch-edge); border-radius: 22px; font-size: 32px; font-weight: 800; color: var(--ink);
+  box-shadow: 0 5px 0 var(--parch-edge); transition: background .2s, border-color .2s;
+}
+.opt .letter { flex: 0 0 auto; width: 56px; height: 56px; border-radius: 50%; display: grid; place-items: center; background: var(--leaf); color: #fff; font-size: 30px; }
+.opt:hover:not(:disabled) { border-color: var(--gold); }
+.opt.correct { background: #dff5d3; border-color: #4caf50; box-shadow: 0 5px 0 #4caf50; }
+.opt.correct .letter { background: #2e9b3e; }
+.opt.wrong { background: #fde3dc; border-color: var(--wrong); box-shadow: 0 5px 0 var(--wrong); animation: shake .45s; }
+.opt.wrong .letter { background: var(--wrong); }
+.opt:disabled { cursor: default; }
+.opt.faded { opacity: .45; }
+@keyframes shake { 20%,60% { transform: translateX(-12px); } 40%,80% { transform: translateX(12px); } }
+#qHint {
+  display: flex; gap: 14px; align-items: flex-start; background: var(--hint); border: 3px dashed #e3b23c; border-radius: 20px;
+  padding: 14px 20px; font-size: 26px; font-weight: 700; line-height: 1.55;
+}
+#qHint strong { color: #a5520f; white-space: nowrap; }
+.qfoot { display: flex; justify-content: space-between; align-items: center; font-size: 20px; font-weight: 700; color: #7b6a4c; }
+
+/* ---------- end screens ---------- */
+#endOverlay { position: absolute; inset: 0; z-index: 36; display: grid; place-items: center; background: rgba(12,32,20,.35); }
+.endcard {
+  width: 1240px; max-height: 820px; background: var(--parch); border: 6px solid var(--gold); border-radius: 40px;
+  box-shadow: 0 24px 60px rgba(0,0,0,.4); padding: 26px 46px 30px; display: flex; flex-direction: column; align-items: center; gap: 14px;
+  animation: pop .5s cubic-bezier(.2,1.4,.4,1);
+}
+.endcard h2 { font-family: var(--display); font-weight: 400; font-size: 54px; color: var(--leaf-dark); margin: 0; text-align: center; line-height: 1.2; text-wrap: balance; }
+.endcard .sub { font-size: 26px; font-weight: 700; margin: 0; color: #5d4b2f; text-align: center; }
+#cycleCanvas { width: 900px; height: 560px; }
+.cmp { display: grid; grid-template-columns: 1fr 1fr; gap: 26px; width: 100%; }
+.cmp-card { border-radius: 28px; padding: 18px 24px 20px; display: flex; flex-direction: column; gap: 10px; align-items: center; }
+.cmp-card.annual { background: #fff0e4; border: 4px solid #f0a46a; }
+.cmp-card.perennial { background: #e6f5df; border: 4px solid #6cbf4a; }
+.cmp-card h3 { font-family: var(--display); font-weight: 400; font-size: 42px; margin: 0; }
+.cmp-card.annual h3 { color: #b4501b; }
+.cmp-card.perennial h3 { color: var(--leaf-dark); }
+.cmp-card canvas { width: 520px; height: 230px; }
+.cmp-card ul { margin: 0; padding: 0 28px 0 0; font-size: 27px; font-weight: 700; line-height: 1.6; align-self: stretch; }
+.stats { display: flex; gap: 24px; }
+.stat { background: #fff; border: 4px solid var(--parch-edge); border-radius: 26px; padding: 14px 30px 10px; text-align: center; min-width: 330px; }
+.stat b { display: block; font-family: var(--display); font-weight: 400; font-size: 64px; color: var(--leaf); line-height: 1.1; font-variant-numeric: tabular-nums; }
+.stat span { font-size: 24px; font-weight: 700; color: #5d4b2f; }
+.medal { display: flex; gap: 10px; }
+.medal svg { width: 64px; height: 64px; }
+.credit { font-family: var(--sign); font-size: 40px; color: var(--leaf-dark); display: flex; align-items: center; gap: 12px; margin-top: 2px; }
+.credit svg { width: 38px; height: 38px; }
+.btn-main {
+  font-family: var(--display); font-size: 38px; color: #fff; padding: 12px 54px 6px; border-radius: 50px; border: 4px solid #fff3c4;
+  background: linear-gradient(180deg, #34a35c, var(--leaf)); box-shadow: 0 8px 0 #0f3d22;
+}
+.btn-main:active { transform: translateY(5px); box-shadow: 0 3px 0 #0f3d22; }
+.btn-row { display: flex; gap: 20px; }
+
+@media (prefers-reduced-motion: reduce) {
+  #btnStart, #progressBar span.now { animation: none; }
+}
+</style>
+
+<div id="app">
+  <div id="stage" aria-label="مغامرة البذرة في وادي الحياة">
+    <canvas id="world" width="1600" height="900"></canvas>
+
+    <div id="hud" hidden>
+      <div class="hud-panel">
+        <div class="hud-title">وادي الحياة</div>
+        <div class="hud-sep"></div>
+        <div id="hearts" aria-label="فرص المحاولة"></div>
+        <div class="hud-sep"></div>
+        <div id="starBox" aria-label="النجوم"><svg viewBox="0 0 24 24"><path d="M12 1.8l3.1 6.4 7 1-5.1 4.9 1.2 7L12 17.8l-6.2 3.3 1.2-7L1.9 9.2l7-1z" fill="#f4c542" stroke="#c98a00" stroke-width="1.4" stroke-linejoin="round"/></svg><span id="starCount">٠</span></div>
+        <div class="hud-sep"></div>
+        <div id="progress"><div id="progressLabel">البوابات: ٠ / ٨</div><div id="progressBar"></div></div>
+      </div>
+      <div class="hud-btns">
+        <button class="icon-btn" id="btnSound" aria-label="كتم الصوت" title="الصوت"></button>
+        <button class="icon-btn" id="btnRestart" aria-label="إعادة اللعب" title="إعادة اللعب"><svg viewBox="0 0 24 24" fill="none" stroke="#1f6b3d" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 12a8.5 8.5 0 1 0 2.6-6.1"/><path d="M3 3.5v5h5"/></svg></button>
+        <button class="icon-btn" id="btnFull" aria-label="ملء الشاشة" title="ملء الشاشة"><svg viewBox="0 0 24 24" fill="none" stroke="#1f6b3d" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
+      </div>
+    </div>
+
+    <div id="ctrlMove" class="ctrl" hidden>
+      <button class="pad" id="btnLeft" aria-label="تحرّكي يسارًا"><svg viewBox="0 0 24 24"><path d="M15.5 4.5L8 12l7.5 7.5" fill="none" stroke="#fff" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      <button class="pad" id="btnRight" aria-label="تحرّكي يمينًا"><svg viewBox="0 0 24 24"><path d="M8.5 4.5L16 12l-7.5 7.5" fill="none" stroke="#fff" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+    </div>
+    <div id="ctrlJump" class="ctrl" hidden>
+      <button class="pad" id="btnJump" aria-label="اقفزي"><svg viewBox="0 0 24 24"><path d="M5 14l7-7 7 7" fill="none" stroke="#fff" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/></svg>قفز</button>
+    </div>
+
+    <div id="bubble" hidden></div>
+    <div id="fact" hidden></div>
+    <div id="tip" hidden>تحرّكي بالسهمين ← →، واقفزي بالمسافة أو بزر «قفز»</div>
+
+    <div id="intro">
+      <div id="introTitle">مغامرة البذرة<small>في وادي الحياة</small></div>
+      <button id="btnSkip">تخطّي المقدمة</button>
+      <button id="btnStart" hidden>ابدئي المغامرة</button>
+    </div>
+
+    <div id="qModal" class="modal" hidden>
+      <div class="qcard" role="dialog" aria-modal="true" aria-labelledby="qTitle">
+        <div class="qhead"><span class="gate-num" id="qGateNum"></span><h2 id="qTitle"></h2></div>
+        <div class="qbody">
+          <p id="qText"></p>
+          <div id="qOpts"></div>
+          <div id="qHint" hidden></div>
+          <div class="qfoot"><span>اختاري الإجابة الصحيحة لتُفتح البوابة</span><span>المفاتيح: ١ ٢ ٣</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="endOverlay" hidden></div>
+
+    <div id="signature"><svg viewBox="0 0 64 64"><path d="M8 56C8 28 28 8 58 6 56 36 36 56 8 56Z" fill="#7cc36a"/><path d="M10 54C24 40 38 26 54 10" stroke="#2f6b2a" stroke-width="3" fill="none" stroke-linecap="round"/></svg>أ. إمتثال العطابي</div>
+
+    <canvas id="fx" width="1600" height="900"></canvas>
+  </div>
+</div>
+
+<script>
+(() => {
+"use strict";
+/* =========================================================
+   Constants & content
+   ========================================================= */
+const W = 1600, H = 900, GROUND = 760;
+const VALLEY_X = 560, START_X = 330, GATE0 = 1650, GATE_GAP = 1150;
+const GARDEN_X = 10820, WORLD_END = 11600;
+const gateX = i => GATE0 + i * GATE_GAP;
+const AR = n => String(n).replace(/\d/g, d => "٠١٢٣٤٥٦٧٨٩"[d]);
+const LETTERS = ["أ", "ب", "ج"];
+const reduceMotion = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+const GATES = [
+  { title: "سر البداية", q: "بماذا تبدأ دورة حياة نبات الطماطم؟", opts: ["زهرة", "بذرة", "ثمرة"], ok: 1,
+    hint: "فكّري: ما الذي نزرعه في التربة لينمو منه نبات جديد؟",
+    say: "رائع! هكذا أبدأ حياتي… بذرة صغيرة داخل التربة!",
+    fact: "تبدأ دورة حياة نبات الطماطم ببذرة صغيرة داخل التربة." },
+  { title: "الاستيقاظ", q: "ما العملية التي تبدأ فيها البذرة بالنمو؟", opts: ["التلقيح", "الإنبات", "انتشار البذور"], ok: 1,
+    hint: "هي العملية التي يخرج فيها الجُذَير من البذرة عندما يتوفر الماء والدفء والهواء.",
+    say: "انظرن! خرج الجُذَير إلى الأسفل، والبادرة إلى الأعلى!",
+    fact: "الإنبات: تنبت البذرة عندما تتوفر الظروف المناسبة، فيخرج الجُذَير إلى الأسفل وتنمو البادرة نحو الأعلى." },
+  { title: "النبتة الصغيرة", q: "ماذا ينتج عن نمو البذرة بعد الإنبات؟", opts: ["شتلة", "ثمرة", "زهرة"], ok: 0,
+    hint: "بعد الإنبات تظهر نبتة صغيرة لها أوراق خضراء قليلة.",
+    say: "أصبحتُ شتلة صغيرة لها أوراق خضراء!",
+    fact: "تنمو البادرة لتصبح شتلة لها أوراق خضراء صغيرة، ثم تكبر لتصبح نباتًا ناضجًا." },
+  { title: "سر الأزهار", q: "ماذا يُنتج نبات الطماطم الناضج قبل تكوّن الثمار؟", opts: ["أزهارًا", "ثمارًا ناضجة مباشرة", "بذورًا خارج الثمرة"], ok: 0,
+    hint: "قبل أن تتكوّن الثمار، تتفتح على النبات أجزاء صفراء جميلة.",
+    say: "تفتحت أزهاري الصفراء! ما أجملها!",
+    fact: "يُنتج نبات الطماطم الناضج أزهارًا صفراء، ومنها تتكوّن الثمار لاحقًا." },
+  { title: "مهمة التلقيح", q: "ما العمليتان اللتان تحدثان قبل تكوّن الثمرة؟", opts: ["الإنبات والنمو", "التلقيح والإخصاب", "انتشار البذور والإنبات"], ok: 1,
+    hint: "تنتقل حبوب اللقاح إلى الميسم أولًا، ثم تتحد بالبويضة.",
+    say: "انتقلت حبوب اللقاح إلى الميسم، ثم حدث الإخصاب!",
+    fact: "التلقيح: انتقال حبوب اللقاح من المتك إلى الميسم. الإخصاب: اتحاد حبة اللقاح بالبويضة. ويكفي اهتزاز زهرة الطماطم بالرياح غالبًا لحدوث التلقيح." },
+  { title: "كنز الطماطم", q: "أين توجد البذور الجديدة في نبات الطماطم؟", opts: ["داخل الثمرة", "داخل الجذر", "فوق الأوراق"], ok: 0,
+    hint: "تخيّلي أنكِ قطعتِ ثمرة طماطم… ماذا ترين في داخلها؟",
+    say: "وجدنا الكنز! البذور الجديدة داخل الثمرة.",
+    fact: "تتكوّن البذور الجديدة داخل الثمرة، ومن كل بذرة تبدأ دورة حياة جديدة." },
+  { title: "حديقة النباتات الحولية", q: "أي النباتات التالية يُعد من النباتات الحولية وفق أمثلة الدرس؟", opts: ["النخيل", "الفجل", "المانجو"], ok: 1,
+    hint: "النبات الحولي يعيش عامًا واحدًا فقط؛ فكّري في نبات نزرعه ونقطفه في موسم واحد.",
+    say: "أحسنتن! النباتات الحولية تكمل دورة حياتها خلال عام واحد، ثم تموت بعد إنتاج البذور.",
+    fact: "من النباتات الحولية: الفجل، والبصل، والثوم." },
+  { title: "بستان النباتات المعمرة", q: "أي النباتات التالية يعيش سنوات عديدة ويُثمر أكثر من مرة؟", opts: ["الفجل", "النخيل", "الثوم"], ok: 1,
+    hint: "ابحثي عن نبات يبقى في الحديقة سنوات طويلة ويُعطي ثمارًا في كل موسم.",
+    say: "رائعات! النباتات المعمرة تعيش سنوات عديدة، ويمكنها الإزهار والإثمار مرات متكررة.",
+    fact: "من النباتات المعمرة: المانجو، والليمون، والنخيل." },
+];
+const OBSTACLES = ["falaj", "wall", "steps", "falaj", "wall", "falaj", "steps", "wall"];
+const INTRO_LINE = "مرحبًا يا عالمات النباتات! أنا <b>بذّورة</b>، وأحتاج مساعدتكن لاكتشاف رحلة حياتي. أمامنا ثماني بوابات، فهل أنتن مستعدات للمغامرة؟";
+
+/* =========================================================
+   DOM & scaling
+   ========================================================= */
+const $ = id => document.getElementById(id);
+const stage = $("stage"), canvas = $("world"), fxCanvas = $("fx");
+const worldCtx = canvas.getContext("2d"), fx = fxCanvas.getContext("2d");
+let ctx = worldCtx; // drawing helpers use `ctx`; withCtx() points it at another canvas temporarily
+function withCtx(c, fn) { const saved = ctx; ctx = c; try { fn(); } finally { ctx = saved; } }
+let SCALE = 1, DPR = 1;
+
+function fit() {
+  const app = $("app");
+  const aw = app.clientWidth, ah = app.clientHeight;
+  SCALE = Math.min(aw / W, ah / H);
+  stage.style.transform = `scale(${SCALE})`;
+  stage.style.left = ((aw - W * SCALE) / 2) + "px";
+  stage.style.top = ((ah - H * SCALE) / 2) + "px";
+  DPR = Math.min(window.devicePixelRatio || 1, 2);
+  const px = Math.max(1, Math.round(W * SCALE * DPR)), py = Math.max(1, Math.round(H * SCALE * DPR));
+  for (const c of [canvas, fxCanvas]) { c.width = px; c.height = py; }
+}
+window.addEventListener("resize", fit);
+fit();
+
+/* =========================================================
+   Seeded random & helpers
+   ========================================================= */
+function hash(n) { n = (n ^ 61) ^ (n >>> 16); n = n + (n << 3); n ^= n >>> 4; n = Math.imul(n, 0x27d4eb2d); n ^= n >>> 15; return (n >>> 0) / 4294967296; }
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const lerp = (a, b, t) => a + (b - a) * t;
+const ease = t => { t = clamp(t, 0, 1); return t * t * (3 - 2 * t); };
+const easeOutBack = t => { t = clamp(t, 0, 1); const c = 1.7; return Math.max(0, 1 + (c + 1) * Math.pow(t - 1, 3) + c * Math.pow(t - 1, 2)); };
+function rr(c, x, y, w, h, r) { c.beginPath(); c.moveTo(x + r, y); c.arcTo(x + w, y, x + w, y + h, r); c.arcTo(x + w, y + h, x, y + h, r); c.arcTo(x, y + h, x, y, r); c.arcTo(x, y, x + w, y, r); c.closePath(); }
+function grad(c, x0, y0, x1, y1, stops) { const g = c.createLinearGradient(x0, y0, x1, y1); stops.forEach(([o, col]) => g.addColorStop(o, col)); return g; }
+function text(c, s, x, y, size, color, font = "Tajawal", weight = 800, stroke = null) {
+  c.save(); c.direction = "rtl"; c.textAlign = "center"; c.textBaseline = "middle";
+  c.font = `${weight} ${size}px "${font}", "Tajawal", "Geeza Pro", sans-serif`;
+  if (stroke) { c.lineJoin = "round"; c.lineWidth = stroke[1]; c.strokeStyle = stroke[0]; c.strokeText(s, x, y); }
+  c.fillStyle = color; c.fillText(s, x, y); c.restore();
+}
+
+/* =========================================================
+   Audio (Web Audio, synthesized — no files)
+   ========================================================= */
+let AC = null, master = null, sfxBus = null, musicBus = null, muted = false, musicTimer = null;
+try { muted = localStorage.getItem("seedAdvMuted") === "1"; } catch (e) {}
+function initAudio() {
+  if (AC) { if (AC.state === "suspended") AC.resume(); return; }
+  try {
+    AC = new (window.AudioContext || window.webkitAudioContext)();
+    master = AC.createGain(); master.gain.value = muted ? 0 : 0.9; master.connect(AC.destination);
+    sfxBus = AC.createGain(); sfxBus.gain.value = 0.8; sfxBus.connect(master);
+    musicBus = AC.createGain(); musicBus.gain.value = 0.16; musicBus.connect(master);
+    startMusic();
+  } catch (e) { AC = null; }
+}
+function env(g, t0, a, peak, d) { g.gain.setValueAtTime(0.0001, t0); g.gain.exponentialRampToValueAtTime(peak, t0 + a); g.gain.exponentialRampToValueAtTime(0.0001, t0 + a + d); }
+function tone(f, t0, dur, type = "triangle", vol = 0.3, bus = sfxBus, f2 = null) {
+  if (!AC) return;
+  const o = AC.createOscillator(), g = AC.createGain();
+  o.type = type; o.frequency.setValueAtTime(f, t0); if (f2) o.frequency.exponentialRampToValueAtTime(f2, t0 + dur);
+  env(g, t0, 0.012, vol, dur); o.connect(g); g.connect(bus); o.start(t0); o.stop(t0 + dur + 0.05);
+}
+function noise(t0, dur, freq, q, vol, type = "bandpass") {
+  if (!AC) return;
+  const len = Math.ceil(AC.sampleRate * dur), buf = AC.createBuffer(1, len, AC.sampleRate), d = buf.getChannelData(0);
+  for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
+  const s = AC.createBufferSource(), f = AC.createBiquadFilter(), g = AC.createGain();
+  s.buffer = buf; f.type = type; f.frequency.value = freq; f.Q.value = q; env(g, t0, 0.01, vol, dur);
+  s.connect(f); f.connect(g); g.connect(sfxBus); s.start(t0);
+}
+const SFX = {
+  jump() { if (!AC) return; const t = AC.currentTime; tone(420, t, 0.16, "square", 0.08, sfxBus, 760); },
+  correct() { if (!AC) return; const t = AC.currentTime; [523, 659, 784, 1047].forEach((f, i) => tone(f, t + i * 0.09, 0.35, "triangle", 0.28)); [1568, 2093].forEach((f, i) => tone(f, t + 0.4 + i * 0.07, 0.25, "sine", 0.12)); },
+  wrong() { if (!AC) return; const t = AC.currentTime; tone(330, t, 0.22, "sawtooth", 0.06); tone(247, t + 0.18, 0.32, "sawtooth", 0.06); },
+  gate() { if (!AC) return; const t = AC.currentTime; noise(t, 0.7, 380, 3, 0.25); tone(90, t, 0.4, "sine", 0.3, sfxBus, 60); },
+  star() { if (!AC) return; const t = AC.currentTime; tone(1318, t, 0.15, "sine", 0.12); tone(1760, t + 0.06, 0.2, "sine", 0.1); },
+  splash() { if (!AC) return; const t = AC.currentTime; noise(t, 0.45, 1800, 0.8, 0.3, "highpass"); },
+  pop() { if (!AC) return; const t = AC.currentTime; tone(880, t, 0.08, "sine", 0.12, sfxBus, 1320); },
+  fanfare() { if (!AC) return; const t = AC.currentTime; [523, 659, 784, 659, 784, 1047].forEach((f, i) => tone(f, t + i * 0.14, 0.4, "triangle", 0.25)); },
+};
+function startMusic() {
+  // gentle major-pentatonic loop: plucked melody + soft bass
+  const scale = [261.63, 293.66, 329.63, 392.0, 440.0, 523.25, 587.33, 659.25];
+  const melody = [4, -1, 3, 4, 5, -1, 4, 3, 2, -1, 3, 2, 0, -1, 1, 2, 4, -1, 3, 4, 6, -1, 5, 4, 3, -1, 2, 3, 2, -1, -1, -1];
+  const bass = [130.81, 110.0, 98.0, 130.81];
+  const step = 60 / 96 / 2; let next = AC.currentTime + 0.1, i = 0;
+  musicTimer = setInterval(() => {
+    if (!AC) return;
+    while (next < AC.currentTime + 0.3) {
+      const m = melody[i % melody.length];
+      if (m >= 0) tone(scale[m], next, 0.5, "triangle", 0.22, musicBus);
+      if (i % 8 === 0) tone(bass[(i / 8 | 0) % 4], next, 1.6, "sine", 0.3, musicBus);
+      next += step; i++;
+    }
+  }, 100);
+}
+function setMuted(m) {
+  muted = m;
+  try { localStorage.setItem("seedAdvMuted", m ? "1" : "0"); } catch (e) {}
+  if (master) master.gain.setTargetAtTime(m ? 0 : 0.9, AC.currentTime, 0.05);
+  $("btnSound").innerHTML = m
+    ? '<svg viewBox="0 0 24 24" fill="none" stroke="#c8442e" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9h4l5-4v14l-5-4H4z" fill="#f6d6cf"/><path d="M17 9l5 6M22 9l-5 6"/></svg>'
+    : '<svg viewBox="0 0 24 24" fill="none" stroke="#1f6b3d" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9h4l5-4v14l-5-4H4z" fill="#cfe9d4"/><path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/></svg>';
+  $("btnSound").setAttribute("aria-label", m ? "تشغيل الصوت" : "كتم الصوت");
+}
+
+/* =========================================================
+   Game state
+   ========================================================= */
+let mode = "intro";       // intro | play | question | end
+let time = 0, introT = 0, endT = 0;
+const cam = { x: 0, zoom: 1 };
+const player = { x: START_X, y: GROUND, vx: 0, vy: 0, onGround: true, face: 1, walk: 0, squash: 0, coyote: 0, jumpBuf: 0, talk: 0, wave: 0 };
+const keys = { left: false, right: false };
+let gates, platforms, gaps, valley, stats, particles = [], hudStars = [], currentGate = -1, attemptHearts = 3;
+let bubbleTimer = null, factTimer = null, tipTimer = null, endStep = 0, introGreeted = false;
+
+function buildWorld() {
+  gates = GATES.map((g, i) => ({ ...g, i, x: gateX(i), opened: false, openAt: -1, wrong: 0, stars: 0, first: false, asked: false }));
+  valley = { x: VALLEY_X, opened: false, openAt: -1 };
+  platforms = []; gaps = [];
+  OBSTACLES.forEach((type, i) => {
+    const prev = i === 0 ? VALLEY_X : gateX(i - 1);
+    const c = prev + 650;
+    if (type === "falaj") gaps.push({ x: c - 75, w: 150 });
+    if (type === "wall") platforms.push({ x: c - 60, w: 120, top: GROUND - 88, kind: "wall" });
+    if (type === "steps") {
+      platforms.push({ x: c - 190, w: 115, top: GROUND - 72, kind: "step" });
+      platforms.push({ x: c - 55, w: 115, top: GROUND - 145, kind: "step" });
+      platforms.push({ x: c + 80, w: 115, top: GROUND - 72, kind: "step" });
+    }
+  });
+}
+function resetGame(skipIntro) {
+  buildWorld();
+  stats = { stars: 0, first: 0 };
+  particles = []; hudStars = []; currentGate = -1; attemptHearts = 3; endStep = 0;
+  Object.assign(player, { x: START_X, y: GROUND, vx: 0, vy: 0, onGround: true, face: 1, walk: 0, squash: 0, talk: 0, wave: 0 });
+  keys.left = keys.right = false;
+  hideBubble(); $("fact").hidden = true; $("qModal").hidden = true; $("endOverlay").hidden = true;
+  renderHearts(); renderProgress(); $("starCount").textContent = AR(0); $("starCount").dataset.v = 0;
+  if (skipIntro) {
+    mode = "play"; valley.opened = true; valley.openAt = time - 2; cam.x = 0; cam.zoom = 1;
+    $("intro").hidden = true; showGameUI(true); showTip();
+  } else {
+    mode = "intro"; introT = 0; introGreeted = false; cam.x = 2300; cam.zoom = 0.86;
+    $("intro").hidden = false; $("btnStart").hidden = true; $("btnSkip").hidden = false;
+    $("introTitle").style.opacity = 1; showGameUI(false);
+  }
+}
+function showGameUI(on) { $("hud").hidden = !on; $("ctrlMove").hidden = !on; $("ctrlJump").hidden = !on; }
+
+/* =========================================================
+   HUD
+   ========================================================= */
+const HEART = '<svg viewBox="0 0 24 24"><path d="M12 21s-7.5-4.6-9.6-9.2C.9 8.4 3 4.5 6.7 4.5c2.1 0 3.6 1.1 5.3 3 1.7-1.9 3.2-3 5.3-3 3.7 0 5.8 3.9 4.3 7.3C19.5 16.4 12 21 12 21z" fill="#e5482d" stroke="#a52c17" stroke-width="1.4"/><ellipse cx="7.6" cy="8.6" rx="1.8" ry="1.2" fill="#fff" opacity=".6"/></svg>';
+function renderHearts() { const h = $("hearts"); h.innerHTML = ""; for (let i = 0; i < 3; i++) { const s = document.createElement("span"); s.innerHTML = HEART; const svg = s.firstChild; if (i >= attemptHearts) svg.classList.add("lost"); h.appendChild(svg); } }
+function renderProgress() {
+  const done = gates.filter(g => g.opened).length;
+  $("progressLabel").textContent = `البوابات: ${AR(done)} / ${AR(8)}`;
+  const bar = $("progressBar"); bar.innerHTML = "";
+  for (let i = 0; i < 8; i++) { const s = document.createElement("span"); if (i < done) s.className = "done"; else if (i === done) s.className = "now"; bar.appendChild(s); }
+}
+
+/* =========================================================
+   Speech bubble, fact card, tip
+   ========================================================= */
+function say(html, ms = 5200) {
+  const b = $("bubble"); clearInterval(bubbleTimer);
+  const plain = html.replace(/<[^>]+>/g, "");
+  b.hidden = false; player.talk = ms / 1000;
+  let n = 0; b.textContent = "";
+  bubbleTimer = setInterval(() => {
+    n += 2;
+    if (n >= plain.length) { b.innerHTML = html; clearInterval(bubbleTimer); bubbleTimer = setTimeout(hideBubble, ms); return; }
+    b.textContent = plain.slice(0, n);
+  }, reduceMotion ? 1 : 28);
+}
+function hideBubble() { clearInterval(bubbleTimer); clearTimeout(bubbleTimer); $("bubble").hidden = true; player.talk = 0; }
+function positionBubble() {
+  const b = $("bubble"); if (b.hidden) return;
+  const p = worldToScreen(player.x, player.y - 190);
+  b.style.left = clamp(p.x, 300, W - 300) + "px";
+  b.style.top = clamp(p.y, 190, H) + "px";
+}
+const LEAF_SVG = '<svg viewBox="0 0 64 64"><path d="M8 56C8 28 28 8 58 6 56 36 36 56 8 56Z" fill="#9be07f"/><path d="M10 54C24 40 38 26 54 10" stroke="#fff" stroke-width="4" fill="none" stroke-linecap="round"/></svg>';
+function showFact(g) {
+  const f = $("fact"); clearTimeout(factTimer);
+  f.innerHTML = `<div class="fact-badge">${LEAF_SVG}</div><div><h3>${g.title}</h3><p>${g.fact}</p></div>`;
+  f.hidden = false; factTimer = setTimeout(() => (f.hidden = true), 9000);
+}
+$("fact").addEventListener("click", () => ($("fact").hidden = true));
+function showTip() { const t = $("tip"); t.hidden = false; clearTimeout(tipTimer); tipTimer = setTimeout(() => (t.hidden = true), 6500); }
+
+/* =========================================================
+   Questions
+   ========================================================= */
+function askGate(i) {
+  const g = gates[i]; if (g.opened || mode !== "play") return;
+  mode = "question"; currentGate = i; attemptHearts = 3; renderHearts();
+  player.vx = 0; keys.left = keys.right = false; hideBubble(); $("fact").hidden = true;
+  g.asked = true;
+  $("qGateNum").textContent = `البوابة ${AR(i + 1)} من ${AR(8)}`;
+  $("qTitle").textContent = g.title;
+  $("qText").textContent = g.q;
+  $("qHint").hidden = true;
+  const box = $("qOpts"); box.innerHTML = "";
+  g.opts.forEach((o, k) => {
+    const b = document.createElement("button");
+    b.className = "opt"; b.id = `opt${k}`; b.dataset.k = k;
+    b.innerHTML = `<span class="letter">${LETTERS[k]}</span><span>${o}</span>`;
+    b.addEventListener("click", () => choose(k));
+    box.appendChild(b);
+  });
+  $("qModal").hidden = false;
+  setTimeout(() => { const b = $("opt0"); if (b) b.focus({ preventScroll: true }); }, 50);
+}
+function choose(k) {
+  if (mode !== "question") return;
+  const g = gates[currentGate], btn = $("opt" + k);
+  if (!btn || btn.disabled) return;
+  if (k === g.ok) {
+    btn.classList.add("correct");
+    [...$("qOpts").children].forEach(b => (b.disabled = true));
+    g.stars = g.wrong === 0 ? 3 : g.wrong === 1 ? 2 : 1;
+    g.first = g.wrong === 0;
+    SFX.correct();
+    setTimeout(() => openGate(g), 900);
+  } else {
+    g.wrong++; btn.classList.add("wrong"); btn.disabled = true; SFX.wrong();
+    attemptHearts = Math.max(0, attemptHearts - 1); renderHearts();
+    const hint = $("qHint");
+    let extra = "";
+    if (attemptHearts === 0) {
+      // keep the student going: remove the remaining wrong choice
+      [...$("qOpts").children].forEach(b => { const kk = +b.dataset.k; if (kk !== g.ok && !b.disabled) { b.disabled = true; b.classList.add("faded"); } });
+      extra = " بقي خيار واحد صحيح، جرّبيه!";
+    }
+    hint.innerHTML = `<strong>تلميح:</strong><span>${g.hint}${extra} لا بأس، حاولي مرة أخرى.</span>`;
+    hint.hidden = false;
+  }
+}
+function openGate(g) {
+  $("qModal").hidden = true;
+  g.opened = true; g.openAt = time; mode = "play";
+  stats.stars += g.stars; if (g.first) stats.first++;
+  SFX.gate(); renderProgress();
+  const s = worldToScreen(g.x, GROUND - 200);
+  burst(s.x, s.y, 40);
+  sendStarsToHud(s.x, s.y, g.stars);
+  setTimeout(() => say(g.say, 6500), 700);
+  setTimeout(() => showFact(g), 1200);
+  attemptHearts = 3; setTimeout(renderHearts, 800);
+}
+
+/* =========================================================
+   Particles (screen-space on fx canvas)
+   ========================================================= */
+function burst(x, y, n) {
+  for (let i = 0; i < n; i++) {
+    const a = Math.random() * Math.PI * 2, sp = 200 + Math.random() * 420;
+    particles.push({ x, y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp - 200, life: 1 + Math.random() * 0.6, max: 1.6, size: 10 + Math.random() * 14, rot: Math.random() * 6, vr: (Math.random() - .5) * 8, kind: Math.random() < 0.6 ? "star" : "dot", hue: Math.random() });
+  }
+}
+function sendStarsToHud(x, y, n) {
+  const r = $("starBox").getBoundingClientRect(), sr = stage.getBoundingClientRect();
+  const tx = (r.left + r.width / 2 - sr.left) / SCALE, ty = (r.top + r.height / 2 - sr.top) / SCALE;
+  for (let i = 0; i < n; i++) hudStars.push({ x, y, sx: x, sy: y, tx, ty, t: -i * 0.25, dur: 0.9 });
+}
+function confetti() {
+  for (let i = 0; i < 4; i++) particles.push({ x: Math.random() * W, y: -30, vx: (Math.random() - .5) * 60, vy: 120 + Math.random() * 160, life: 6, max: 6, size: 14 + Math.random() * 16, rot: Math.random() * 6, vr: (Math.random() - .5) * 3, kind: "star", hue: Math.random(), fall: true });
+}
+function drawStar(c, x, y, r, rot, fill, stroke) {
+  c.save(); c.translate(x, y); c.rotate(rot); c.beginPath();
+  for (let i = 0; i < 10; i++) { const a = -Math.PI / 2 + i * Math.PI / 5, rad = i % 2 ? r * 0.45 : r; c.lineTo(Math.cos(a) * rad, Math.sin(a) * rad); }
+  c.closePath(); c.fillStyle = fill; c.fill(); if (stroke) { c.lineWidth = r * 0.14; c.strokeStyle = stroke; c.stroke(); } c.restore();
+}
+function updateFx(dt) {
+  fx.setTransform(SCALE * DPR, 0, 0, SCALE * DPR, 0, 0);
+  fx.clearRect(0, 0, W, H);
+  if (mode === "end" && !reduceMotion && Math.random() < 0.5) confetti();
+  particles = particles.filter(p => (p.life -= dt) > 0 && p.y < H + 60);
+  for (const p of particles) {
+    if (!p.fall) { p.vy += 900 * dt; p.vx *= 0.985; }
+    p.x += p.vx * dt; p.y += p.vy * dt; p.rot += p.vr * dt;
+    const a = clamp(p.life / (p.fall ? 1 : p.max) * 1.4, 0, 1);
+    fx.globalAlpha = a;
+    if (p.kind === "star") drawStar(fx, p.x, p.y, p.size, p.rot, p.hue < .5 ? "#ffd84a" : "#fff3a3", "#d39a00");
+    else { fx.fillStyle = p.hue < .5 ? "#fff" : "#9be07f"; fx.beginPath(); fx.arc(p.x, p.y, p.size * 0.3, 0, 7); fx.fill(); }
+  }
+  fx.globalAlpha = 1;
+  hudStars = hudStars.filter(s => {
+    s.t += dt; if (s.t < 0) return true;
+    const k = s.t / s.dur;
+    if (k >= 1) { SFX.star(); $("starCount").textContent = AR(Math.min(stats.stars, +($("starCount").dataset.v || 0) + 1)); $("starCount").dataset.v = Math.min(stats.stars, +($("starCount").dataset.v || 0) + 1); return false; }
+    const e = ease(k), x = lerp(s.sx, s.tx, e), y = lerp(s.sy, s.ty, e) - Math.sin(k * Math.PI) * 160;
+    drawStar(fx, x, y, 26 - 8 * k, k * 6, "#ffd84a", "#c98a00");
+    return true;
+  });
+}
+
+/* =========================================================
+   Input
+   ========================================================= */
+function tryJump() { player.jumpBuf = 0.14; }
+window.addEventListener("keydown", e => {
+  if (mode === "question") {
+    if (["1", "2", "3", "١", "٢", "٣"].includes(e.key)) { choose("1١".includes(e.key) ? 0 : "2٢".includes(e.key) ? 1 : 2); e.preventDefault(); }
+    return;
+  }
+  if (mode !== "play") return;
+  if (["ArrowLeft", "a", "A", "ش"].includes(e.key)) { keys.left = true; e.preventDefault(); }
+  if (["ArrowRight", "d", "D", "ي"].includes(e.key)) { keys.right = true; e.preventDefault(); }
+  if ([" ", "ArrowUp", "w", "W", "ص"].includes(e.key)) { if (!e.repeat) tryJump(); e.preventDefault(); }
+});
+window.addEventListener("keyup", e => {
+  if (["ArrowLeft", "a", "A", "ش"].includes(e.key)) keys.left = false;
+  if (["ArrowRight", "d", "D", "ي"].includes(e.key)) keys.right = false;
+});
+window.addEventListener("blur", () => { keys.left = keys.right = false; });
+function holdButton(el, on, off) {
+  const down = e => { e.preventDefault(); initAudio(); el.classList.add("on"); on(); try { el.setPointerCapture(e.pointerId); } catch (_) {} };
+  const up = e => { el.classList.remove("on"); off && off(); };
+  el.addEventListener("pointerdown", down);
+  el.addEventListener("pointerup", up); el.addEventListener("pointercancel", up); el.addEventListener("lostpointercapture", up);
+  el.addEventListener("contextmenu", e => e.preventDefault());
+}
+holdButton($("btnLeft"), () => (keys.left = true), () => (keys.left = false));
+holdButton($("btnRight"), () => (keys.right = true), () => (keys.right = false));
+holdButton($("btnJump"), () => tryJump());
+document.addEventListener("gesturestart", e => e.preventDefault());
+
+$("btnSound").addEventListener("click", () => { initAudio(); setMuted(!muted); });
+$("btnRestart").addEventListener("click", () => { initAudio(); resetGame(true); });
+$("btnFull").addEventListener("click", () => {
+  const el = $("app");
+  const fs = document.fullscreenElement || document.webkitFullscreenElement;
+  try {
+    if (fs) (document.exitFullscreen || document.webkitExitFullscreen).call(document);
+    else { const req = el.requestFullscreen || el.webkitRequestFullscreen; const p = req && req.call(el); if (p && p.catch) p.catch(() => {}); }
+  } catch (e) {}
+});
+if (!(document.fullscreenEnabled || document.webkitFullscreenEnabled)) $("btnFull").hidden = true;
+document.addEventListener("fullscreenchange", () => setTimeout(fit, 50));
+document.addEventListener("webkitfullscreenchange", () => setTimeout(fit, 50));
+
+$("btnSkip").addEventListener("click", () => { introT = Math.max(introT, 4.6); });
+$("btnStart").addEventListener("click", () => {
+  initAudio(); SFX.pop();
+  $("intro").hidden = true; hideBubble();
+  valley.opened = true; valley.openAt = time; SFX.gate();
+  mode = "play"; showGameUI(true); renderProgress(); showTip();
+  setTimeout(() => say("هيا بنا! أول بوابة أمامنا. سيري إلى اليمين ←", 3800), 900);
+});
+
+/* =========================================================
+   Physics
+   ========================================================= */
+const HW = 34;
+function solids() {
+  const s = platforms.slice();
+  for (const g of gates) if (!g.opened || time - g.openAt < 0.55) s.push({ x: g.x - 82, w: 164, top: -2000, gate: g });
+  if (!valley.opened || time - valley.openAt < 0.55) s.push({ x: VALLEY_X - 100, w: 200, top: -2000 });
+  return s;
+}
+function overGap(x) { return gaps.find(g => x > g.x + 14 && x < g.x + g.w - 14); }
+function stepPhysics(dt) {
+  const dir = (keys.right ? 1 : 0) - (keys.left ? 1 : 0);
+  const target = dir * 380;
+  player.vx += clamp(target - player.vx, -2800 * dt, 2800 * dt);
+  if (dir) player.face = dir;
+  const S = solids();
+  // horizontal
+  const ox = player.x;
+  player.x += player.vx * dt;
+  for (const s of S) {
+    const overlapY = player.y > s.top + 4;
+    if (!overlapY) continue;
+    if (player.x + HW > s.x && player.x - HW < s.x + s.w) {
+      if (ox <= s.x + s.w / 2) player.x = s.x - HW; else player.x = s.x + s.w + HW;
+      player.vx = 0;
+      if (s.gate && !s.gate.opened && mode === "play") askGate(s.gate.i);
+    }
+  }
+  player.x = clamp(player.x, 60, WORLD_END - 80);
+  // vertical
+  player.coyote -= dt; player.jumpBuf -= dt;
+  if (player.jumpBuf > 0 && (player.onGround || player.coyote > 0)) {
+    player.vy = -1060; player.onGround = false; player.coyote = 0; player.jumpBuf = 0; player.squash = -0.18; SFX.jump();
+  }
+  const oy = player.y;
+  player.vy += 2600 * dt; player.vy = Math.min(player.vy, 1800);
+  player.y += player.vy * dt;
+  let floor = overGap(player.x) ? Infinity : GROUND;
+  for (const s of platforms) {
+    if (player.x + HW * 0.6 > s.x && player.x - HW * 0.6 < s.x + s.w && oy <= s.top + 1) floor = Math.min(floor, s.top);
+  }
+  const was = player.onGround;
+  if (player.y >= floor) {
+    player.y = floor; if (!was && player.vy > 400) player.squash = 0.2;
+    player.vy = 0; player.onGround = true; player.coyote = 0.1;
+  } else {
+    if (was) player.coyote = 0.1;
+    player.onGround = false;
+  }
+  if (player.y > GROUND + 120) { // fell into the falaj: splash and return to the bank
+    const g = gaps.find(g => player.x > g.x - 20 && player.x < g.x + g.w + 20) || gaps[0];
+    const s = worldToScreen(player.x, GROUND + 10); splash(s.x, s.y); SFX.splash();
+    player.x = g.x - 60; player.y = GROUND; player.vy = 0; player.vx = 0; player.onGround = true;
+    say("بلّلني ماء الفلج! لنقفز فوقه هذه المرة.", 3200);
+  }
+  player.walk += Math.abs(player.vx) * dt * 0.035;
+  player.squash *= Math.pow(0.0015, dt);
+  // gate proximity trigger
+  for (const g of gates) if (!g.opened && mode === "play" && player.x > g.x - 150 && player.x < g.x) { askGate(g.i); break; }
+  if (mode === "play" && player.x > GARDEN_X + 80) startEnd();
+}
+function splash(x, y) { for (let i = 0; i < 26; i++) { const a = -Math.PI / 2 + (Math.random() - .5) * 1.6, sp = 250 + Math.random() * 380; particles.push({ x, y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, life: .9, max: .9, size: 10, rot: 0, vr: 0, kind: "dot", hue: .2 }); } }
+
+/* =========================================================
+   Camera
+   ========================================================= */
+function worldToScreen(x, y) {
+  const zx = (x - cam.x - 800) * cam.zoom + 800, zy = (y - GROUND) * cam.zoom + GROUND;
+  return { x: zx, y: zy };
+}
+
+/* =========================================================
+   Drawing: sky & parallax layers
+   ========================================================= */
+function drawSky() {
+  ctx.fillStyle = grad(ctx, 0, 0, 0, 760, [[0, "#7ccbf0"], [0.55, "#b9e4f4"], [1, "#fde7c2"]]);
+  ctx.fillRect(0, 0, W, H);
+  const sx = 1250 - cam.x * 0.02, sy = 150;
+  const g = ctx.createRadialGradient(sx, sy, 10, sx, sy, 260);
+  g.addColorStop(0, "rgba(255,248,200,1)"); g.addColorStop(0.25, "rgba(255,240,170,.75)"); g.addColorStop(1, "rgba(255,240,170,0)");
+  ctx.fillStyle = g; ctx.fillRect(sx - 260, sy - 260, 520, 520);
+  ctx.fillStyle = "#fff8d2"; ctx.beginPath(); ctx.arc(sx, sy, 58, 0, 7); ctx.fill();
+  // clouds
+  for (let k = 0; k < 7; k++) {
+    const cx = ((k * 420 + time * 12 - cam.x * 0.06) % 2940 + 2940) % 2940 - 200, cy = 110 + hash(k + 11) * 160, s = 0.7 + hash(k + 3) * 0.8;
+    cloud(cx, cy, s);
+  }
+}
+function cloud(x, y, s) {
+  ctx.save(); ctx.translate(x, y); ctx.scale(s, s);
+  ctx.fillStyle = "rgba(255,255,255,.92)";
+  ctx.beginPath(); ctx.arc(0, 0, 38, 0, 7); ctx.arc(42, -16, 46, 0, 7); ctx.arc(92, 0, 36, 0, 7); ctx.arc(46, 12, 40, 0, 7); ctx.fill();
+  ctx.fillStyle = "rgba(205,226,240,.6)"; ctx.beginPath(); ctx.ellipse(46, 30, 82, 12, 0, 0, 7); ctx.fill();
+  ctx.restore();
+}
+function ridge(lx, seed, amp, base) {
+  return base - amp * (0.55 + 0.25 * Math.sin(lx * 0.0021 + seed) + 0.15 * Math.sin(lx * 0.0057 + seed * 2.3) + 0.08 * Math.sin(lx * 0.013 + seed * 5.1) + 0.06 * (hash(Math.floor(lx / 60) + seed * 1000) - .5));
+}
+function drawMountains(f, seed, amp, base, light, dark, haze) {
+  const off = cam.x * f, step = 24;
+  let prev = null;
+  for (let sx = -step; sx <= W + step; sx += step) {
+    const lx = sx + off, y = ridge(lx, seed, amp, base), y2 = ridge(lx + step, seed, amp, base);
+    const slope = (y2 - y) / step;
+    const t = clamp(0.5 + slope * 1.6, 0, 1); // facing the sun (right) = lighter
+    ctx.fillStyle = mix(dark, light, t);
+    ctx.beginPath(); ctx.moveTo(sx, y); ctx.lineTo(sx + step + 1, y2); ctx.lineTo(sx + step + 1, 780); ctx.lineTo(sx, 780); ctx.fill();
+  }
+  ctx.fillStyle = grad(ctx, 0, base - amp, 0, 780, [[0, "rgba(255,255,255,0)"], [1, haze]]);
+  ctx.fillRect(0, base - amp * 1.2, W, 780);
+}
+function hex2rgb(h) { const n = parseInt(h.slice(1), 16); return [n >> 16, (n >> 8) & 255, n & 255]; }
+function mix(a, b, t) { const A = hex2rgb(a), B = hex2rgb(b); return `rgb(${A.map((v, i) => Math.round(lerp(v, B[i], t))).join(",")})`; }
+
+function palm(x, base, h, s, seed, sway = 1) {
+  const sw = Math.sin(time * 1.3 + seed * 7) * 0.05 * sway;
+  ctx.save(); ctx.translate(x, base); ctx.scale(s, s);
+  const lean = (hash(seed * 97 | 0) - .5) * 40;
+  // trunk
+  const topX = lean, topY = -h;
+  ctx.lineCap = "round";
+  for (let i = 0; i < 14; i++) {
+    const t0 = i / 14, t1 = (i + 1) / 14;
+    const x0 = lean * t0 * t0, y0 = -h * t0, x1 = lean * t1 * t1, y1 = -h * t1;
+    ctx.strokeStyle = i % 2 ? "#8a5a3a" : "#7a4d30"; ctx.lineWidth = 26 - 10 * t0;
+    ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x1, y1); ctx.stroke();
+    ctx.strokeStyle = "rgba(255,220,170,.25)"; ctx.lineWidth = 5; ctx.beginPath(); ctx.moveTo(x0 + 6 - 3 * t0, y0); ctx.lineTo(x1 + 6 - 3 * t1, y1); ctx.stroke();
+  }
+  // dates
+  ctx.fillStyle = "#c56a1b"; for (let i = 0; i < 9; i++) { ctx.beginPath(); ctx.arc(topX - 16 + (i % 3) * 12 + (i > 5 ? 8 : 0), topY + 14 + (i / 3 | 0) * 9, 6, 0, 7); ctx.fill(); }
+  // fronds
+  ctx.translate(topX, topY); ctx.rotate(sw);
+  for (let k = 0; k < 11; k++) {
+    const a = -Math.PI + (k / 10) * Math.PI + (hash(k + seed * 31 | 0) - .5) * 0.2;
+    const len = 150 + hash(k * 7 + seed * 13 | 0) * 50, droop = 70 + 40 * Math.abs(Math.cos(a));
+    const ex = Math.cos(a) * len, ey = Math.sin(a) * len * 0.45 + droop;
+    const cx = Math.cos(a) * len * 0.5, cy = Math.sin(a) * len * 0.6 - 30;
+    ctx.strokeStyle = k % 2 ? "#2f7d36" : "#3e9440"; ctx.lineWidth = 6;
+    ctx.beginPath(); ctx.moveTo(0, 0); ctx.quadraticCurveTo(cx, cy, ex, ey); ctx.stroke();
+    ctx.lineWidth = 3.4;
+    for (let j = 2; j < 12; j++) {
+      const t = j / 12, px = (1 - t) * (1 - t) * 0 + 2 * (1 - t) * t * cx + t * t * ex, py = 2 * (1 - t) * t * cy + t * t * ey;
+      const ll = 34 * (1 - t * 0.6);
+      ctx.strokeStyle = j % 2 ? "#5bb04a" : "#2f7d36";
+      ctx.beginPath(); ctx.moveTo(px, py); ctx.lineTo(px + Math.cos(a + 0.9) * ll * 0.6, py + ll * 0.7); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(px, py); ctx.lineTo(px + Math.cos(a - 0.9) * ll * 0.6, py + ll * 0.8); ctx.stroke();
+    }
+  }
+  ctx.restore();
+}
+function house(x, base, w, h, s, seed, tower = false) {
+  ctx.save(); ctx.translate(x, base); ctx.scale(s, s);
+  const d = 26; // depth of the side face
+  if (tower) {
+    const r = w / 2;
+    ctx.fillStyle = grad(ctx, -r, 0, r, 0, [[0, "#c79b6c"], [0.45, "#ecc996"], [1, "#b98a5c"]]);
+    ctx.fillRect(-r, -h, w, h);
+    ctx.fillStyle = "#e9c89a"; for (let i = 0; i < 4; i++) ctx.fillRect(-r + i * (w / 4) + 3, -h - 16, w / 4 - 8, 18);
+    ctx.fillStyle = "#5c3a22"; rr(ctx, -9, -h * 0.62, 18, 30, 9); ctx.fill();
+    ctx.fillStyle = "rgba(0,0,0,.12)"; ctx.fillRect(-r, -6, w, 6);
+    ctx.restore(); return;
+  }
+  // side face
+  ctx.fillStyle = "#b98d61"; ctx.beginPath(); ctx.moveTo(w / 2, 0); ctx.lineTo(w / 2 + d, -d * 0.6); ctx.lineTo(w / 2 + d, -h - d * 0.6); ctx.lineTo(w / 2, -h); ctx.fill();
+  // roof top
+  ctx.fillStyle = "#f0d3a6"; ctx.beginPath(); ctx.moveTo(-w / 2, -h); ctx.lineTo(w / 2, -h); ctx.lineTo(w / 2 + d, -h - d * 0.6); ctx.lineTo(-w / 2 + d, -h - d * 0.6); ctx.fill();
+  // front face
+  ctx.fillStyle = grad(ctx, 0, -h, 0, 0, [[0, "#e8c595"], [1, "#d4a874"]]); ctx.fillRect(-w / 2, -h, w, h);
+  // crenellations
+  ctx.fillStyle = "#e8c595"; const n = Math.max(3, Math.round(w / 30));
+  for (let i = 0; i < n; i++) { const cx = -w / 2 + (i + 0.5) * (w / n); ctx.beginPath(); ctx.moveTo(cx - 9, -h); ctx.lineTo(cx - 9, -h - 12); ctx.lineTo(cx, -h - 20); ctx.lineTo(cx + 9, -h - 12); ctx.lineTo(cx + 9, -h); ctx.fill(); }
+  // beam ends
+  ctx.fillStyle = "#6b4426"; for (let i = 0; i < n + 1; i++) ctx.fillRect(-w / 2 + i * (w / n) - 3, -h + 14, 8, 6);
+  // door & windows
+  ctx.fillStyle = "#6e4426"; rr(ctx, -16, -58, 32, 58, 4); ctx.fill();
+  ctx.fillStyle = "#8b5a33"; ctx.fillRect(-12, -54, 11, 52); ctx.fillRect(1, -54, 11, 52);
+  if (w > 110) { ctx.fillStyle = "#4e3220"; for (const wx of [-w / 2 + 26, w / 2 - 26]) { ctx.beginPath(); ctx.moveTo(wx - 11, -h * 0.45); ctx.lineTo(wx - 11, -h * 0.62); ctx.quadraticCurveTo(wx, -h * 0.74, wx + 11, -h * 0.62); ctx.lineTo(wx + 11, -h * 0.45); ctx.fill(); } }
+  ctx.fillStyle = "rgba(0,0,0,.1)"; ctx.fillRect(-w / 2, -5, w, 5);
+  ctx.restore();
+}
+function drawVillage() {
+  const f = 0.38, base = 652, off = cam.x * f, sp = 230;
+  const k0 = Math.floor((off - 300) / sp), k1 = Math.floor((off + W + 300) / sp);
+  for (let k = k0; k <= k1; k++) {
+    const r = hash(k * 131 + 7), x = k * sp - off + (hash(k + 999) - .5) * 80;
+    if (r < 0.42) house(x, base, 120 + hash(k + 5) * 80, 80 + hash(k + 9) * 50, 0.78, k);
+    else if (r < 0.55) { house(x - 30, base, 140, 90, 0.78, k); house(x + 60, base, 44, 150, 0.78, k, true); }
+    else palm(x, base + 6, 220 + hash(k + 2) * 80, 0.55, k, 0.6);
+  }
+  ctx.fillStyle = "rgba(225,236,240,.22)"; ctx.fillRect(0, 300, W, 360);
+}
+function bush(x, base, s, seed) {
+  ctx.save(); ctx.translate(x, base); ctx.scale(s, s);
+  ctx.fillStyle = "#3f8f3a"; ctx.beginPath(); ctx.arc(-26, -20, 26, 0, 7); ctx.arc(0, -34, 32, 0, 7); ctx.arc(28, -20, 25, 0, 7); ctx.fill();
+  ctx.fillStyle = "#5fb34a"; ctx.beginPath(); ctx.arc(-10, -42, 18, 0, 7); ctx.arc(14, -34, 14, 0, 7); ctx.fill();
+  const cols = ["#ff6fa0", "#ffd23f", "#ff8a3d", "#fff"];
+  for (let i = 0; i < 6; i++) { ctx.fillStyle = cols[(seed + i) % 4]; ctx.beginPath(); ctx.arc(-34 + hash(seed * 7 + i) * 68, -12 - hash(seed * 3 + i) * 44, 5, 0, 7); ctx.fill(); }
+  ctx.restore();
+}
+function drawFarm() {
+  const f = 0.66, off = cam.x * f, base = 742;
+  // falaj channel running along the farms
+  ctx.fillStyle = "#c9a57a"; ctx.fillRect(0, 716, W, 30);
+  ctx.fillStyle = grad(ctx, 0, 721, 0, 737, [[0, "#5cc3e6"], [1, "#2f8fbf"]]); ctx.fillRect(0, 721, W, 16);
+  ctx.strokeStyle = "rgba(255,255,255,.7)"; ctx.lineWidth = 2;
+  for (let i = 0; i < 26; i++) { const x = ((i * 97 - off * 1 + time * 60) % (W + 100) + W + 100) % (W + 100) - 50; ctx.beginPath(); ctx.moveTo(x, 727 + (i % 3) * 3); ctx.lineTo(x + 22, 727 + (i % 3) * 3); ctx.stroke(); }
+  ctx.fillStyle = "#b08860"; ctx.fillRect(0, 716, W, 5); ctx.fillRect(0, 737, W, 5);
+  const sp = 170, k0 = Math.floor((off - 300) / sp), k1 = Math.floor((off + W + 300) / sp);
+  for (let k = k0; k <= k1; k++) {
+    const r = hash(k * 53 + 3), x = k * sp - off + (hash(k + 41) - .5) * 60;
+    if (r < 0.28) palm(x, 718, 300 + hash(k + 8) * 70, 0.72, k + 50, 1);
+    else if (r < 0.7) bush(x, 718, 0.9 + hash(k) * 0.3, k);
+    else { // crop rows
+      for (let j = 0; j < 5; j++) { ctx.fillStyle = j % 2 ? "#4f9e3c" : "#6cbf4a"; ctx.beginPath(); ctx.ellipse(x - 50 + j * 25, 708, 13, 9, 0, 0, 7); ctx.fill(); }
+    }
+  }
+}
+
+/* =========================================================
+   Drawing: playfield
+   ========================================================= */
+function drawGround(x0, x1) {
+  // back grass edge
+  ctx.fillStyle = "#79b84a"; ctx.fillRect(x0, 738, x1 - x0, 10);
+  // path top surface
+  ctx.fillStyle = grad(ctx, 0, 744, 0, 790, [[0, "#ecd09f"], [1, "#d8b17a"]]); ctx.fillRect(x0, 744, x1 - x0, 46);
+  // front face
+  ctx.fillStyle = grad(ctx, 0, 790, 0, 900, [[0, "#b98654"], [1, "#7f532f"]]); ctx.fillRect(x0, 790, x1 - x0, 120);
+  ctx.fillStyle = "rgba(255,255,255,.25)"; ctx.fillRect(x0, 789, x1 - x0, 3);
+  // pebbles & tufts
+  const k0 = Math.floor(x0 / 60), k1 = Math.ceil(x1 / 60);
+  for (let k = k0; k <= k1; k++) {
+    const px = k * 60 + hash(k) * 40;
+    if (overGap(px)) continue;
+    ctx.fillStyle = hash(k + 3) < .5 ? "#a9805a" : "#c49a6c"; ctx.beginPath(); ctx.ellipse(px, 820 + hash(k + 7) * 60, 9, 6, 0, 0, 7); ctx.fill();
+    if (hash(k + 17) < 0.45) { ctx.strokeStyle = "#5e9e3a"; ctx.lineWidth = 3; for (let j = -2; j <= 2; j++) { ctx.beginPath(); ctx.moveTo(px + j * 3, 748); ctx.lineTo(px + j * 6, 735 - hash(k + j) * 8); ctx.stroke(); } }
+  }
+}
+function drawGaps() {
+  for (const g of gaps) {
+    if (g.x > cam.x + W + 400 || g.x + g.w < cam.x - 400) continue;
+    ctx.fillStyle = "#6c4a2c"; ctx.fillRect(g.x, 744, g.w, 166);
+    ctx.fillStyle = grad(ctx, 0, 770, 0, 900, [[0, "#57c0e8"], [1, "#1d6f9e"]]); ctx.fillRect(g.x + 10, 772, g.w - 20, 140);
+    ctx.strokeStyle = "rgba(255,255,255,.8)"; ctx.lineWidth = 3;
+    for (let i = 0; i < 4; i++) { const yy = 786 + i * 22, sh = (time * 50 + i * 30) % 60; ctx.beginPath(); ctx.moveTo(g.x + 20 + sh, yy); ctx.lineTo(g.x + 50 + sh, yy); ctx.stroke(); }
+    // stone lips (2.5D)
+    for (const sx of [g.x - 6, g.x + g.w - 16]) { ctx.fillStyle = "#cfc0a8"; rr(ctx, sx, 740, 22, 58, 6); ctx.fill(); ctx.fillStyle = "#a99a82"; ctx.fillRect(sx, 778, 22, 20); }
+    text(ctx, "فلج", g.x + g.w / 2, 870, 24, "rgba(255,255,255,.85)", "Tajawal", 800);
+  }
+}
+function drawPlatforms() {
+  for (const p of platforms) {
+    if (p.x > cam.x + W + 400 || p.x + p.w < cam.x - 400) continue;
+    const h = GROUND - p.top + 18, d = 16;
+    ctx.fillStyle = "#a07a55"; ctx.beginPath(); ctx.moveTo(p.x + p.w, p.top); ctx.lineTo(p.x + p.w + d, p.top - d * 0.6); ctx.lineTo(p.x + p.w + d, GROUND + 18 - d * 0.6); ctx.lineTo(p.x + p.w, GROUND + 18); ctx.fill();
+    ctx.fillStyle = "#e6c79b"; ctx.beginPath(); ctx.moveTo(p.x, p.top); ctx.lineTo(p.x + p.w, p.top); ctx.lineTo(p.x + p.w + d, p.top - d * 0.6); ctx.lineTo(p.x + d, p.top - d * 0.6); ctx.fill();
+    ctx.fillStyle = grad(ctx, 0, p.top, 0, p.top + h, [[0, "#d9b07d"], [1, "#b48555"]]); ctx.fillRect(p.x, p.top, p.w, h);
+    ctx.strokeStyle = "rgba(110,70,40,.35)"; ctx.lineWidth = 2;
+    for (let y = p.top + 22; y < p.top + h; y += 22) { ctx.beginPath(); ctx.moveTo(p.x, y); ctx.lineTo(p.x + p.w, y); ctx.stroke(); for (let x = p.x + ((y / 22) % 2 ? 20 : 45); x < p.x + p.w; x += 50) { ctx.beginPath(); ctx.moveTo(x, y - 22); ctx.lineTo(x, y); ctx.stroke(); } }
+    if (p.kind === "wall") { ctx.fillStyle = "#5fb34a"; ctx.beginPath(); ctx.arc(p.x + 20, p.top - 6, 10, 0, 7); ctx.arc(p.x + 34, p.top - 9, 8, 0, 7); ctx.fill(); }
+  }
+}
+function leafEmblem(x, y, s, col = "#e7c35a") {
+  ctx.save(); ctx.translate(x, y); ctx.scale(s, s);
+  ctx.fillStyle = col; ctx.beginPath(); ctx.moveTo(0, 20); ctx.bezierCurveTo(-18, 6, -16, -14, 0, -22); ctx.bezierCurveTo(16, -14, 18, 6, 0, 20); ctx.fill();
+  ctx.strokeStyle = "rgba(90,50,20,.7)"; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(0, 18); ctx.lineTo(0, -16); ctx.stroke();
+  for (let i = -1; i <= 1; i++) { ctx.beginPath(); ctx.moveTo(0, i * 8); ctx.lineTo(-8, i * 8 - 6); ctx.moveTo(0, i * 8); ctx.lineTo(8, i * 8 - 6); ctx.stroke(); }
+  ctx.restore();
+}
+function drawGate(gx, opened, openAt, l1, l2, big = false, idx = -1) {
+  if (gx > cam.x + W + 500 || gx < cam.x - 500) return;
+  const s = big ? 1.22 : 1;
+  ctx.save(); ctx.translate(gx, GROUND); ctx.scale(s, s);
+  const oT = opened ? ease((time - openAt) / 1.1) : 0;
+  const ph = 320, pw = 62, iw = 70, d = 18;
+  // pillars (2.5D)
+  for (const px of [-iw - pw, iw]) {
+    ctx.fillStyle = "#b48a5e"; ctx.beginPath(); ctx.moveTo(px + pw, 0); ctx.lineTo(px + pw + d, -d * .6); ctx.lineTo(px + pw + d, -ph - d * .6); ctx.lineTo(px + pw, -ph); ctx.fill();
+    ctx.fillStyle = grad(ctx, px, 0, px + pw, 0, [[0, "#d7ad7a"], [1, "#e9c693"]]); ctx.fillRect(px, -ph, pw, ph);
+    ctx.fillStyle = "rgba(120,80,40,.18)"; for (let y = -ph + 30; y < 0; y += 38) ctx.fillRect(px, y, pw, 3);
+  }
+  // lintel
+  ctx.fillStyle = "#f0d3a6"; ctx.beginPath(); ctx.moveTo(-iw - pw - 14, -ph); ctx.lineTo(iw + pw + 14, -ph); ctx.lineTo(iw + pw + 14 + d, -ph - d * .6); ctx.lineTo(-iw - pw - 14 + d, -ph - d * .6); ctx.fill();
+  ctx.fillStyle = grad(ctx, 0, -ph - 50, 0, -ph, [[0, "#e8c595"], [1, "#d1a571"]]); ctx.fillRect(-iw - pw - 14, -ph - 2, (iw + pw + 14) * 2, 40);
+  ctx.fillStyle = "#e8c595";
+  for (let i = 0; i < 7; i++) { const cx = -iw - pw + i * ((iw + pw) * 2 / 6); ctx.beginPath(); ctx.moveTo(cx - 12, -ph); ctx.lineTo(cx - 12, -ph - 18); ctx.lineTo(cx, -ph - 30); ctx.lineTo(cx + 12, -ph - 18); ctx.lineTo(cx + 12, -ph); ctx.fill(); }
+  // doorway
+  const arch = () => { ctx.beginPath(); ctx.moveTo(-iw, 0); ctx.lineTo(-iw, -ph + 110); ctx.quadraticCurveTo(-iw, -ph + 30, 0, -ph + 12); ctx.quadraticCurveTo(iw, -ph + 30, iw, -ph + 110); ctx.lineTo(iw, 0); ctx.closePath(); };
+  arch(); ctx.fillStyle = "#3a2414"; ctx.fill();
+  if (oT > 0) { // light from the other side
+    arch(); ctx.save(); ctx.clip();
+    ctx.fillStyle = grad(ctx, 0, -ph, 0, 0, [[0, `rgba(255,236,160,${0.9 * oT})`], [1, `rgba(170,220,120,${0.9 * oT})`]]); ctx.fillRect(-iw, -ph, iw * 2, ph);
+    ctx.restore();
+  }
+  // door panels
+  arch(); ctx.save(); ctx.clip();
+  const pwid = iw * (1 - 0.82 * oT);
+  for (const side of [-1, 1]) {
+    const x0 = side < 0 ? -iw : iw - pwid;
+    ctx.fillStyle = grad(ctx, x0, 0, x0 + pwid, 0, side < 0 ? [[0, "#7a4a28"], [1, oT > 0 ? "#5a361c" : "#9a6236"]] : [[0, oT > 0 ? "#5a361c" : "#9a6236"], [1, "#7a4a28"]]);
+    ctx.fillRect(x0, -ph, pwid, ph);
+    ctx.strokeStyle = "rgba(50,25,10,.45)"; ctx.lineWidth = 2;
+    for (let i = 1; i < 4; i++) { const xx = x0 + pwid * i / 4; ctx.beginPath(); ctx.moveTo(xx, -ph); ctx.lineTo(xx, 0); ctx.stroke(); }
+    ctx.fillStyle = "#d9b25a"; for (let r = 0; r < 5; r++) for (let c = 0; c < 2; c++) { ctx.beginPath(); ctx.arc(x0 + pwid * (0.3 + c * 0.4), -ph + 140 + r * 38, 3.2, 0, 7); ctx.fill(); }
+    if (pwid > 30) leafEmblem(x0 + pwid / 2, -150, pwid / iw * 1.25);
+  }
+  ctx.restore();
+  ctx.lineWidth = 6; ctx.strokeStyle = "#5a3a1f"; arch(); ctx.stroke();
+  // medallion
+  const my = -ph + 70;
+  ctx.fillStyle = opened ? "#4caf50" : "#f4c542"; ctx.strokeStyle = "#7a4a1f"; ctx.lineWidth = 4;
+  const pulse = opened ? 1 : 1 + 0.06 * Math.sin(time * 4);
+  ctx.beginPath(); ctx.arc(0, my, 24 * pulse, 0, 7); ctx.fill(); ctx.stroke();
+  if (opened) { ctx.strokeStyle = "#fff"; ctx.lineWidth = 6; ctx.lineCap = "round"; ctx.beginPath(); ctx.moveTo(-10, my); ctx.lineTo(-2, my + 9); ctx.lineTo(12, my - 9); ctx.stroke(); }
+  else text(ctx, "؟", 0, my + 3, 34, "#7a4a1f", "Lalezar", 400);
+  // sign board
+  const sw = big ? 330 : 300;
+  ctx.fillStyle = "#6e4426"; ctx.fillRect(-60, -ph - 74, 8, 40); ctx.fillRect(52, -ph - 74, 8, 40);
+  ctx.fillStyle = grad(ctx, 0, -ph - 150, 0, -ph - 66, [[0, "#b07a46"], [1, "#8a5a32"]]); rr(ctx, -sw / 2, -ph - 152, sw, 86, 14); ctx.fill();
+  ctx.strokeStyle = "#5a3a1f"; ctx.lineWidth = 4; rr(ctx, -sw / 2, -ph - 152, sw, 86, 14); ctx.stroke();
+  if (l2) { text(ctx, l1, 0, -ph - 128, 22, "#ffe6a8", "Tajawal", 800); text(ctx, l2, 0, -ph - 92, 34, "#fff", "Lalezar", 400, ["#4a2c14", 5]); }
+  else text(ctx, l1, 0, -ph - 106, 46, "#fff", "Lalezar", 400, ["#4a2c14", 6]);
+  ctx.restore();
+}
+function drawGardenArch() {
+  const gx = GARDEN_X; if (gx > cam.x + W + 500 || gx < cam.x - 600) return;
+  ctx.save(); ctx.translate(gx, GROUND);
+  ctx.lineCap = "round";
+  ctx.strokeStyle = "#5a3a1f"; ctx.lineWidth = 18; ctx.beginPath(); ctx.moveTo(-130, 0); ctx.lineTo(-130, -250); ctx.quadraticCurveTo(0, -400, 130, -250); ctx.lineTo(130, 0); ctx.stroke();
+  ctx.strokeStyle = "#3f8f3a"; ctx.lineWidth = 12; ctx.setLineDash([22, 10]); ctx.stroke(); ctx.setLineDash([]);
+  for (let i = 0; i < 16; i++) { const t = i / 15, a = Math.PI + t * Math.PI; const x = i < 4 ? -130 : i > 11 ? 130 : Math.cos(a) * 130, y = i < 4 ? -i * 60 : i > 11 ? -(15 - i) * 60 : -250 + Math.sin(a) * 130 * 1.15;
+    ctx.fillStyle = ["#ff6fa0", "#ffd23f", "#e5482d", "#fff"][i % 4]; ctx.beginPath(); ctx.arc(x + 10, y, 9, 0, 7); ctx.fill(); }
+  ctx.fillStyle = grad(ctx, 0, -420, 0, -350, [[0, "#3aa35c"], [1, "#1f6b3d"]]); rr(ctx, -170, -440, 340, 78, 16); ctx.fill();
+  ctx.strokeStyle = "#f4c542"; ctx.lineWidth = 4; rr(ctx, -170, -440, 340, 78, 16); ctx.stroke();
+  text(ctx, "حديقة الحياة", 0, -398, 46, "#fff", "Lalezar", 400, ["#0f3d22", 5]);
+  ctx.restore();
+  // garden decorations after the arch
+  for (let i = 0; i < 9; i++) tomatoPlant(GARDEN_X + 230 + i * 60 + (i % 2) * 20, GROUND - 10, 0.55 + (i % 3) * 0.08, 1, i);
+  for (let i = 0; i < 6; i++) bush(GARDEN_X - 360 + i * 90, GROUND - 10, 0.8, i + 20);
+}
+
+/* ---------- tomato & stage visuals ---------- */
+function tomatoSeed(c, x, y, s, rot = 0) {
+  c.save(); c.translate(x, y); c.rotate(rot); c.scale(s, s);
+  c.fillStyle = "#f2dca3"; c.strokeStyle = "#c9a45c"; c.lineWidth = 1.5;
+  c.beginPath(); c.ellipse(0, 0, 10, 7, 0, 0, 7); c.fill(); c.stroke();
+  c.fillStyle = "#d8b56b"; c.beginPath(); c.arc(-8, 2, 2, 0, 7); c.fill();
+  c.restore();
+}
+function soilBox(c, x, y, w, h) {
+  c.fillStyle = "#7a5233"; rr(c, x - w / 2 - 8, y - h - 8, w + 16, h + 16, 14); c.fill();
+  c.fillStyle = grad(c, 0, y - h, 0, y, [[0, "#8e6040"], [1, "#5c3b22"]]); rr(c, x - w / 2, y - h, w, h, 10); c.fill();
+  c.strokeStyle = "rgba(255,255,255,.12)"; c.lineWidth = 2; for (let i = 1; i < 4; i++) { c.beginPath(); c.moveTo(x - w / 2 + 6, y - h + i * h / 4); c.bezierCurveTo(x - w / 6, y - h + i * h / 4 - 6, x + w / 6, y - h + i * h / 4 + 6, x + w / 2 - 6, y - h + i * h / 4); c.stroke(); }
+  c.fillStyle = "#4e9a3a"; c.fillRect(x - w / 2, y - h - 2, w, 6);
+}
+function pot(c, x, y, s) {
+  c.save(); c.translate(x, y); c.scale(s, s);
+  c.fillStyle = grad(c, -50, 0, 50, 0, [[0, "#b8532b"], [0.5, "#e07a46"], [1, "#a8472a"]]);
+  c.beginPath(); c.moveTo(-46, -70); c.lineTo(46, -70); c.lineTo(36, 0); c.lineTo(-36, 0); c.fill();
+  c.fillStyle = "#c9633a"; rr(c, -54, -84, 108, 18, 6); c.fill();
+  c.fillStyle = "#5c3b22"; c.beginPath(); c.ellipse(0, -84, 48, 7, 0, 0, 7); c.fill();
+  c.restore();
+}
+function compoundLeaf(c, x, y, ang, len, col = "#3f9a3f") {
+  c.save(); c.translate(x, y); c.rotate(ang);
+  c.strokeStyle = "#2f7a33"; c.lineWidth = 3; c.beginPath(); c.moveTo(0, 0); c.lineTo(len, 0); c.stroke();
+  for (let i = 1; i <= 3; i++) {
+    const px = len * i / 3.4;
+    for (const sd of [-1, 1]) { c.save(); c.translate(px, 0); c.rotate(sd * 0.7); leaflet(c, len * 0.22); c.restore(); }
+  }
+  c.save(); c.translate(len, 0); leaflet(c, len * 0.26); c.restore();
+  function leaflet(c, l) { c.fillStyle = col; c.beginPath(); c.moveTo(0, 0); for (let k = 0; k <= 6; k++) { const t = k / 6; c.lineTo(l * t, -Math.sin(t * Math.PI) * l * 0.42 - (k % 2) * 3); } for (let k = 6; k >= 0; k--) { const t = k / 6; c.lineTo(l * t, Math.sin(t * Math.PI) * l * 0.42 + (k % 2) * 3); } c.fill(); }
+  c.restore();
+}
+function tomatoFlower(c, x, y, s, open = 1) {
+  c.save(); c.translate(x, y); c.scale(s * open, s * open);
+  c.fillStyle = "#f7d21c"; c.strokeStyle = "#d9a400"; c.lineWidth = 1;
+  for (let i = 0; i < 6; i++) { c.save(); c.rotate(i * Math.PI / 3); c.beginPath(); c.moveTo(0, 0); c.lineTo(-4, 10); c.lineTo(0, 18); c.lineTo(4, 10); c.closePath(); c.fill(); c.stroke(); c.restore(); }
+  c.fillStyle = "#f2a900"; c.beginPath(); c.arc(0, 0, 5, 0, 7); c.fill();
+  c.restore();
+}
+function tomato(c, x, y, r, ripe = 1) {
+  const col = mix("#7cbf3a", "#e5482d", ripe), dk = mix("#4f8f22", "#b3301b", ripe);
+  const g = c.createRadialGradient(x - r * 0.35, y - r * 0.4, r * 0.1, x, y, r);
+  g.addColorStop(0, "#fff3e0"); g.addColorStop(0.18, col); g.addColorStop(1, dk);
+  c.fillStyle = g; c.beginPath(); c.ellipse(x, y, r, r * 0.9, 0, 0, 7); c.fill();
+  c.fillStyle = "#2f7a33"; for (let i = 0; i < 5; i++) { c.save(); c.translate(x, y - r * 0.82); c.rotate(-Math.PI / 2 + (i - 2) * 0.55); c.beginPath(); c.ellipse(r * 0.28, 0, r * 0.3, r * 0.08, 0, 0, 7); c.fill(); c.restore(); }
+}
+function tomatoPlant(x, base, s, stage, seed, flowersOpen = 1) {
+  ctx.save(); ctx.translate(x, base); ctx.scale(s, s);
+  const sw = Math.sin(time * 1.4 + seed) * 0.03;
+  ctx.fillStyle = "#8a6a45"; ctx.fillRect(-4, -250, 8, 250);
+  ctx.rotate(sw);
+  ctx.strokeStyle = "#3d8a35"; ctx.lineWidth = 9; ctx.beginPath(); ctx.moveTo(0, 0); ctx.bezierCurveTo(8, -80, -6, -160, 4, -240); ctx.stroke();
+  const L = [[-40, -0.4, 80], [-80, 3.5, 85], [-120, -0.6, 80], [-160, 3.7, 78], [-195, -0.8, 66], [-225, 3.9, 56]];
+  L.forEach(([yy, a, l]) => compoundLeaf(ctx, 2, yy, a, l));
+  if (stage >= 1) [[-130, 40], [-170, -42], [-205, 30]].forEach(([yy, dx]) => tomatoFlower(ctx, dx, yy, 1.2, flowersOpen));
+  if (stage >= 2) [[-90, 36, 1], [-100, 60, .7], [-150, -40, 1], [-110, -58, .4]].forEach(([yy, dx, rp]) => tomato(ctx, dx, yy, 18, rp));
+  ctx.restore();
+}
+function sproutShape(c, x, y, h, leaves, trueLeaves) {
+  c.strokeStyle = "#4caf50"; c.lineWidth = 5; c.lineCap = "round";
+  c.beginPath(); c.moveTo(x, y); c.quadraticCurveTo(x + 4, y - h / 2, x, y - h); c.stroke();
+  if (leaves > 0) for (const sd of [-1, 1]) { c.save(); c.translate(x, y - h); c.rotate(sd * (0.9 - 0.3 * leaves)); c.fillStyle = "#6cc04a"; c.beginPath(); c.ellipse(sd * 14 * leaves, -4, 16 * leaves, 6 * leaves, 0, 0, 7); c.fill(); c.restore(); }
+  if (trueLeaves > 0) { compoundLeaf(c, x, y - h * 0.82, -0.6, 34 * trueLeaves); compoundLeaf(c, x, y - h * 0.86, Math.PI + 0.6, 34 * trueLeaves); }
+}
+function label(c, s, x, y, size = 24, bg = "rgba(255,247,227,.95)", fg = "#1f5e3a") {
+  c.save(); c.font = `800 ${size}px "Tajawal", sans-serif`; c.direction = "rtl";
+  const w = c.measureText(s).width + 26;
+  c.fillStyle = bg; rr(c, x - w / 2, y - size * 0.8, w, size * 1.6, size * 0.8); c.fill();
+  c.strokeStyle = "#7cb342"; c.lineWidth = 2.5; rr(c, x - w / 2, y - size * 0.8, w, size * 1.6, size * 0.8); c.stroke();
+  c.restore(); text(c, s, x, y + 1, size, fg);
+}
+function pedestal(c, x, y, w) {
+  c.fillStyle = "#cfb48c"; c.beginPath(); c.moveTo(x - w / 2, y); c.lineTo(x + w / 2, y); c.lineTo(x + w / 2 + 14, y - 8); c.lineTo(x - w / 2 + 14, y - 8); c.fill();
+  c.fillStyle = grad(c, 0, y, 0, y + 26, [[0, "#d8bf98"], [1, "#b39673"]]); c.fillRect(x - w / 2, y, w, 26);
+}
+/* Each gate reveals one stage of the tomato life cycle (p = 0..1 reveal progress). */
+function stageVisual(c, idx, x, base, p, t) {
+  const pe = easeOutBack(p);
+  switch (idx) {
+    case 0: { pedestal(c, x, base - 26, 230); soilBox(c, x, base - 30, 200, 120);
+      c.save(); c.globalAlpha = 0.5 + 0.5 * Math.sin(t * 3); c.strokeStyle = "#ffe27a"; c.lineWidth = 4; c.beginPath(); c.arc(x, base - 90, 22 + 6 * Math.sin(t * 3), 0, 7); c.stroke(); c.restore();
+      tomatoSeed(c, x, base - 90, 1.6 * pe); label(c, "بذرة", x, base - 186); break; }
+    case 1: { pedestal(c, x, base - 26, 230); soilBox(c, x, base - 30, 200, 130);
+      const sy = base - 100, g = ease((p - 0.15) / 0.85);
+      c.strokeStyle = "#f6f1e4"; c.lineWidth = 4; c.lineCap = "round";
+      c.beginPath(); c.moveTo(x - 4, sy + 4); c.bezierCurveTo(x - 10, sy + 25 * g, x + 6, sy + 45 * g, x - 2, sy + 62 * g); c.stroke();
+      c.strokeStyle = "#e8f3c8"; c.beginPath(); c.moveTo(x + 2, sy - 4); c.quadraticCurveTo(x + 14, sy - 40 * g, x + 2, sy - 70 * g); c.stroke();
+      if (g > 0.85) { c.fillStyle = "#9bd36a"; c.beginPath(); c.ellipse(x - 8, sy - 72 * g, 10, 5, -0.4, 0, 7); c.ellipse(x + 12, sy - 72 * g, 10, 5, 0.4, 0, 7); c.fill(); }
+      tomatoSeed(c, x, sy, 1.5, -0.3);
+      if (p > 0.6) { label(c, "البادرة ↑", x + 120, sy - 70, 20); label(c, "الجُذَير ↓", x + 120, sy + 40, 20); }
+      label(c, "الإنبات", x, base - 196); break; }
+    case 2: { pot(c, x, base - 4, 1.15);
+      sproutShape(c, x, base - 100, 40 + 60 * pe, Math.min(1, pe * 1.3), clamp((p - 0.4) / 0.6, 0, 1));
+      label(c, "شتلة", x, base - 250); break; }
+    case 3: { pedestal(c, x, base - 26, 200);
+      c.save(); c.translate(0, 0); c.restore();
+      tomatoPlant(x, base - 30, 0.95 * (0.5 + 0.5 * pe), 1, 3, clamp((p - 0.5) / 0.5, 0.01, 1));
+      label(c, "أزهار صفراء", x, base - 300); break; }
+    case 4: { // pollination & fertilization diagram on a round board
+      const cy = base - 190, R = 150;
+      c.fillStyle = "#6e4426"; c.fillRect(x - 6, cy, 12, 190);
+      c.fillStyle = "#fff8e6"; c.strokeStyle = "#f4c542"; c.lineWidth = 6; c.beginPath(); c.arc(x, cy, Math.max(0.5, R * pe), 0, 7); c.fill(); c.stroke();
+      if (p < 0.4) break;
+      const k = 1;
+      c.save(); c.translate(x, cy + 10);
+      // petals
+      c.fillStyle = "#fdd835"; c.strokeStyle = "#f9a825"; c.lineWidth = 2;
+      for (const sd of [-1, 1]) { c.beginPath(); c.moveTo(sd * 18, 50); c.quadraticCurveTo(sd * 90, 55, sd * 115, 85); c.quadraticCurveTo(sd * 70, 92, sd * 14, 64); c.fill(); c.stroke(); }
+      c.fillStyle = "#9ccc65"; c.strokeStyle = "#558b2f"; c.beginPath(); c.ellipse(0, 70, 30, 24, 0, 0, 7); c.fill(); c.stroke();
+      c.fillStyle = "#fff8e1"; for (const [ox, oy] of [[-12, 66], [0, 60], [12, 66], [-6, 78], [6, 78]]) { c.beginPath(); c.arc(ox, oy, 4.5, 0, 7); c.fill(); }
+      c.strokeStyle = "#aed581"; c.lineWidth = 6; c.beginPath(); c.moveTo(0, 48); c.lineTo(0, -82); c.stroke();
+      c.fillStyle = "#cddc39"; c.beginPath(); c.arc(0, -88, 9, 0, 7); c.fill();
+      c.fillStyle = "#fbc02d"; c.strokeStyle = "#f57f17"; c.lineWidth = 2;
+      c.beginPath(); c.moveTo(-26, 50); c.lineTo(-7, 50); c.lineTo(-5, -70); c.lineTo(-14, -70); c.closePath(); c.fill(); c.stroke();
+      c.beginPath(); c.moveTo(26, 50); c.lineTo(7, 50); c.lineTo(5, -70); c.lineTo(14, -70); c.closePath(); c.fill(); c.stroke();
+      // animated pollen → stigma (pollination), then tube → ovule (fertilization)
+      const cyc = (t % 6) / 6;
+      if (cyc < 0.5) { const q = cyc / 0.5; for (let i = 0; i < 7; i++) { const st = (i / 7) * 0.5, kk = ease((q - st) / 0.5); const sx = (i % 2 ? 8 : -8), sy2 = -50 + i * 6; c.fillStyle = "#ffb300"; c.beginPath(); c.arc(lerp(sx, (i - 3) * 2, kk), lerp(sy2, -92, kk), 3.6, 0, 7); c.fill(); } }
+      else { const q = ease((cyc - 0.5) / 0.35); c.strokeStyle = "#ff7043"; c.lineWidth = 3; c.beginPath(); c.moveTo(0, -84); c.lineTo(0, lerp(-84, 58, q)); c.stroke(); c.fillStyle = "#ffb300"; c.beginPath(); c.arc(0, -92, 4, 0, 7); c.fill();
+        if (q >= 1) { c.fillStyle = `rgba(255,213,79,${0.6 + 0.4 * Math.sin(t * 10)})`; c.beginPath(); c.arc(0, 60, 8, 0, 7); c.fill(); } }
+      c.restore();
+      const phase = (t % 6) / 6 < 0.5 ? "التلقيح: من المتك إلى الميسم" : "الإخصاب: اتحاد حبة اللقاح بالبويضة";
+      label(c, phase, x, cy - R - 26, 21);
+      text(c, "الميسم", x + 82, cy - 80, 17, "#5d4037"); text(c, "المتك", x - 70, cy - 30, 17, "#5d4037"); text(c, "البويضة", x + 74, cy + 78, 17, "#5d4037");
+      break; }
+    case 5: { // tomato opens to reveal seeds (cut section, seeds stay inside)
+      pedestal(c, x, base - 26, 240);
+      const r = 70, gap = 46 * ease((p - 0.35) / 0.65), cy = base - 110;
+      if (gap < 1) { tomato(c, x, cy, r * pe, 1); }
+      else for (const sd of [-1, 1]) {
+        c.save(); c.translate(x + sd * gap, cy);
+        c.fillStyle = "#c62f1b"; c.beginPath(); c.ellipse(0, 0, r, r * 0.9, 0, 0, 7); c.fill();
+        c.fillStyle = "#f2664a"; c.beginPath(); c.ellipse(0, 0, r * 0.9, r * 0.8, 0, 0, 7); c.fill();
+        c.fillStyle = "#ff8a6e"; c.beginPath(); c.ellipse(0, 0, r * 0.22, r * 0.2, 0, 0, 7); c.fill();
+        for (let j = 0; j < 3; j++) { const a = -Math.PI / 2 + j * 2 * Math.PI / 3; c.save(); c.rotate(a); c.fillStyle = "rgba(255,190,160,.85)"; c.beginPath(); c.ellipse(r * 0.5, 0, r * 0.26, r * 0.2, 0, 0, 7); c.fill();
+          for (let s2 = 0; s2 < 4; s2++) tomatoSeed(c, r * 0.4 + (s2 % 2) * 14, (s2 < 2 ? -7 : 7), 0.6, 0.3); c.restore(); }
+        c.restore();
+      }
+      if (p > 0.7) label(c, "البذور الجديدة داخل الثمرة", x, cy - 120, 22);
+      break; }
+    case 6: { // annuals bed: radish, onion, garlic
+      const bx = x, by = base - 20;
+      c.fillStyle = "#7a5233"; rr(c, bx - 260, by - 70, 520, 80, 14); c.fill();
+      c.fillStyle = grad(c, 0, by - 64, 0, by, [[0, "#8e6040"], [1, "#5c3b22"]]); rr(c, bx - 250, by - 64, 500, 64, 10); c.fill();
+      const items = [["الفجل", -170], ["البصل", 0], ["الثوم", 170]];
+      items.forEach(([nm, dx], i) => {
+        const q = clamp(pe * 1.4 - i * 0.2, 0, 1), px = bx + dx, py = by - 40;
+        c.save(); c.translate(px, py); c.scale(q, q);
+        if (i === 0) { c.fillStyle = "#d81b60"; c.beginPath(); c.arc(0, 8, 22, 0, 7); c.fill(); c.fillStyle = "#fff"; c.beginPath(); c.moveTo(-4, 28); c.lineTo(0, 46); c.lineTo(4, 28); c.fill(); compoundLeaf(c, 0, -10, -1.9, 50, "#4caf50"); compoundLeaf(c, 0, -10, -1.2, 46, "#43a047"); }
+        else if (i === 1) { c.fillStyle = "#d9952e"; c.beginPath(); c.moveTo(0, -20); c.bezierCurveTo(30, -8, 28, 30, 0, 32); c.bezierCurveTo(-28, 30, -30, -8, 0, -20); c.fill(); c.strokeStyle = "#5aa83c"; c.lineWidth = 5; for (const a of [-0.3, 0, 0.3]) { c.beginPath(); c.moveTo(0, -18); c.lineTo(a * 90, -90); c.stroke(); } }
+        else { c.fillStyle = "#f5f1e8"; c.strokeStyle = "#cfc6b4"; c.lineWidth = 2; for (const ox of [-12, 0, 12]) { c.beginPath(); c.ellipse(ox, 8, 13, 22, 0, 0, 7); c.fill(); c.stroke(); } c.strokeStyle = "#7cb342"; c.lineWidth = 6; for (const a of [-0.25, 0.1, 0.35]) { c.beginPath(); c.moveTo(0, -14); c.quadraticCurveTo(a * 40, -60, a * 70, -95); c.stroke(); } }
+        c.restore();
+        if (q > 0.6) label(c, nm, px, by + 34, 22);
+      });
+      label(c, "نباتات حولية", bx, by - 170, 28, "#fff0e4", "#b4501b");
+      break; }
+    case 7: { // perennials: mango, lemon, palm
+      const items = [["المانجو", -260], ["الليمون", 0], ["النخيل", 260]];
+      items.forEach(([nm, dx], i) => {
+        const q = clamp(pe * 1.4 - i * 0.2, 0, 1), px = x + dx;
+        if (q <= 0) return;
+        c.save(); c.translate(px, base); c.scale(q, q);
+        if (i === 2) { c.restore(); palm(px, base, 330 * q, 0.75 * q + 0.001, 77); }
+        else {
+          c.fillStyle = "#7a4d30"; c.fillRect(-10, -150, 20, 150);
+          const crown = i === 0 ? ["#2e7d32", "#43a047"] : ["#388e3c", "#66bb6a"];
+          c.fillStyle = crown[0]; c.beginPath(); c.arc(-60, -190, 70, 0, 7); c.arc(60, -190, 70, 0, 7); c.arc(0, -250, 85, 0, 7); c.arc(0, -170, 80, 0, 7); c.fill();
+          c.fillStyle = crown[1]; c.beginPath(); c.arc(-30, -250, 45, 0, 7); c.arc(40, -215, 40, 0, 7); c.fill();
+          for (let k = 0; k < 9; k++) { const fx2 = -90 + hash(k + i * 20) * 180, fy = -280 + hash(k * 3 + i) * 150;
+            if (i === 0) { c.fillStyle = k % 2 ? "#ffb74d" : "#ff8f00"; c.beginPath(); c.ellipse(fx2, fy, 11, 15, 0.3, 0, 7); c.fill(); }
+            else { c.fillStyle = "#fdd835"; c.beginPath(); c.ellipse(fx2, fy, 10, 8, 0, 0, 7); c.fill(); } }
+          c.restore();
+        }
+        if (q > 0.6) label(c, nm, px, base + 36, 22);
+      });
+      label(c, "نباتات معمرة", x, base - 420, 28, "#e6f5df", "#1f5e3a");
+      break; }
+  }
+}
+function drawStageVisuals() {
+  gates.forEach((g, i) => {
+    if (!g.opened) return;
+    const vx = g.x + (i === 7 ? 540 : i === 6 ? 420 : 270);
+    if (vx > cam.x + W + 600 || vx < cam.x - 600) return;
+    const p = clamp((time - g.openAt - 0.5) / 2.0, 0, 1);
+    stageVisual(ctx, i, vx, GROUND, p, time);
+  });
+}
+
+/* ---------- the character: Bathoora the tomato seed ---------- */
+function drawSeedChar(c, x, y, face, t, opts = {}) {
+  const sq = opts.squash || 0, walk = opts.walk || 0, moving = opts.moving, talk = opts.talk, wave = opts.wave;
+  c.save(); c.translate(x, y); c.scale(1.3, 1.3);
+  // shadow
+  const air = clamp((GROUND - y) / 200, 0, 1);
+  c.fillStyle = `rgba(60,40,20,${0.25 * (1 - air)})`; c.beginPath(); c.ellipse(0, ((opts.groundY ?? y) - y) / 1.3 + 2, 34 * (1 - air * .4), 9, 0, 0, 7); c.fill();
+  c.scale(1 + sq, 1 - sq);
+  const bob = moving ? Math.abs(Math.sin(walk * 2)) * -5 : Math.sin(t * 2.2) * 1.5;
+  c.translate(0, bob);
+  // legs
+  const lg = moving ? Math.sin(walk * 2) * 12 : 0;
+  c.strokeStyle = "#7a5530"; c.lineWidth = 7; c.lineCap = "round";
+  c.beginPath(); c.moveTo(-10, -24); c.lineTo(-12 + lg, -4); c.moveTo(10, -24); c.lineTo(12 - lg, -4); c.stroke();
+  c.fillStyle = "#2f8a45"; c.beginPath(); c.ellipse(-12 + lg + 4 * face, -3, 11, 6, 0, 0, 7); c.ellipse(12 - lg + 4 * face, -3, 11, 6, 0, 0, 7); c.fill();
+  // body (tomato seed: flattened oval with a little hilum tip)
+  c.save(); c.translate(0, -66); c.rotate(-0.08 * face);
+  const g = c.createRadialGradient(-14, -20, 6, 0, 0, 56);
+  g.addColorStop(0, "#fffaf0"); g.addColorStop(0.35, "#f6e3ae"); g.addColorStop(1, "#d6b06a");
+  c.fillStyle = g;
+  c.beginPath(); c.moveTo(0, -46); c.bezierCurveTo(36, -46, 42, 0, 34, 22); c.bezierCurveTo(26, 42, 8, 46, -4, 44); c.bezierCurveTo(-12, 48, -20, 44, -24, 36); c.bezierCurveTo(-40, 18, -40, -46, 0, -46); c.fill();
+  c.strokeStyle = "#c79a4f"; c.lineWidth = 2.5; c.stroke();
+  // fuzz
+  c.strokeStyle = "rgba(255,250,235,.9)"; c.lineWidth = 1.6;
+  for (let i = 0; i < 26; i++) { const a = i / 26 * Math.PI * 2, rx = 37 * Math.cos(a), ry = 44 * Math.sin(a) - 2; c.beginPath(); c.moveTo(rx, ry); c.lineTo(rx * 1.09, ry * 1.07); c.stroke(); }
+  c.fillStyle = "#d1a75c"; c.beginPath(); c.ellipse(-20, 40, 5, 3, 0.6, 0, 7); c.fill();
+  // cheeks
+  c.fillStyle = "rgba(255,120,110,.45)"; c.beginPath(); c.ellipse(-20 + 6 * face, 6, 8, 5, 0, 0, 7); c.ellipse(20 + 6 * face, 6, 8, 5, 0, 0, 7); c.fill();
+  // eyes
+  const blink = (t % 3.6) < 0.12 ? 0.15 : 1, ex = 6 * face;
+  for (const sx of [-13, 13]) {
+    c.fillStyle = "#fff"; c.beginPath(); c.ellipse(sx + ex, -12, 10, 13 * blink, 0, 0, 7); c.fill();
+    c.strokeStyle = "#5a3b1c"; c.lineWidth = 2; c.stroke();
+    if (blink > 0.5) { c.fillStyle = "#3a2410"; c.beginPath(); c.arc(sx + ex + 3 * face, -10, 6.5, 0, 7); c.fill(); c.fillStyle = "#fff"; c.beginPath(); c.arc(sx + ex + 3 * face + 2, -13, 2.4, 0, 7); c.fill(); }
+  }
+  c.strokeStyle = "#5a3b1c"; c.lineWidth = 2.5; c.lineCap = "round";
+  c.beginPath(); c.moveTo(-20 + ex, -30); c.quadraticCurveTo(-13 + ex, -34, -6 + ex, -31); c.moveTo(6 + ex, -31); c.quadraticCurveTo(13 + ex, -34, 20 + ex, -30); c.stroke();
+  // mouth
+  const mo = talk ? (0.5 + 0.5 * Math.sin(t * 18)) : 0;
+  c.fillStyle = "#8a3b2a"; c.beginPath();
+  c.moveTo(-9 + ex, 12); c.quadraticCurveTo(ex, 20 + 7 * mo, 9 + ex, 12); c.quadraticCurveTo(ex, 15 + 2 * mo, -9 + ex, 12); c.fill();
+  // sprout on top
+  c.save(); c.translate(2, -46); c.rotate(Math.sin(t * 2.4) * 0.12);
+  c.strokeStyle = "#4caf50"; c.lineWidth = 4; c.beginPath(); c.moveTo(0, 0); c.quadraticCurveTo(-2, -10, 2, -18); c.stroke();
+  c.fillStyle = "#6cc04a"; c.beginPath(); c.ellipse(-9, -20, 10, 5, 0.5, 0, 7); c.ellipse(12, -21, 10, 5, -0.5, 0, 7); c.fill();
+  c.restore();
+  c.restore();
+  // arms
+  const sw = moving ? Math.sin(walk * 2) * 0.6 : 0;
+  c.strokeStyle = "#7a5530"; c.lineWidth = 6;
+  const arm = (side, ang) => { const sx = side * 33, sy = -66; const ex2 = sx + side * Math.cos(ang) * 26, ey = sy + Math.sin(ang) * 26; c.beginPath(); c.moveTo(sx, sy); c.lineTo(ex2, ey); c.stroke(); c.fillStyle = "#f6e3ae"; c.beginPath(); c.arc(ex2, ey, 6.5, 0, 7); c.fill(); c.strokeStyle = "#c79a4f"; c.lineWidth = 2; c.stroke(); c.strokeStyle = "#7a5530"; c.lineWidth = 6; };
+  arm(-1, 0.9 + sw);
+  if (wave) arm(1, -1.2 + Math.sin(t * 9) * 0.5); else arm(1, 0.9 - sw);
+  c.restore();
+}
+
+/* =========================================================
+   Frame
+   ========================================================= */
+function render() {
+  ctx.setTransform(SCALE * DPR, 0, 0, SCALE * DPR, 0, 0);
+  ctx.clearRect(0, 0, W, H);
+  ctx.save();
+  ctx.translate(800, GROUND); ctx.scale(cam.zoom, cam.zoom); ctx.translate(-800, -GROUND);
+  drawSky();
+  drawMountains(0.1, 1.3, 330, 640, "#e3bfb3", "#a98a95", "rgba(240,225,215,.55)");
+  drawMountains(0.2, 4.1, 250, 680, "#e2a77f", "#9a6b58", "rgba(245,220,190,.45)");
+  drawVillage();
+  drawFarm();
+  ctx.save(); ctx.translate(-cam.x, 0);
+  const x0 = cam.x - 900, x1 = cam.x + W + 900;
+  drawGround(x0, x1);
+  drawGaps();
+  drawPlatforms();
+  drawGate(VALLEY_X, valley.opened, valley.openAt, "وادي الحياة", null, true);
+  drawStageVisuals();
+  gates.forEach((g, i) => drawGate(g.x, g.opened, g.openAt, `البوابة ${AR(i + 1)} من ${AR(8)}`, g.title, false, i));
+  drawGardenArch();
+  drawSeedChar(ctx, player.x, player.y, player.face, time, { squash: player.squash, walk: player.walk, moving: player.onGround && Math.abs(player.vx) > 30, talk: player.talk > 0, wave: mode === "intro" || player.wave > 0, groundY: overGap(player.x) ? player.y : GROUND });
+  ctx.restore();
+  // foreground grass (parallax 1.25)
+  const off = cam.x * 1.25;
+  for (let k = Math.floor((off - 100) / 140); k <= Math.floor((off + W + 100) / 140); k++) {
+    if (hash(k * 19) < 0.55) continue;
+    const gx = k * 140 - off; ctx.fillStyle = "rgba(60,120,45,.85)";
+    for (let j = 0; j < 7; j++) { ctx.beginPath(); ctx.moveTo(gx + j * 7, 905); ctx.quadraticCurveTo(gx + j * 7 + 6, 870, gx + j * 9 - 10 + Math.sin(time * 2 + k + j) * 3, 845 - hash(k + j) * 30); ctx.lineTo(gx + j * 7 + 6, 905); ctx.fill(); }
+  }
+  ctx.restore();
+}
+
+let last = performance.now();
+function frame(now) {
+  const dt = Math.min(1 / 30, (now - last) / 1000); last = now;
+  time += dt;
+  if (mode === "intro") updateIntro(dt);
+  if (mode === "play") stepPhysics(dt);
+  if (mode === "end") updateEnd(dt);
+  if (player.talk > 0) player.talk -= dt;
+  if (player.wave > 0) player.wave -= dt;
+  // camera follow
+  if (mode !== "intro") {
+    const target = clamp(player.x - 620, 0, WORLD_END - W);
+    cam.x += (target - cam.x) * Math.min(1, dt * 5);
+    cam.zoom += (1 - cam.zoom) * Math.min(1, dt * 3);
+  }
+  requestAnimationFrame(frame);
+  try { render(); positionBubble(); updateFx(dt); }
+  catch (err) { if (!frame.warned) { frame.warned = true; console.error(err); } }
+}
+
+/* =========================================================
+   Intro & ending
+   ========================================================= */
+function updateIntro(dt) {
+  introT += dt;
+  const k = ease(introT / 4.6);
+  cam.x = lerp(2300, 0, k); cam.zoom = lerp(0.86, 1, k);
+  if (introT > 4.6 && !introGreeted) {
+    introGreeted = true;
+    $("btnSkip").hidden = true; $("introTitle").style.opacity = 0.0;
+    say(INTRO_LINE, 600000); player.wave = 3;
+    setTimeout(() => { if (mode === "intro") { $("btnStart").hidden = false; $("btnStart").focus({ preventScroll: true }); } }, reduceMotion ? 100 : 3600);
+  }
+}
+function startEnd() {
+  mode = "end"; endT = 0; player.vx = 0; keys.left = keys.right = false;
+  say("وصلنا إلى <b>حديقة الحياة</b>! انظرن كيف اكتملت رحلتي.", 4000);
+  SFX.fanfare();
+  setTimeout(() => showEnd(1), 2600);
+}
+function updateEnd(dt) { endT += dt; player.walk += dt * 2; }
+function showEnd(step) {
+  endStep = step; hideBubble();
+  const o = $("endOverlay"); o.hidden = false;
+  if (step === 1) {
+    o.innerHTML = `<div class="endcard"><h2>دورة حياة نبات الطماطم</h2><p class="sub">من بذرة… إلى ثمرة فيها بذور جديدة… ثم بذرة من جديد</p><canvas id="cycleCanvas" width="1800" height="1120"></canvas><div class="btn-row"><button class="btn-main" id="endNext">التالي</button></div></div>`;
+    animateCycle($("cycleCanvas"));
+  } else if (step === 2) {
+    o.innerHTML = `<div class="endcard"><h2>النباتات الحولية والمعمرة</h2>
+      <div class="cmp">
+        <div class="cmp-card annual"><h3>النباتات الحولية</h3><canvas id="cmpA" width="1040" height="460"></canvas>
+          <ul><li>تُكمل دورة حياتها خلال عام واحد.</li><li>تموت بعد إنتاج البذور.</li><li>أمثلة: الفجل، البصل، الثوم.</li></ul></div>
+        <div class="cmp-card perennial"><h3>النباتات المعمرة</h3><canvas id="cmpP" width="1040" height="460"></canvas>
+          <ul><li>تعيش سنوات عديدة.</li><li>تُزهر وتُثمر مرات متكررة.</li><li>أمثلة: المانجو، الليمون، النخيل.</li></ul></div>
+      </div><div class="btn-row"><button class="btn-main" id="endNext">التالي</button></div></div>`;
+    drawCompare($("cmpA"), 6); drawCompare($("cmpP"), 7);
+  } else {
+    SFX.fanfare();
+    const medal = n => Array.from({ length: 3 }, (_, i) => `<svg viewBox="0 0 24 24"><path d="M12 1.8l3.1 6.4 7 1-5.1 4.9 1.2 7L12 17.8l-6.2 3.3 1.2-7L1.9 9.2l7-1z" fill="${i < n ? "#f4c542" : "#e8dcc0"}" stroke="${i < n ? "#c98a00" : "#cbbd9c"}" stroke-width="1.3" stroke-linejoin="round"/></svg>`).join("");
+    const rating = stats.stars >= 21 ? 3 : stats.stars >= 14 ? 2 : 1;
+    o.innerHTML = `<div class="endcard"><h2>تهانينا يا عالمات النباتات!<br>لقد اكتملت مغامرة دورة الحياة!</h2>
+      <div class="medal">${medal(rating)}</div>
+      <div class="stats">
+        <div class="stat"><b>${AR(stats.first)} / ${AR(8)}</b><span>إجابات صحيحة من المحاولة الأولى</span></div>
+        <div class="stat"><b>${AR(stats.stars)} / ${AR(24)}</b><span>النجوم المكتسبة</span></div>
+      </div>
+      <div class="credit">${LEAF_SVG.replace('#9be07f', '#7cc36a').replace('#fff', '#2f6b2a')}إعداد وتصميم: أ. إمتثال العطابي</div>
+      <div class="btn-row"><button class="btn-main" id="endAgain">العبي مرة أخرى</button></div></div>`;
+    $("endAgain").addEventListener("click", () => { initAudio(); resetGame(true); });
+    $("endAgain").focus({ preventScroll: true });
+    return;
+  }
+  $("endNext").addEventListener("click", () => { SFX.pop(); showEnd(step + 1); });
+  $("endNext").focus({ preventScroll: true });
+}
+function animateCycle(cv) {
+  const c = cv.getContext("2d"), t0 = performance.now();
+  const names = ["بذرة", "إنبات", "شتلة", "نبات ناضج", "الإزهار والتلقيح والإخصاب", "ثمرة تحتوي بذورًا جديدة"];
+  const CX = 900, CY = 560, R = 380;
+  function draw(now) {
+    if (!document.body.contains(cv)) return;
+    const t = (now - t0) / 1000;
+    c.setTransform(1, 0, 0, 1, 0, 0); c.clearRect(0, 0, cv.width, cv.height);
+    // center
+    c.fillStyle = "#1f6b3d"; c.beginPath(); c.arc(CX, CY, 150, 0, 7); c.fill();
+    c.strokeStyle = "#f4c542"; c.lineWidth = 8; c.stroke();
+    text(c, "دورة حياة", CX, CY - 32, 52, "#fff", "Lalezar", 400); text(c, "نبات الطماطم", CX, CY + 36, 52, "#fff", "Lalezar", 400);
+    for (let i = 0; i < 6; i++) {
+      // arrow i → i+1 (the last one returns to the seed)
+      const ka = ease((t - 0.6 - i * 0.7 - 0.45) / 0.5);
+      if (ka > 0) {
+        const a0 = -Math.PI / 2 + i * Math.PI / 3 + 0.36, a1 = a0 + (Math.PI / 3 - 0.72) * ka;
+        c.strokeStyle = "#43a047"; c.lineWidth = 22; c.lineCap = "round"; c.beginPath(); c.arc(CX, CY, R, a0, a1); c.stroke();
+        c.strokeStyle = "#a5d6a7"; c.lineWidth = 8; c.beginPath(); c.arc(CX, CY, R, a0, a1); c.stroke();
+        const hx = CX + R * Math.cos(a1), hy = CY + R * Math.sin(a1), tx = -Math.sin(a1), ty = Math.cos(a1), nx = Math.cos(a1), ny = Math.sin(a1);
+        c.fillStyle = "#2e7d32"; c.beginPath(); c.moveTo(hx + tx * 34, hy + ty * 34); c.lineTo(hx + nx * 30, hy + ny * 30); c.lineTo(hx - nx * 30, hy - ny * 30); c.fill();
+      }
+      const kc = easeOutBack((t - 0.2 - i * 0.7) / 0.5);
+      if (kc <= 0) continue;
+      const a = -Math.PI / 2 + i * Math.PI / 3, x = CX + R * Math.cos(a), y = CY + R * Math.sin(a);
+      c.save(); c.translate(x, y); c.scale(kc, kc);
+      c.fillStyle = "#fff"; c.strokeStyle = "#f4c542"; c.lineWidth = 8; c.beginPath(); c.arc(0, 0, 118, 0, 7); c.fill(); c.stroke();
+      c.save(); c.beginPath(); c.arc(0, 0, 112, 0, 7); c.clip();
+      cycleIcon(c, i, t);
+      c.restore(); c.restore();
+      if (kc > 0.5) label(c, names[i], x, i === 0 ? y - 150 : y + 150, 34);
+    }
+    requestAnimationFrame(draw);
+  }
+  requestAnimationFrame(draw);
+}
+function cycleIcon(c, i, t) {
+  c.save();
+  if (i === 0) { c.fillStyle = "#6b4426"; c.fillRect(-112, 20, 224, 100); c.fillStyle = "#4e9a3a"; c.fillRect(-112, 14, 224, 8); tomatoSeed(c, 0, 50, 3); }
+  if (i === 1) { c.fillStyle = "#6b4426"; c.fillRect(-112, 0, 224, 120); c.fillStyle = "#4e9a3a"; c.fillRect(-112, -6, 224, 8);
+    c.strokeStyle = "#f6f1e4"; c.lineWidth = 6; c.lineCap = "round"; c.beginPath(); c.moveTo(-4, 40); c.bezierCurveTo(-14, 60, 8, 80, -2, 100); c.stroke();
+    c.strokeStyle = "#cfe8a0"; c.beginPath(); c.moveTo(4, 30); c.quadraticCurveTo(22, -10, 4, -50); c.stroke(); tomatoSeed(c, 0, 36, 2.4, -0.3); }
+  if (i === 2) { c.fillStyle = "#6b4426"; c.fillRect(-112, 40, 224, 80); c.fillStyle = "#4e9a3a"; c.fillRect(-112, 34, 224, 8); sproutShape(c, 0, 40, 90, 1.2, 1.2); }
+  if (i === 3) { c.save(); c.translate(0, 112); c.scale(0.62, 0.62); withCtx(c, () => tomatoPlant(0, 0, 1, 0, 1)); c.restore(); }
+  if (i === 4) { tomatoFlower(c, 0, 0, 4.2, 1); c.fillStyle = "#ffb300"; for (let k = 0; k < 5; k++) { const q = ((t * 0.6 + k / 5) % 1); c.beginPath(); c.arc(-60 + q * 60, -60 + q * 60, 5, 0, 7); c.fill(); } }
+  if (i === 5) { c.fillStyle = "#c62f1b"; c.beginPath(); c.ellipse(0, 0, 90, 80, 0, 0, 7); c.fill(); c.fillStyle = "#f2664a"; c.beginPath(); c.ellipse(0, 0, 80, 70, 0, 0, 7); c.fill();
+    for (let j = 0; j < 3; j++) { const a = -Math.PI / 2 + j * 2 * Math.PI / 3; c.save(); c.rotate(a); c.fillStyle = "rgba(255,190,160,.9)"; c.beginPath(); c.ellipse(42, 0, 24, 18, 0, 0, 7); c.fill(); for (let s2 = 0; s2 < 4; s2++) tomatoSeed(c, 34 + (s2 % 2) * 16, s2 < 2 ? -7 : 7, 0.8, 0.3); c.restore(); } }
+  c.restore();
+}
+function drawCompare(cv, idx) {
+  const c = cv.getContext("2d"), t0 = performance.now();
+  const sc = idx === 6 ? 1.45 : 0.82, by = idx === 6 ? cv.height - 100 : cv.height - 64;
+  function draw(now) {
+    if (!document.body.contains(cv)) return;
+    const t = (now - t0) / 1000;
+    c.setTransform(1, 0, 0, 1, 0, 0); c.clearRect(0, 0, cv.width, cv.height);
+    c.fillStyle = idx === 6 ? "#ffe6d1" : "#d3ecc8"; rr(c, 0, 0, cv.width, cv.height, 40); c.fill();
+    c.save(); c.translate(cv.width / 2, by); c.scale(sc, sc);
+    withCtx(c, () => stageVisual(c, idx, 0, 0, clamp(t / 1.8, 0, 1), t));
+    c.restore();
+    requestAnimationFrame(draw);
+  }
+  requestAnimationFrame(draw);
+}
+/* =========================================================
+   Boot
+   ========================================================= */
+setMuted(muted);
+resetGame(false);
+renderHearts(); renderProgress();
+requestAnimationFrame(frame);
+if (document.fonts && document.fonts.load) {
+  Promise.all(["400 40px Lalezar", "800 30px Tajawal", "700 30px Amiri"].map(f => document.fonts.load(f).catch(() => {}))).catch(() => {});
+}
+
+/* test hooks for automated checks (harmless in normal play) */
+window.__seedGame = {
+  state: () => ({ mode, x: Math.round(player.x), opened: gates.filter(g => g.opened).length, stars: stats.stars, first: stats.first, hearts: attemptHearts, currentGate, endStep }),
+  correct: i => GATES[i].ok,
+  skipTo: (n, age = 5) => { // test helper: open the first n gates and stand after them
+    mode = "play"; $("intro").hidden = true; showGameUI(true); valley.opened = true; valley.openAt = time - 5;
+    gates.forEach((g, i) => { if (i < n) { g.opened = true; g.openAt = time - (i === n - 1 ? age : 5); } });
+    player.x = n ? gateX(n - 1) + 120 : START_X; player.y = GROUND; renderProgress();
+  },
+};
+})();
+</script>
