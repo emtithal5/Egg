@@ -206,7 +206,7 @@ button:focus-visible { outline: 4px solid var(--gold); outline-offset: 3px; }
 .cmp-card h3 { font-family: var(--display); font-weight: 400; font-size: 42px; margin: 0; }
 .cmp-card.annual h3 { color: #b4501b; }
 .cmp-card.perennial h3 { color: var(--leaf-dark); }
-.cmp-card canvas { width: 520px; height: 230px; }
+.cmp-card canvas { width: 520px; height: 290px; border-radius: 20px; }
 .cmp-card ul { margin: 0; padding: 0 28px 0 0; font-size: 27px; font-weight: 700; line-height: 1.6; align-self: stretch; }
 .stats { display: flex; gap: 24px; }
 .stat { background: #fff; border: 4px solid var(--parch-edge); border-radius: 26px; padding: 14px 30px 10px; text-align: center; min-width: 330px; }
@@ -294,8 +294,8 @@ button:focus-visible { outline: 4px solid var(--gold); outline-offset: 3px; }
    Constants & content
    ========================================================= */
 const W = 1600, H = 900, GROUND = 760;
-const VALLEY_X = 560, START_X = 330, GATE0 = 1650, GATE_GAP = 1150;
-const GARDEN_X = 10820, WORLD_END = 11600;
+const VALLEY_X = 560, START_X = 330, GATE0 = 1650, GATE_GAP = 1300;
+const GARDEN_X = GATE0 + 7 * GATE_GAP + 1120, WORLD_END = GARDEN_X + 800;
 const gateX = i => GATE0 + i * GATE_GAP;
 const AR = n => String(n).replace(/\d/g, d => "٠١٢٣٤٥٦٧٨٩"[d]);
 const LETTERS = ["أ", "ب", "ج"];
@@ -380,6 +380,74 @@ function text(c, s, x, y, size, color, font = "Tajawal", weight = 800, stroke = 
 }
 
 /* =========================================================
+   Realistic 3D images (generated with Higgsfield) — loaded from ./assets
+   ========================================================= */
+const IMG = {};
+function img(name) {
+  if (!IMG[name]) { const im = new Image(); im.decoding = "async"; im.onload = () => (im.ok = true); im.src = `assets/${name}.jpg`; IMG[name] = im; }
+  return IMG[name];
+}
+const ready = n => IMG[n] && IMG[n].ok;
+const seqNames = (prefix, n) => Array.from({ length: n }, (_, i) => prefix + String(i).padStart(2, "0"));
+/* A panel plays a timeline of [frame, seconds, fade] and loops. */
+function crossfade(names, dur = 2.6, fade = 0.9) { return names.map(n => [n, dur, fade]); }
+function flipbook(names, step = 0.2) { return names.map((n, i) => [n, i === names.length - 1 ? 2.4 : step, i ? 0.12 : 0.6]); }
+const PANELS = [
+  { tl: crossfade(["t_seed"]), cap: "بذرة طماطم داخل التربة", focus: [0.5, 0.62, 1.35] },
+  { tl: crossfade(["t_seed", "t_germ"], 3), cap: "الإنبات: الجُذَير إلى الأسفل والبادرة إلى الأعلى" },
+  { tl: crossfade(["t_germ", "t_seedling"], 3), cap: "تنمو البادرة لتصبح شتلة" },
+  { tl: crossfade(["t_seedling", "t_mature", "t_flower"], 2.6), cap: "النبات الناضج تتفتح أزهاره الصفراء" },
+  null, // pollination keeps its animated diagram
+  { tl: crossfade(["t_flower", "t_green", "t_ripe", "t_cut"], 2.6), cap: "تتكوّن الثمرة وتنضج… والبذور داخلها" },
+  { tl: [...flipbook(seqNames("r_", 20)), ["annual_ex", 4.5, 1]], cap: "الفجل نبات حولي: يُزهر ويُنتج البذور ثم يموت", wide: true },
+  { tl: [...flipbook(seqNames("m_", 20)), ["perennial_ex", 4.5, 1]], cap: "المانجو نبات معمر: تبقى حيّة وتُثمر من جديد", wide: true },
+];
+PANELS.forEach(p => p && p.tl.forEach(([n]) => img(n)));
+["intro_garden", "end_bg"].forEach(img);
+function panelFrame(panel, t) {
+  const total = panel.tl.reduce((a, [, d]) => a + d, 0) + 2.5; // short hold, then loop
+  let u = t % total, prevName = null;
+  for (let k = 0; k < panel.tl.length; k++) {
+    const [n, d, f] = panel.tl[k];
+    if (u < d || k === panel.tl.length - 1) return { cur: n, prev: prevName, a: prevName ? clamp(u / f, 0, 1) : 1, k: (t % total) / total };
+    u -= d; prevName = n;
+  }
+}
+function drawCover(c, im, x, y, w, h, zoom = 1, fx = 0.5, fy = 0.5) {
+  const iw = im.naturalWidth, ih = im.naturalHeight, sc = Math.max(w / iw, h / ih) * zoom;
+  const sw = w / sc, sh = h / sc;
+  const sx = clamp(iw * fx - sw / 2, 0, iw - sw), sy = clamp(ih * fy - sh / 2, 0, ih - sh);
+  c.drawImage(im, sx, sy, sw, sh, x, y, w, h);
+}
+/* Wooden easel in the world showing the animated photo for a gate. Returns false if images are not ready. */
+function drawPanel(c, panel, cx, base, reveal, t) {
+  const fr = panelFrame(panel, Math.max(0, t));
+  if (!ready(fr.cur)) return false;
+  const w = panel.wide ? 640 : 540, h = Math.round(w * 9 / 16), y = base - 70 - h;
+  const sc = 0.55 + 0.45 * easeOutBack(reveal);
+  c.save(); c.translate(cx, base - 70); c.scale(sc, sc); c.translate(-cx, -(base - 70)); c.globalAlpha = clamp(reveal * 1.6, 0, 1);
+  // posts
+  c.fillStyle = "#6e4426"; c.fillRect(cx - w / 2 + 40, base - 80, 16, 80); c.fillRect(cx + w / 2 - 56, base - 80, 16, 80);
+  // frame
+  c.fillStyle = "rgba(0,0,0,.25)"; rr(c, cx - w / 2 - 12, y - 6, w + 36, h + 36, 22); c.fill();
+  c.fillStyle = grad(c, 0, y - 18, 0, y + h + 18, [[0, "#b07a46"], [1, "#7a4a28"]]); rr(c, cx - w / 2 - 18, y - 18, w + 36, h + 36, 22); c.fill();
+  c.strokeStyle = "#f4c542"; c.lineWidth = 4; rr(c, cx - w / 2 - 8, y - 8, w + 16, h + 16, 14); c.stroke();
+  c.save(); rr(c, cx - w / 2, y, w, h, 10); c.clip();
+  const [fxp, fyp, z0] = panel.focus || [0.5, 0.5, 1];
+  const zoom = z0 * (1 + 0.05 * Math.sin(fr.k * Math.PI));
+  if (fr.prev && fr.a < 1 && ready(fr.prev)) drawCover(c, IMG[fr.prev], cx - w / 2, y, w, h, zoom, fxp, fyp);
+  c.globalAlpha = clamp(reveal * 1.6, 0, 1) * (fr.prev ? fr.a : 1);
+  drawCover(c, IMG[fr.cur], cx - w / 2, y, w, h, zoom, fxp, fyp);
+  c.restore();
+  c.globalAlpha = clamp(reveal * 1.6, 0, 1);
+  leafEmblemOn(c, cx - w / 2 - 4, y - 4); leafEmblemOn(c, cx + w / 2 + 4, y - 4);
+  c.restore();
+  if (reveal > 0.6) label(c, panel.cap, cx, y - 44, 24);
+  return true;
+}
+function leafEmblemOn(c, x, y) { const saved = ctx; ctx = c; leafEmblem(x, y, 0.7, "#9be07f"); ctx = saved; }
+
+/* =========================================================
    Audio (Web Audio, synthesized — no files)
    ========================================================= */
 let AC = null, master = null, sfxBus = null, musicBus = null, muted = false, musicTimer = null;
@@ -462,7 +530,7 @@ function buildWorld() {
   platforms = []; gaps = [];
   OBSTACLES.forEach((type, i) => {
     const prev = i === 0 ? VALLEY_X : gateX(i - 1);
-    const c = prev + 650;
+    const c = prev + 860;
     if (type === "falaj") gaps.push({ x: c - 75, w: 150 });
     if (type === "wall") platforms.push({ x: c - 60, w: 120, top: GROUND - 88, kind: "wall" });
     if (type === "steps") {
@@ -685,7 +753,7 @@ if (!(document.fullscreenEnabled || document.webkitFullscreenEnabled)) $("btnFul
 document.addEventListener("fullscreenchange", () => setTimeout(fit, 50));
 document.addEventListener("webkitfullscreenchange", () => setTimeout(fit, 50));
 
-$("btnSkip").addEventListener("click", () => { introT = Math.max(introT, 4.6); });
+$("btnSkip").addEventListener("click", () => { introT = Math.max(introT, 6.8); });
 $("btnStart").addEventListener("click", () => {
   initAudio(); SFX.pop();
   $("intro").hidden = true; hideBubble();
@@ -1219,10 +1287,11 @@ function stageVisual(c, idx, x, base, p, t) {
 function drawStageVisuals() {
   gates.forEach((g, i) => {
     if (!g.opened) return;
-    const vx = g.x + (i === 7 ? 540 : i === 6 ? 420 : 270);
-    if (vx > cam.x + W + 600 || vx < cam.x - 600) return;
+    const vx = g.x + (PANELS[i] && PANELS[i].wide ? 470 : 430);
+    if (vx > cam.x + W + 700 || vx < cam.x - 700) return;
     const p = clamp((time - g.openAt - 0.5) / 2.0, 0, 1);
-    stageVisual(ctx, i, vx, GROUND, p, time);
+    if (PANELS[i] && drawPanel(ctx, PANELS[i], vx, GROUND, p, time - g.openAt - 0.8)) return;
+    stageVisual(ctx, i, i === 4 ? vx - 80 : vx, GROUND, p, time);
   });
 }
 
@@ -1313,7 +1382,12 @@ function render() {
     const gx = k * 140 - off; ctx.fillStyle = "rgba(60,120,45,.85)";
     for (let j = 0; j < 7; j++) { ctx.beginPath(); ctx.moveTo(gx + j * 7, 905); ctx.quadraticCurveTo(gx + j * 7 + 6, 870, gx + j * 9 - 10 + Math.sin(time * 2 + k + j) * 3, 845 - hash(k + j) * 30); ctx.lineTo(gx + j * 7 + 6, 905); ctx.fill(); }
   }
-  ctx.restore();
+  ctx.restore();  if (mode === "intro" && introT < 4 && ready("intro_garden")) { // cinematic opening shot
+    ctx.save(); ctx.globalAlpha = 1 - ease((introT - 2.4) / 1.4);
+    const z = 1.12 - 0.1 * ease(introT / 4);
+    drawCover(ctx, IMG.intro_garden, 0, 0, W, H, z, 0.55, 0.55);
+    ctx.restore();
+  }
 }
 
 let last = performance.now();
@@ -1341,9 +1415,9 @@ function frame(now) {
    ========================================================= */
 function updateIntro(dt) {
   introT += dt;
-  const k = ease(introT / 4.6);
+  const k = ease((introT - 2.6) / 4.2);
   cam.x = lerp(2300, 0, k); cam.zoom = lerp(0.86, 1, k);
-  if (introT > 4.6 && !introGreeted) {
+  if (introT > 6.8 && !introGreeted) {
     introGreeted = true;
     $("btnSkip").hidden = true; $("introTitle").style.opacity = 0.0;
     say(INTRO_LINE, 600000); player.wave = 3;
@@ -1360,15 +1434,16 @@ function updateEnd(dt) { endT += dt; player.walk += dt * 2; }
 function showEnd(step) {
   endStep = step; hideBubble();
   const o = $("endOverlay"); o.hidden = false;
+  o.style.background = ready("end_bg") ? 'linear-gradient(rgba(12,32,20,.25), rgba(12,32,20,.25)), url("assets/end_bg.jpg") center / cover' : "";
   if (step === 1) {
     o.innerHTML = `<div class="endcard"><h2>دورة حياة نبات الطماطم</h2><p class="sub">من بذرة… إلى ثمرة فيها بذور جديدة… ثم بذرة من جديد</p><canvas id="cycleCanvas" width="1800" height="1120"></canvas><div class="btn-row"><button class="btn-main" id="endNext">التالي</button></div></div>`;
     animateCycle($("cycleCanvas"));
   } else if (step === 2) {
     o.innerHTML = `<div class="endcard"><h2>النباتات الحولية والمعمرة</h2>
       <div class="cmp">
-        <div class="cmp-card annual"><h3>النباتات الحولية</h3><canvas id="cmpA" width="1040" height="460"></canvas>
+        <div class="cmp-card annual"><h3>النباتات الحولية</h3><canvas id="cmpA" width="1040" height="580"></canvas>
           <ul><li>تُكمل دورة حياتها خلال عام واحد.</li><li>تموت بعد إنتاج البذور.</li><li>أمثلة: الفجل، البصل، الثوم.</li></ul></div>
-        <div class="cmp-card perennial"><h3>النباتات المعمرة</h3><canvas id="cmpP" width="1040" height="460"></canvas>
+        <div class="cmp-card perennial"><h3>النباتات المعمرة</h3><canvas id="cmpP" width="1040" height="580"></canvas>
           <ul><li>تعيش سنوات عديدة.</li><li>تُزهر وتُثمر مرات متكررة.</li><li>أمثلة: المانجو، الليمون، النخيل.</li></ul></div>
       </div><div class="btn-row"><button class="btn-main" id="endNext">التالي</button></div></div>`;
     drawCompare($("cmpA"), 6); drawCompare($("cmpP"), 7);
@@ -1427,7 +1502,10 @@ function animateCycle(cv) {
   }
   requestAnimationFrame(draw);
 }
+const CYCLE_PHOTOS = [["t_seed", 0.5, 0.64, 3.2], ["t_germ", 0.5, 0.6, 2.4], ["t_seedling", 0.5, 0.55, 1.5], ["t_mature", 0.5, 0.42, 1.15], ["t_flower", 0.5, 0.3, 1.9], ["t_cut", 0.62, 0.6, 1.6]];
 function cycleIcon(c, i, t) {
+  const [n, fxp, fyp, z] = CYCLE_PHOTOS[i];
+  if (ready(n)) { drawCover(c, IMG[n], -112, -112, 224, 224, z, fxp, fyp); return; }
   c.save();
   if (i === 0) { c.fillStyle = "#6b4426"; c.fillRect(-112, 20, 224, 100); c.fillStyle = "#4e9a3a"; c.fillRect(-112, 14, 224, 8); tomatoSeed(c, 0, 50, 3); }
   if (i === 1) { c.fillStyle = "#6b4426"; c.fillRect(-112, 0, 224, 120); c.fillStyle = "#4e9a3a"; c.fillRect(-112, -6, 224, 8);
@@ -1448,9 +1526,17 @@ function drawCompare(cv, idx) {
     const t = (now - t0) / 1000;
     c.setTransform(1, 0, 0, 1, 0, 0); c.clearRect(0, 0, cv.width, cv.height);
     c.fillStyle = idx === 6 ? "#ffe6d1" : "#d3ecc8"; rr(c, 0, 0, cv.width, cv.height, 40); c.fill();
-    c.save(); c.translate(cv.width / 2, by); c.scale(sc, sc);
-    withCtx(c, () => stageVisual(c, idx, 0, 0, clamp(t / 1.8, 0, 1), t));
-    c.restore();
+    const fr = panelFrame(PANELS[idx], t);
+    if (fr && ready(fr.cur)) {
+      c.save(); rr(c, 0, 0, cv.width, cv.height, 40); c.clip();
+      if (fr.prev && fr.a < 1 && ready(fr.prev)) drawCover(c, IMG[fr.prev], 0, 0, cv.width, cv.height);
+      c.globalAlpha = fr.prev ? fr.a : 1; drawCover(c, IMG[fr.cur], 0, 0, cv.width, cv.height);
+      c.restore();
+    } else {
+      c.save(); c.translate(cv.width / 2, by); c.scale(sc, sc);
+      withCtx(c, () => stageVisual(c, idx, 0, 0, clamp(t / 1.8, 0, 1), t));
+      c.restore();
+    }
     requestAnimationFrame(draw);
   }
   requestAnimationFrame(draw);
