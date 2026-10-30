@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>منظومة تغذية أجهزة الإرسال بالطاقة</title>
+<style>
+  @font-face { font-family: Cairo; font-weight: 400; src: url(../node_modules/@fontsource/cairo/files/cairo-arabic-400-normal.woff2) format('woff2'); }
+  @font-face { font-family: Cairo; font-weight: 700; src: url(../node_modules/@fontsource/cairo/files/cairo-arabic-700-normal.woff2) format('woff2'); }
+  @font-face { font-family: CairoLatin; font-weight: 400; src: url(../node_modules/@fontsource/cairo/files/cairo-latin-400-normal.woff2) format('woff2'); }
+  @font-face { font-family: CairoLatin; font-weight: 700; src: url(../node_modules/@fontsource/cairo/files/cairo-latin-700-normal.woff2) format('woff2'); }
+  :root {
+    --blue: #3d9bff;
+    --green: #2fd67a;
+    --grey: #7d858f;
+    --ink: #eef2f6;
+  }
+  html, body { margin: 0; width: 1920px; height: 1080px; overflow: hidden; background: #0b0d10; }
+  body { font-family: Cairo, CairoLatin, sans-serif; color: var(--ink); }
+  canvas#gl { position: absolute; inset: 0; width: 1920px; height: 1080px; }
+  #hud { position: absolute; inset: 0; pointer-events: none; }
+  svg#leaders { position: absolute; inset: 0; width: 1920px; height: 1080px; }
+
+  .title { position: absolute; top: 120px; left: 0; right: 0; text-align: center; }
+  .title h1 { margin: 0; font-size: 64px; font-weight: 700; letter-spacing: 0; text-shadow: 0 4px 24px rgba(0,0,0,.6); }
+  .title p { margin: 10px 0 0; font-size: 30px; font-weight: 400; color: #b9c3cf; }
+  .title .rule { width: 160px; height: 4px; margin: 22px auto 0; border-radius: 2px;
+                 background: linear-gradient(90deg, var(--green), var(--blue)); }
+
+  .caption { position: absolute; top: 56px; left: 50%; transform: translateX(-50%);
+             padding: 14px 34px 16px; border-radius: 14px; white-space: nowrap;
+             background: rgba(10,14,20,.78); border: 1px solid rgba(255,255,255,.12);
+             font-size: 38px; font-weight: 700; box-shadow: 0 10px 40px rgba(0,0,0,.45); }
+  .caption .bar { position: absolute; right: 0; top: 12px; bottom: 12px; width: 6px; border-radius: 3px; }
+  .caption.mains .bar { background: var(--blue); }
+  .caption.batt .bar { background: var(--green); }
+
+  .badge { position: absolute; bottom: 48px; right: 50px; padding: 8px 20px; border-radius: 999px;
+           font-size: 24px; font-weight: 700; background: rgba(10,14,20,.7);
+           border: 1px solid rgba(255,255,255,.14); display: flex; align-items: center; gap: 10px; }
+  .badge i { width: 14px; height: 14px; border-radius: 50%; display: inline-block; }
+
+  .station { position: absolute; transform: translate(-50%, 0); text-align: center; white-space: nowrap; }
+  .station .num { display: inline-block; width: 44px; height: 44px; line-height: 44px; border-radius: 50%;
+                  background: #e9edf2; color: #11161c; font-weight: 700; font-size: 26px; margin-bottom: 6px; }
+  .station .name { font-size: 26px; font-weight: 700; text-shadow: 0 2px 10px rgba(0,0,0,.8); }
+  .station .chip { display: inline-block; margin-top: 6px; padding: 2px 14px; border-radius: 999px; font-size: 20px;
+                   font-weight: 700; border: 1px solid; background: rgba(10,14,20,.6); }
+
+  .tag { position: absolute; transform: translate(-50%, -50%); padding: 3px 12px 5px; border-radius: 8px; white-space: nowrap;
+         font-size: 19px; font-weight: 700; background: rgba(10,14,20,.78); border: 1px solid rgba(255,255,255,.18); }
+
+  .legend { position: absolute; left: 50px; bottom: 44px; direction: rtl; padding: 12px 18px; border-radius: 12px;
+            background: rgba(10,14,20,.66); border: 1px solid rgba(255,255,255,.1); font-size: 19px; }
+  .legend div { display: flex; align-items: center; gap: 12px; line-height: 32px; }
+  .legend .sw { width: 46px; height: 6px; border-radius: 3px; position: relative; }
+  #fade { position: absolute; inset: 0; background: #000; opacity: 0; }
+</style>
+<script type="importmap">
+{ "imports": {
+  "three": "../node_modules/three/build/three.module.js",
+  "three/addons/": "../node_modules/three/examples/jsm/"
+} }
+</script>
+</head>
+<body>
+<canvas id="gl" width="1920" height="1080"></canvas>
+<div id="hud">
+  <svg id="leaders"></svg>
+
+  <div class="title" id="title">
+    <h1>منظومة تغذية أجهزة الإرسال بالطاقة</h1>
+    <p>مسار الطاقة عند توفر الكهرباء العمومية وعند انقطاعها</p>
+    <div class="rule"></div>
+  </div>
+
+  <div class="caption mains" id="cap1"><span class="bar"></span>الكهرباء العمومية متوفرة — التغذية من المصدر الرئيسي</div>
+  <div class="caption batt" id="cap2"><span class="bar"></span>انقطاع الكهرباء العمومية — البطاريات الاحتياطية تواصل تغذية أجهزة الإرسال</div>
+
+  <div class="badge" id="badge"><i></i><span></span></div>
+
+  <div class="station" id="st1"><div class="num">١</div><div class="name">لوحة الكهرباء العمومية</div><div class="chip"></div></div>
+  <div class="station" id="st2"><div class="num">٢</div><div class="name">وحدة الطاقة والبطاريات الاحتياطية</div></div>
+  <div class="station" id="st3"><div class="num">٣</div><div class="name">أجهزة الإرسال والاتصالات</div><div class="chip"></div></div>
+
+  <div class="tag" id="tagRect">وحدات التقويم</div>
+  <div class="tag" id="tagBus">ناقل التغذية المستمرة (DC) المشترك</div>
+  <div class="tag" id="tagDist">توزيع خرج التغذية</div>
+  <div class="tag" id="tagBatt">البطاريات الاحتياطية</div>
+
+  <div class="legend" id="legend">
+    <div><span class="sw" style="background:var(--blue);border-right-color:var(--blue)"></span>مسار الكهرباء العمومية النشط</div>
+    <div><span class="sw" style="background:var(--green);border-right-color:var(--green)"></span>تغذية مدعومة من البطاريات</div>
+    <div><span class="sw" style="background:#4a5059;border-right-color:#4a5059"></span>مسار غير نشط في الحالة المعروضة</div>
+  </div>
+  <div id="fade"></div>
+</div>
+<script type="module" src="./scene.js"></script>
+</body>
+</html>
