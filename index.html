@@ -1,0 +1,776 @@
+<title>نموش في مختبر الإنزيمات</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+Bhaijaan+2:wght@500;700;800&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: home = Nizwa sky band with Nmoosh + station grid; lab = white stage (SVG) + side panel; signature pinned to the bottom edge */
+:root{
+  --bg:#FFFFFF; --ink:#22193A; --muted:#655C7A; --line:#E6E1F0; --soft:#F7F4FD;
+  --purple:#6B4BD0; --purple-d:#46299E; --purple-l:#EEE8FD;
+  --orange:#F28C28; --orange-d:#B25A0E; --orange-l:#FFF1E3; --gold:#F6C343;
+  --ok:#137A53; --ok-l:#E2F4EB; --warn:#B0421A; --warn-l:#FDEEE6;
+  --sky:#D7ECFA; --sky2:#FBF0DC; --sand:#EAD2A4; --fort:#D5AE77; --fort-d:#A57E4B;
+  --f-display:'Baloo Bhaijaan 2','IBM Plex Sans Arabic',Tahoma,sans-serif;
+  --f-body:'IBM Plex Sans Arabic','Segoe UI',Tahoma,sans-serif;
+  color-scheme:light;
+}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:17px;line-height:1.7;direction:rtl}
+button{font:inherit;color:inherit}
+*{box-sizing:border-box}
+:focus-visible{outline:3px solid var(--orange);outline-offset:2px}
+#app{min-height:100%;padding-bottom:64px}
+.wrap{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));max-width:1320px;margin-inline:auto}
+
+/* ---------- Home ---------- */
+.hero{background:linear-gradient(180deg,var(--sky) 0%,var(--sky2) 100%);border-bottom:1px solid var(--line)}
+.hero .wrap{padding-block:28px 0;display:grid;gap:8px}
+.eyebrow{font-weight:600;color:var(--purple-d);letter-spacing:.02em;font-size:15px}
+.hero h1{font-family:var(--f-display);font-weight:800;font-size:clamp(34px,5.4vw,60px);line-height:1.15;margin:0;text-wrap:balance}
+.hero h1 em{font-style:normal;color:var(--purple)}
+.hero p.lead{margin:0;max-width:60ch;color:var(--muted);font-size:18px}
+.scene{display:block;width:100%;height:auto;max-height:340px;margin-top:6px}
+.home-main .wrap{padding-block:28px 24px;display:grid;gap:18px}
+.home-head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px}
+.home-head h2{font-family:var(--f-display);font-size:28px;margin:0}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px}
+.st-card{display:grid;grid-template-rows:auto auto 1fr auto;gap:6px;text-align:right;background:#fff;border:2px solid var(--line);border-radius:20px;padding:18px;cursor:pointer;min-height:190px;transition:border-color .2s,transform .2s}
+.st-card:hover{border-color:var(--purple);transform:translateY(-2px)}
+.st-num{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;background:var(--purple-l);color:var(--purple-d);font-family:var(--f-display);font-weight:800;font-size:24px}
+.st-card.final .st-num{background:var(--orange-l);color:var(--orange-d)}
+.st-card h3{margin:4px 0 0;font-family:var(--f-display);font-size:21px;line-height:1.3}
+.st-card p{margin:0;color:var(--muted);font-size:15px}
+.chip{justify-self:start;font-size:13px;font-weight:600;padding:2px 12px;border-radius:999px;background:var(--soft);color:var(--muted)}
+.chip.done{background:var(--ok-l);color:var(--ok)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:8px 20px;border-radius:14px;border:2px solid var(--purple);background:var(--purple);color:#fff;font-weight:600;cursor:pointer;touch-action:manipulation}
+.btn:hover{background:var(--purple-d);border-color:var(--purple-d)}
+.btn.line{background:#fff;color:var(--purple-d)}
+.btn.line:hover{background:var(--purple-l)}
+.btn.orange{background:var(--orange);border-color:var(--orange);color:#2a1503}
+.btn.orange:hover{background:#e07a15}
+.btn.small{min-height:40px;padding:4px 14px;font-size:15px}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
+.link-btn{background:none;border:0;color:var(--muted);text-decoration:underline;cursor:pointer;font-size:14px}
+
+/* ---------- Lab ---------- */
+.labbar{position:sticky;top:env(safe-area-inset-top,0px);z-index:15;background:#fff;border-bottom:1px solid var(--line)}
+.labbar .wrap{display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px;padding-block:10px}
+.lab-title{flex:1 1 260px;min-width:0;display:flex;align-items:center;gap:12px}
+.lab-title .st-num{flex:none}
+.lab-title h1{font-family:var(--f-display);font-size:clamp(20px,2.4vw,27px);margin:0;line-height:1.25}
+.lab-nav{display:flex;gap:8px;flex-wrap:wrap}
+.lab-body{display:grid;grid-template-columns:minmax(0,1fr) minmax(290px,370px);gap:20px;align-items:start;padding-block:16px}
+@media (max-width:920px){.lab-body{grid-template-columns:minmax(0,1fr)}}
+.stage-col{min-width:0;display:grid;gap:10px}
+.stage-box{border:1px solid var(--line);border-radius:22px;background:#fff;overflow:hidden}
+#stage{display:block;width:100%;height:auto;max-height:calc(100vh - 250px);min-height:220px;touch-action:none;user-select:none;-webkit-user-select:none;background:#fff}
+.status{margin:0;min-height:56px;padding:10px 16px;border-radius:14px;background:var(--soft);font-size:17px;font-weight:500}
+.status.ok{background:var(--ok-l);color:var(--ok)}
+.status.warn{background:var(--warn-l);color:var(--warn)}
+.controls{display:flex;flex-wrap:wrap;gap:10px}
+.controls .btn{flex:1 1 140px}
+.panel{display:grid;gap:12px;min-width:0}
+.card{border:1px solid var(--line);border-radius:18px;padding:14px 16px;background:#fff}
+.card h3{margin:0 0 6px;font-family:var(--f-display);font-size:19px;color:var(--purple-d)}
+.card p{margin:0 0 8px}
+.card ol,.card ul{margin:0;padding-inline-start:20px}
+.card.q{border:2px solid var(--orange);background:var(--orange-l)}
+.card.q h3{color:var(--orange-d)}
+.card.book{background:var(--soft);border-color:transparent;font-size:15px}
+.choices{display:flex;flex-wrap:wrap;gap:8px;margin-block:6px}
+.choices .btn{flex:1 1 90px}
+.fb{margin-top:8px!important;font-weight:500}
+.fb.ok{color:var(--ok)} .fb.warn{color:var(--warn)}
+.steps{list-style:none;padding:0!important;display:grid;gap:6px}
+.steps li{padding:6px 12px;border-radius:12px;background:var(--soft);color:var(--muted);font-size:15px}
+.steps li.on{background:var(--purple);color:#fff;font-weight:600}
+.steps li.past{background:var(--purple-l);color:var(--purple-d)}
+.tabs{display:flex;gap:8px}
+.tabs .btn{flex:1}
+.counter{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-weight:600}
+.counter b{font-family:var(--f-display);font-size:28px;color:var(--purple-d);font-variant-numeric:tabular-nums}
+textarea{width:100%;min-height:90px;border:1px solid var(--line);border-radius:12px;padding:10px;font:inherit;resize:vertical;background:#fff;color:var(--ink)}
+.model{margin-top:8px;padding:10px 12px;border-radius:12px;background:var(--ok-l);color:#0f4f37}
+.crumbs{display:flex;flex-wrap:wrap;gap:6px}
+.crumbs button{border:1px solid var(--line);background:#fff;border-radius:999px;padding:4px 12px;font-size:14px;cursor:pointer;min-height:38px}
+.crumbs button.on{background:var(--purple);border-color:var(--purple);color:#fff}
+.crumbs button:disabled{opacity:.4;cursor:not-allowed}
+.mol-fig{width:100%;height:auto;display:block}
+
+/* ---------- SVG drawing ---------- */
+svg text{font-family:var(--f-body);direction:rtl}
+.lbl{font-size:22px;font-weight:600;fill:var(--ink);text-anchor:middle}
+.h{font-family:var(--f-display);font-size:30px;font-weight:700;fill:var(--ink);text-anchor:middle}
+.name{font-size:21px;font-weight:700;fill:var(--orange-d);text-anchor:middle;transition:opacity .8s}
+.state{font-size:20px;font-weight:600;fill:var(--purple-d);text-anchor:middle}
+.h2{font-size:19px;font-weight:700;fill:var(--muted);text-anchor:middle}
+.mini{font-size:14px;font-weight:600;fill:var(--muted);text-anchor:middle}
+.chem{font-size:15px;font-weight:700;fill:#1f5f96;text-anchor:middle;direction:ltr}
+.axis-l{font-size:22px;font-weight:700;fill:var(--ink);text-anchor:middle}
+.tag rect{fill:#fff;stroke:var(--purple);stroke-width:2}
+.tag text{font-size:18px;font-weight:600;fill:var(--purple-d)}
+.tag.o rect{stroke:var(--orange-d);fill:var(--orange-l)} .tag.o text{fill:var(--orange-d)}
+.tag.ok rect{stroke:var(--ok);fill:var(--ok-l)} .tag.ok text{fill:var(--ok)}
+.enz{fill:url(#gEnz);stroke:#3B2190;stroke-width:4;stroke-linejoin:round}
+.ghost{fill:none;stroke:#1d1433;stroke-width:3;stroke-dasharray:9 7;stroke-linejoin:round}
+.sub{fill:var(--orange);stroke:var(--orange-d);stroke-width:3;stroke-linejoin:round}
+.sub-dot{fill:#FFD9AE}
+.pA{fill:var(--orange);stroke:var(--orange-d);stroke-width:3;stroke-linejoin:round}
+.pB{fill:var(--gold);stroke:#A87D06;stroke-width:3;stroke-linejoin:round}
+.prodA{fill:#2E9E5B;stroke:#1b6b3c;stroke-width:3;stroke-linejoin:round}
+.prodB{fill:#1E98B0;stroke:#11677a;stroke-width:3;stroke-linejoin:round}
+.bond{fill:#fff;stroke:#1d1433;stroke-width:3}
+.tray{fill:var(--soft);stroke:var(--line);stroke-width:2;stroke-dasharray:8 6}
+.bin{fill:#F4FBF7;stroke:#BFE3CF;stroke-width:2}
+.flash{fill:#FFE7A3}
+.hint-arrow{fill:none;stroke:var(--purple-d);stroke-width:5;stroke-linecap:round}
+.drag{cursor:grab}
+.dragging{cursor:grabbing}
+.tap{cursor:pointer}
+.glyc{stroke:#8A4B12;stroke-width:6;stroke-linecap:round}
+.cross{stroke:#9C97AE;stroke-width:7;stroke-linecap:round}
+.inset{fill:#fff;stroke:var(--line);stroke-width:2}
+.pcard{fill:#fff;stroke:var(--line);stroke-width:3}
+.pcard-g.sel .pcard{stroke:var(--orange);stroke-width:5;fill:var(--orange-l)}
+.grid-l{stroke:#EFEBF6;stroke-width:1}
+.lvl{stroke:var(--muted);stroke-width:2.5;stroke-dasharray:10 8}
+.cU{fill:none;stroke:#5E5873;stroke-width:6;stroke-linecap:round}
+.cC{fill:none;stroke:var(--purple);stroke-width:6;stroke-linecap:round}
+.axis{stroke:var(--ink);stroke-width:3}
+.cell{fill:#E3F3DF}
+.wall{fill:none;stroke:#3E8E4A;stroke-width:14;stroke-linecap:round}
+.h2o{fill:#3B8FD9}
+@keyframes blink{0%,94%,100%{transform:scaleY(1)}97%{transform:scaleY(.1)}}
+.blink{animation:blink 5.5s infinite;transform-box:fill-box;transform-origin:center}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+.bob{animation:bob 3.2s ease-in-out infinite}
+@keyframes ring{0%{transform:scale(.85);opacity:.9}100%{transform:scale(1.35);opacity:0}}
+.ring{fill:none;stroke:var(--orange);stroke-width:4;animation:ring 1.8s ease-out infinite;transform-box:fill-box;transform-origin:center;pointer-events:none}
+#stage.paused *{animation-play-state:paused!important}
+@media (prefers-reduced-motion:reduce){.bob,.ring{animation:none}}
+
+/* ---------- Signature ---------- */
+.sig{position:fixed;inset:auto 0 0 0;z-index:30;background:rgba(255,255,255,.95);border-top:1px solid var(--line);text-align:center;font-family:var(--f-display);font-weight:700;font-size:17px;color:var(--purple-d);padding:8px max(16px,env(safe-area-inset-right,0px)) calc(8px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+</style>
+
+<div id="app">
+  <section id="home">
+    <header class="hero">
+      <div class="wrap">
+        <span class="eyebrow">الأحياء · الصف الحادي عشر · الوحدة الثالثة: الإنزيمات</span>
+        <h1>نموش في <em>مختبر الإنزيمات</em></h1>
+        <p class="lead">خمس محطات تفاعلية من فرضية القفل والمفتاح حتى خفض طاقة التنشيط. افتحي أي محطة مباشرة، وأكملي من حيث توقّفتِ في الحصة التالية.</p>
+      </div>
+      <svg class="scene" viewBox="0 0 1200 360" role="img" aria-label="نموش أمام قلعة نزوى وأشجار النخيل وجبال الحجر">
+        <defs>
+          <linearGradient id="hSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#D7ECFA"/><stop offset="1" stop-color="#FBF0DC"/></linearGradient>
+        </defs>
+        <circle cx="1060" cy="70" r="40" fill="#FFD98A"/>
+        <path d="M0 230 L110 150 L210 200 L340 105 L470 190 L590 125 L700 205 L840 110 L980 185 L1090 135 L1200 190 L1200 360 L0 360 Z" fill="#CDAA86" opacity=".55"/>
+        <path d="M0 265 L140 205 L260 240 L380 180 L520 250 L650 200 L780 255 L940 195 L1080 245 L1200 220 L1200 360 L0 360 Z" fill="#B88E66" opacity=".7"/>
+        <rect x="0" y="292" width="1200" height="68" fill="#EAD2A4"/>
+        <path d="M330 340 C 520 318, 700 350, 900 330 S 1120 322, 1200 330" fill="none" stroke="#6CB8D8" stroke-width="9" stroke-linecap="round"/>
+        <!-- Nizwa fort round tower -->
+        <g>
+          <path d="M760 300 L774 150 L936 150 L950 300 Z" fill="#D5AE77"/>
+          <path d="M880 150 L936 150 L950 300 L895 300 Z" fill="#BE9660"/>
+          <rect x="766" y="132" width="178" height="22" fill="#C99F66"/>
+          <g fill="#C99F66">
+            <rect x="766" y="118" width="16" height="16"/><rect x="792" y="118" width="16" height="16"/><rect x="818" y="118" width="16" height="16"/><rect x="844" y="118" width="16" height="16"/><rect x="870" y="118" width="16" height="16"/><rect x="896" y="118" width="16" height="16"/><rect x="922" y="118" width="16" height="16"/>
+          </g>
+          <g fill="#7A5A33"><rect x="812" y="185" width="10" height="20" rx="5"/><rect x="852" y="185" width="10" height="20" rx="5"/><rect x="892" y="185" width="10" height="20" rx="5"/><rect x="832" y="235" width="10" height="20" rx="5"/><rect x="872" y="235" width="10" height="20" rx="5"/></g>
+          <path d="M950 300 L950 215 L1110 215 L1110 300 Z" fill="#CFA46D"/>
+          <g fill="#CFA46D"><rect x="952" y="203" width="14" height="14"/><rect x="976" y="203" width="14" height="14"/><rect x="1000" y="203" width="14" height="14"/><rect x="1024" y="203" width="14" height="14"/><rect x="1048" y="203" width="14" height="14"/><rect x="1072" y="203" width="14" height="14"/><rect x="1094" y="203" width="14" height="14"/></g>
+          <path d="M1010 300 L1010 258 Q1030 236 1050 258 L1050 300 Z" fill="#6E5030"/>
+        </g>
+        <!-- palms -->
+        <g id="palm">
+          <path d="M640 300 C 646 250, 636 205, 650 160" fill="none" stroke="#8B6A43" stroke-width="12" stroke-linecap="round"/>
+          <g fill="#3F7D4E"><path d="M650 160 C 610 140, 585 150, 565 175 C 595 160, 620 162, 650 166 Z"/><path d="M650 160 C 690 138, 720 146, 740 172 C 708 158, 682 160, 650 166 Z"/><path d="M650 160 C 630 128, 606 118, 580 122 C 612 132, 630 146, 648 166 Z"/><path d="M650 160 C 672 126, 700 116, 724 122 C 694 132, 670 146, 652 166 Z"/><path d="M650 160 C 652 130, 646 112, 636 100 C 660 116, 662 136, 654 164 Z"/></g>
+        </g>
+        <use href="#palm" transform="translate(-110 22) scale(1.08)"/>
+        <use href="#palm" transform="translate(520 40) scale(.92)"/>
+        <!-- Nmoosh -->
+        <g transform="translate(250 336)">
+          <ellipse cx="0" cy="2" rx="70" ry="10" fill="#000" opacity=".08"/>
+          <ellipse cx="-20" cy="-4" rx="18" ry="8" fill="#3B2F4F"/><ellipse cx="20" cy="-4" rx="18" ry="8" fill="#3B2F4F"/>
+          <path d="M-58 -6 L-46 -128 Q0 -146 46 -128 L58 -6 Z" fill="#fff" stroke="#CFC7E0" stroke-width="3"/>
+          <path d="M-14 -138 L0 -100 L14 -138" fill="none" stroke="#CFC7E0" stroke-width="3"/>
+          <line x1="0" y1="-100" x2="0" y2="-10" stroke="#E2DCEE" stroke-width="3"/>
+          <rect x="-44" y="-86" width="34" height="18" rx="5" fill="#EEE8FD" stroke="#6B4BD0" stroke-width="2"/>
+          <text x="-27" y="-72" text-anchor="middle" font-size="13" font-weight="700" fill="#46299E">نموش</text>
+          <path d="M-46 -122 Q -76 -84 -54 -54" fill="none" stroke="#fff" stroke-width="22" stroke-linecap="round"/>
+          <path d="M-46 -122 Q -76 -84 -54 -54" fill="none" stroke="#CFC7E0" stroke-width="3" stroke-dasharray="0 0" opacity=".0"/>
+          <path d="M46 -122 Q 82 -100 86 -78" fill="none" stroke="#fff" stroke-width="22" stroke-linecap="round"/>
+          <circle cx="-54" cy="-52" r="10" fill="#F3CFA8"/><circle cx="88" cy="-76" r="10" fill="#F3CFA8"/>
+          <!-- flask -->
+          <g transform="translate(96 -66)">
+            <path d="M-6 -46 L6 -46 L6 -22 L26 14 Q28 22 20 22 L-20 22 Q-28 22 -26 14 L-6 -22 Z" fill="#fff" stroke="#9A93AE" stroke-width="3"/>
+            <path d="M-17 2 L17 2 L24 15 Q25 20 19 20 L-19 20 Q-25 20 -24 15 Z" fill="#8E70EA"/>
+            <circle cx="-4" cy="-8" r="4" fill="#C9B8F6"/><circle cx="6" cy="-20" r="3" fill="#C9B8F6"/>
+          </g>
+          <!-- head -->
+          <ellipse cx="0" cy="-180" rx="54" ry="60" fill="#fff" stroke="#DCD5EA" stroke-width="3"/>
+          <circle cx="0" cy="-174" r="38" fill="#F3CFA8"/>
+          <path d="M-40 -186 Q 0 -232 40 -186 Q 0 -206 -40 -186 Z" fill="#fff"/>
+          <rect x="-36" y="-226" width="72" height="18" rx="9" fill="#7CC6E8" stroke="#3E89AE" stroke-width="2"/>
+          <circle cx="-16" cy="-217" r="6" fill="#DFF3FB"/><circle cx="16" cy="-217" r="6" fill="#DFF3FB"/>
+          <ellipse cx="-14" cy="-174" rx="5" ry="7" fill="#2A1E3B"/><ellipse cx="14" cy="-174" rx="5" ry="7" fill="#2A1E3B"/>
+          <circle cx="-12" cy="-177" r="2" fill="#fff"/><circle cx="16" cy="-177" r="2" fill="#fff"/>
+          <ellipse cx="-24" cy="-160" rx="7" ry="4" fill="#F29BB8" opacity=".6"/><ellipse cx="24" cy="-160" rx="7" ry="4" fill="#F29BB8" opacity=".6"/>
+          <path d="M-10 -154 Q 0 -146 10 -154" fill="none" stroke="#2A1E3B" stroke-width="3" stroke-linecap="round"/>
+        </g>
+      </svg>
+    </header>
+    <main class="home-main">
+      <div class="wrap">
+        <div class="home-head">
+          <h2>محطات المختبر</h2>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+            <button class="btn orange" id="resumeBtn" type="button">ابدئي من المحطة الأولى</button>
+            <button class="link-btn" id="clearBtn" type="button">مسح علامات الإنجاز</button>
+          </div>
+        </div>
+        <div class="grid" id="cards"></div>
+      </div>
+    </main>
+  </section>
+
+  <section id="lab" hidden>
+    <header class="labbar">
+      <div class="wrap">
+        <button class="btn line small" id="menuBtn" type="button">☰ القائمة</button>
+        <div class="lab-title"><span class="st-num" id="labNum">١</span><h1 id="labTitle"></h1></div>
+        <nav class="lab-nav" aria-label="التنقل بين المحطات">
+          <button class="btn line small" id="prevBtn" type="button">→ السابقة</button>
+          <button class="btn line small" id="nextBtn" type="button">التالية ←</button>
+        </nav>
+      </div>
+    </header>
+    <div class="wrap">
+      <div class="lab-body">
+        <div class="stage-col">
+          <div class="stage-box" id="stageBox"></div>
+          <p class="status" id="status" aria-live="polite"></p>
+          <div class="controls">
+            <button class="btn" id="stepBtn" type="button">خطوة واحدة</button>
+            <button class="btn line" id="pauseBtn" type="button">إيقاف</button>
+            <button class="btn line" id="resetBtn" type="button">إعادة التجربة</button>
+          </div>
+        </div>
+        <aside class="panel" id="panel"></aside>
+      </div>
+    </div>
+  </section>
+  <footer class="sig">أ.إمتثال العطابي</footer>
+</div>
+
+<script>
+(function(){
+'use strict';
+document.documentElement.lang='ar';document.documentElement.dir='rtl';
+const $=s=>document.querySelector(s);
+const NS='http://www.w3.org/2000/svg';
+function S(tag,attrs,parent){const e=document.createElementNS(NS,tag);if(attrs)for(const k in attrs)e.setAttribute(k,attrs[k]);if(parent)parent.appendChild(e);return e;}
+function T(parent,x,y,text,cls){const e=S('text',{x,y,class:cls||'lbl'},parent);e.textContent=text;return e;}
+function H(html){const t=document.createElement('template');t.innerHTML=html.trim();return t.content.firstElementChild;}
+const AR='٠١٢٣٤٥٦٧٨٩';const ar=n=>String(n).replace(/\d/g,d=>AR[d]);
+function tag(parent,x,y,text,cls){const g=S('g',{class:'tag '+(cls||'')},parent);const tx=S('text',{x,y:y+6,'text-anchor':'middle'},g);tx.textContent=text;let b;try{b=tx.getBBox();}catch(e){b={x:x-60,y:y-12,width:120,height:24};}if(!b.width)b={x:x-text.length*5,y:y-12,width:text.length*10,height:24};const r=S('rect',{x:b.x-14,y:b.y-6,width:b.width+28,height:b.height+12,rx:(b.height+12)/2},g);g.insertBefore(r,tx);return g;}
+
+/* ---------- Animation engine (pausable, cancellable) ---------- */
+const CANCEL={cancel:true};
+const A={paused:false,gen:0};
+const ease=t=>t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2;
+const lerp=(a,b,t)=>a+(b-a)*t;
+function tween(ms,fn,e){e=e||ease;const g=A.gen;return new Promise((res,rej)=>{let el=0,last=performance.now();const fr=now=>{if(g!==A.gen)return rej(CANCEL);const dt=Math.min(64,now-last);last=now;if(!A.paused)el+=dt;const t=Math.min(1,el/ms);fn(e(t));if(t<1)requestAnimationFrame(fr);else res();};requestAnimationFrame(fr);});}
+const wait=ms=>tween(ms,()=>{},t=>t);
+function lerpP(p,q,t){const o={};for(const k in p)o[k]=(k in q)?lerp(p[k],q[k],t):p[k];return o;}
+function P(parent,x,y,k){const g=S('g',null,parent);const o={g,x:0,y:0,k:1,r:0,o:1};
+  o.at=function(x,y,k,r){if(k===undefined)k=o.k;if(r===undefined)r=o.r;o.x=x;o.y=y;o.k=k;o.r=r;g.setAttribute('transform',`translate(${x.toFixed(2)} ${y.toFixed(2)}) rotate(${r.toFixed(2)}) scale(${k.toFixed(3)})`);return o;};
+  o.fade=function(v){o.o=v;g.setAttribute('opacity',v.toFixed(3));return o;};
+  o.at(x||0,y||0,k===undefined?1:k);return o;}
+function moveTo(p,x,y,ms,k,r){const x0=p.x,y0=p.y,k0=p.k,r0=p.r;if(k===undefined)k=k0;if(r===undefined)r=r0;return tween(ms||1000,t=>p.at(lerp(x0,x,t),lerp(y0,y,t),lerp(k0,k,t),lerp(r0,r,t)));}
+function fadeTo(p,v,ms){const a=p.o;return tween(ms||600,t=>p.fade(lerp(a,v,t)));}
+function svgPt(svg,e){const m=svg.getScreenCTM();if(!m)return{x:0,y:0};return new DOMPoint(e.clientX,e.clientY).matrixTransform(m.inverse());}
+function draggable(p,svg,opt){p.g.classList.add('drag');p.home={x:p.x,y:p.y,k:p.k};
+  p.g.addEventListener('pointerdown',e=>{
+    if(p.locked)return;
+    if(opt.can&&!opt.can()){if(opt.blocked)opt.blocked();return;}
+    e.preventDefault();e.stopPropagation();
+    const g0=A.gen;const a=svgPt(svg,e);const ox=p.x-a.x,oy=p.y-a.y;
+    p.g.parentNode.appendChild(p.g);p.g.classList.add('dragging');p.at(p.x,p.y,opt.dragK||p.k);
+    const mv=ev=>{const b=svgPt(svg,ev);p.at(Math.max(20,Math.min(980,b.x+ox)),Math.max(30,Math.min(595,b.y+oy)));};
+    const up=()=>{window.removeEventListener('pointermove',mv);window.removeEventListener('pointerup',up);window.removeEventListener('pointercancel',up);p.g.classList.remove('dragging');if(g0===A.gen)opt.drop(p);};
+    window.addEventListener('pointermove',mv);window.addEventListener('pointerup',up);window.addEventListener('pointercancel',up);
+  });}
+function goHome(p){return moveTo(p,p.home.x,p.home.y,550,p.home.k).catch(()=>{});}
+
+/* ---------- Shared drawings ---------- */
+function defs(svg){const d=S('defs',null,svg);
+  const lg=S('linearGradient',{id:'gEnz',x1:0,y1:0,x2:0,y2:1},d);S('stop',{offset:0,'stop-color':'#9274EC'},lg);S('stop',{offset:1,'stop-color':'#5A3BBF'},lg);
+  const ea=S('linearGradient',{id:'gEa',x1:0,y1:1,x2:0,y2:0},d);S('stop',{offset:0,'stop-color':'#F6C343'},ea);S('stop',{offset:1,'stop-color':'#D2402F'},ea);
+  const mk=(id,c)=>{const m=S('marker',{id,viewBox:'0 0 10 10',refX:7,refY:5,markerWidth:5,markerHeight:5,orient:'auto-start-reverse'},d);S('path',{d:'M0 0 L10 5 L0 10 z',fill:c},m);};
+  mk('arw','#46299E');mk('arwB','#2F7FC4');mk('arwK','#22193A');}
+function enzD(p){const W=p.W||125,t=-60,cx=p.bw/2+p.s*(p.d+p.lift),cy=t-p.lift,fy=t+p.d,hb=p.bw/2,sx=cx+28;const f=n=>n.toFixed(2);
+  return `M ${-W} -20 C ${-W-3} -62 ${f(-W+25)} ${t} ${f(-sx)} ${t} Q ${f(-cx-6)} ${t} ${f(-cx)} ${f(cy)} L ${f(-hb)} ${f(fy)} L ${f(hb)} ${f(fy)} L ${f(cx)} ${f(cy)} Q ${f(cx+6)} ${t} ${f(sx)} ${t} C ${f(W-25)} ${t} ${W+3} -62 ${W} -20 C ${W-3} 70 ${f(W*.62)} 115 0 115 C ${f(-W*.62)} 115 ${-W+3} 70 ${-W} -20 Z`;}
+function makeEnzyme(layer,o){const E=P(layer,o.x,o.y,o.k||1);E.p=Object.assign({},o.p);const W=E.p.W||125;
+  const body=S('path',{class:'enz'},E.g);
+  S('ellipse',{cx:-W*.62,cy:12,rx:13,ry:34,fill:'#fff',opacity:.16},E.g);
+  const face=S('g',null,E.g);
+  for(const sx of[-1,1]){const eg=S('g',{class:'blink'},face);S('ellipse',{cx:sx*W*.32,cy:30,rx:15,ry:18,fill:'#fff'},eg);S('circle',{cx:sx*W*.32+3,cy:33,r:8,fill:'#1d1433'},eg);S('circle',{cx:sx*W*.32+6,cy:29,r:3,fill:'#fff'},eg);
+    S('ellipse',{cx:sx*W*.52,cy:60,rx:13,ry:7,fill:'#F49AC1',opacity:.55},face);}
+  S('path',{d:'M -14 62 Q 0 73 14 62',fill:'none',stroke:'#1d1433','stroke-width':4,'stroke-linecap':'round'},face);
+  E.set=q=>{Object.assign(E.p,q);body.setAttribute('d',enzD(E.p));};E.set({});
+  E.floor=()=>E.y+(-60+E.p.d)*E.k;
+  if(o.top){E.ghostG=P(o.top,o.x,o.y,o.k||1);S('path',{class:'ghost',d:enzD(Object.assign({},o.p))},E.ghostG.g);E.ghostG.g.style.display='none';}
+  return E;}
+const SUB_D='M -25 0 L 25 0 L 45 -55 L 45 -78 Q 45 -95 28 -95 L -28 -95 Q -45 -95 -45 -78 L -45 -55 Z';
+const HALF_L='M 0 0 L -25 0 L -45 -55 L -45 -78 Q -45 -95 -28 -95 L 0 -95 Z';
+const HALF_R='M 0 0 L 25 0 L 45 -55 L 45 -78 Q 45 -95 28 -95 L 0 -95 Z';
+function subShape(layer,x,y,k){const p=P(layer,x,y,k);S('path',{d:SUB_D,class:'sub'},p.g);S('circle',{cx:-14,cy:-74,r:6,class:'sub-dot'},p.g);S('circle',{cx:12,cy:-60,r:5,class:'sub-dot'},p.g);return p;}
+function ballShape(layer,x,y,k){const p=P(layer,x,y,k);S('circle',{cx:0,cy:-44,r:44,class:'sub'},p.g);S('circle',{cx:-12,cy:-56,r:7,class:'sub-dot'},p.g);return p;}
+function blockShape(layer,x,y,k){const p=P(layer,x,y,k);S('rect',{x:-52,y:-72,width:104,height:72,rx:10,class:'sub'},p.g);S('circle',{cx:-24,cy:-46,r:6,class:'sub-dot'},p.g);return p;}
+function ring(parent,cx,cy,r){return S('circle',{cx,cy,r,class:'ring'},parent);}
+
+/* ---------- Store ---------- */
+const KEY='nmoosh-enzyme-lab-v1';let store={done:{},last:null};
+try{const s=JSON.parse(localStorage.getItem(KEY)||'null');if(s&&typeof s==='object')store=Object.assign(store,s);}catch(e){}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(store));}catch(e){}}
+
+/* ---------- Station framework ---------- */
+let busy=false,busyGen=-1,cur=null;
+function say(msg,kind){const s=$('#status');s.textContent=msg||'';s.className='status'+(kind?' '+kind:'');}
+async function run(fn){if(busy&&busyGen===A.gen)return false;busy=true;busyGen=A.gen;const g=A.gen;try{await fn();return true;}catch(e){if(e!==CANCEL)console.error(e);return false;}finally{if(g===A.gen)busy=false;}}
+function markDone(id){if(!store.done[id]){store.done[id]=true;save();}}
+function setPause(v){A.paused=v;const b=$('#pauseBtn');b.textContent=v?'متابعة':'إيقاف';b.setAttribute('aria-pressed',v?'true':'false');const sv=$('#stage');if(sv)sv.classList.toggle('paused',v);}
+
+/* ======================= Station 1 ======================= */
+function st1(ctx){
+  const svg=ctx.svg,panel=ctx.panel;
+  const LK={bw:50,d:55,s:20/55,lift:0,W:125},IF0={bw:76,d:44,s:.55,lift:0,W:125},IF1={bw:50,d:55,s:20/55,lift:10,W:125};
+  const L1=S('g',null,svg),L2=S('g',null,svg),L3=S('g',null,svg);
+  T(L1,265,92,'النموذج (أ)','h');T(L1,735,92,'النموذج (ب)','h');
+  const nmA=T(L1,265,128,'فرضية القفل والمفتاح','name'),nmB=T(L1,735,128,'فرضية التلاؤم المستحث','name');nmA.style.opacity=0;nmB.style.opacity=0;
+  const EA=makeEnzyme(L1,{x:265,y:300,p:LK,top:L3}),EB=makeEnzyme(L1,{x:735,y:300,p:IF0,top:L3});
+  const sA=T(L1,265,452,'إنزيم حرّ','state'),sB=T(L1,735,452,'إنزيم حرّ','state');
+  S('rect',{x:150,y:476,width:700,height:116,rx:24,class:'tray'},L1);
+  const arr=S('g',{opacity:0},L3);
+  S('path',{d:'M 610 196 Q 640 200 662 226',class:'hint-arrow','marker-end':'url(#arw)'},arr);
+  S('path',{d:'M 860 196 Q 830 200 808 226',class:'hint-arrow','marker-end':'url(#arw)'},arr);
+  let curFit=null,mode='bind';
+  function spawn(kind,x){const p=kind==='fit'?subShape(L2,x,580,.8):kind==='ball'?ballShape(L2,x,580,.8):blockShape(L2,x,580,.8);p.kind=kind;if(kind==='fit')curFit=p;
+    draggable(p,svg,{dragK:1,drop:onDrop});p.fade(0);tween(600,t=>p.fade(t)).catch(()=>{});return p;}
+  spawn('ball',330);spawn('fit',500);spawn('block',670);
+  function onDrop(p){
+    const free=[EA,EB].filter(E=>!E.bound);
+    const tgt=free.find(E=>Math.hypot(p.x-E.x,p.y-(E.y-10))<150);
+    if(!tgt){goHome(p);say(free.length?'أفلتي المادة فوق الموقع النشط لأحد الإنزيمين.':'ارتبط الإنزيمان بالمادة المتفاعلة. قارني بينهما الآن.');return;}
+    if(p.kind!=='fit'){run(async()=>{say('لا ترتبط هذه المادة: شكلها لا يتمّم شكل الموقع النشط. جرّبي مادة أخرى.','warn');await moveTo(p,tgt.x,tgt.y-150,400,1);await tween(700,t=>p.at(tgt.x+Math.sin(t*22)*10*(1-t),tgt.y-150));await moveTo(p,p.home.x,p.home.y,600,p.home.k);}).then(ok=>{if(!ok)goHome(p);});return;}
+    run(()=>bind(tgt,p)).then(ok=>{if(!ok&&!tgt.bound)goHome(p);});
+  }
+  async function bind(E,p){
+    E.bound=true;p.locked=true;p.g.classList.remove('drag');const isB=E===EB;
+    say(isB?'المادة تدخل الموقع النشط للنموذج (ب)… راقبي حوافه.':'المادة تدخل الموقع النشط للنموذج (أ)… راقبي حوافه.');
+    if(p.y>470)await moveTo(p,p.x,400,600,1);
+    await moveTo(p,E.x,E.floor(),1400,1);
+    if(isB){await wait(500);arr.setAttribute('opacity',1);const y0=p.y;await tween(2800,t=>{E.set(lerpP(IF0,IF1,t));p.at(E.x,lerp(y0,E.floor(),t));});await tween(600,t=>arr.setAttribute('opacity',1-t));}
+    else await wait(700);
+    (isB?sB:sA).textContent='معقّد الإنزيم–المادة المتفاعلة';
+    if(!(EA.bound&&EB.bound)){spawn('fit',500);
+      say(isB?'تحرّكت حواف الموقع النشط قليلًا حتى أحاطت بالمادة. اسحبي مادة أخرى إلى النموذج الثاني.':'دخلت المادة دون أن يتغيّر شكل الموقع النشط، فهو متمّم لها منذ البداية. اسحبي مادة أخرى إلى النموذج الثاني.','ok');}
+    else{qEnable();say('ارتبطت المادة بالنموذجين. اضغطي «إظهار الحدود الأصلية» وقارني، ثم أجيبي عن السؤال.','ok');}
+  }
+  panel.append(H(`<div class="card"><h3>المهمة</h3><ol>
+    <li>اسحبي المادة المتفاعلة التي يتمّم شكلها الموقع النشط إلى كل إنزيم.</li>
+    <li>راقبي حواف الموقع النشط لحظة الارتباط في النموذجين.</li>
+    <li>اعرضي الحدود الأصلية للموقع لتري موضع التغيّر.</li></ol>
+    <p style="margin-top:10px"><button class="btn line" id="ghostBtn" type="button" aria-pressed="false">إظهار الحدود الأصلية للموقع النشط</button></p></div>`));
+  const q=H(`<div class="card q"><h3>سؤال</h3><p>أيّ النموذجين يمثّل التلاؤم المستحث؟ أشيري إلى دليلكِ.</p>
+    <div class="choices"><button class="btn line" data-c="A" type="button" disabled>النموذج (أ)</button><button class="btn line" data-c="B" type="button" disabled>النموذج (ب)</button></div>
+    <p class="fb" id="fb1">اربطي المادة بالنموذجين أولًا.</p></div>`);
+  panel.append(q);
+  panel.append(H(`<div class="card book"><h3>من الكتاب</h3><p><b>القفل والمفتاح:</b> للموقع النشط شكل محدّد يتناسب تمامًا مع المادة المتفاعلة.</p><p style="margin:0"><b>التلاؤم المستحث (١٩٥٩م):</b> يمكن للإنزيم أن يغيّر شكله تغيّرًا طفيفًا عند دخول المادة المتفاعلة لضمان التلاؤم المثالي، دون أن يفقد تخصّصيته.</p></div>`));
+  const fb=q.querySelector('#fb1');
+  function qEnable(){q.querySelectorAll('[data-c]').forEach(b=>b.disabled=false);fb.textContent='اختاري النموذج.';}
+  let ghost=false;const gb=panel.querySelector('#ghostBtn');
+  function setGhost(v){ghost=v;[EA,EB].forEach(E=>E.ghostG.g.style.display=v?'':'none');gb.textContent=v?'إخفاء الحدود الأصلية':'إظهار الحدود الأصلية للموقع النشط';gb.setAttribute('aria-pressed',v);}
+  gb.onclick=()=>{setGhost(!ghost);if(ghost)say('الخط المنقّط هو حدود الموقع النشط قبل الارتباط. أين ابتعدت حدود الإنزيم عن الخط المنقّط؟');};
+  q.querySelectorAll('[data-c]').forEach(b=>b.onclick=()=>{
+    if(mode==='done')return;
+    if(b.dataset.c==='A'){fb.className='fb warn';fb.textContent='راجعي النموذج (أ): قارني حدوده بالخط المنقّط. هل تغيّر شكل موقعه النشط بعد الارتباط؟';mode='bind';}
+    else{fb.className='fb';fb.textContent='صحيح. الآن أشيري إلى دليلكِ: اضغطي في الرسم على الموضع الذي تغيّر.';mode='point';if(!ghost)setGhost(true);say('اضغطي على الموضع الذي تغيّر شكله عند الارتباط.');}
+  });
+  const marks=S('g',null,L3);
+  svg.addEventListener('pointerdown',e=>{if(mode!=='point')return;const p=svgPt(svg,e);
+    marks.innerHTML='';S('circle',{cx:p.x,cy:p.y,r:20,fill:'none',stroke:'#B0421A','stroke-width':4},marks);
+    const inB=Math.abs(p.x-735)<100&&p.y>170&&p.y<310,inA=Math.abs(p.x-265)<100&&p.y>170&&p.y<310;
+    if(inB){mode='done';marks.innerHTML='';ring(marks,735-49,232,30);ring(marks,735+49,232,30);
+      nmA.style.opacity=1;nmB.style.opacity=1;fb.className='fb ok';
+      fb.textContent='أحسنتِ! في النموذج (ب) كان الموقع النشط مختلفًا قليلًا قبل الارتباط (الخط المنقّط)، وعند ارتباط المادة تحرّكت حوافه نحوها فازداد التلاؤم. هذا هو التلاؤم المستحث. أمّا النموذج (أ) فيمثّل فرضية القفل والمفتاح.';
+      say('هذا هو الدليل: حواف الموقع النشط في (ب) ابتعدت عن حدودها الأصلية لتحيط بالمادة.','ok');ctx.done();}
+    else if(inA){fb.className='fb warn';fb.textContent='هذا الموقع النشط في النموذج (أ)، وحدوده منطبقة على الخط المنقّط، أي لم تتغيّر. ابحثي في النموذج (ب).';}
+    else{fb.className='fb warn';fb.textContent='ليس هنا. ابحثي عن حواف الموقع النشط التي ابتعدت عن الخط المنقّط.';}
+  });
+  say('اسحبي المادة المتفاعلة المناسبة من الصينية إلى الموقع النشط لأحد الإنزيمين.');
+  return{step(){const E=[EA,EB].find(E=>!E.bound);if(E&&curFit&&!curFit.locked)run(()=>bind(E,curFit));else if(!E){setGhost(!ghost);}}};
+}
+
+/* ======================= Station 2 ======================= */
+function st2(ctx){
+  const svg=ctx.svg,panel=ctx.panel;
+  const IF0={bw:76,d:44,s:.55,lift:0,W:125},IF1={bw:50,d:55,s:20/55,lift:10,W:125};
+  const L1=S('g',null,svg),L2=S('g',null,svg),L3=S('g',null,svg);
+  S('rect',{x:24,y:330,width:190,height:258,rx:22,class:'bin'},L1);T(L1,119,364,'النواتج','h2');
+  S('rect',{x:792,y:420,width:184,height:170,rx:22,class:'tray'},L1);T(L1,884,452,'مادة متفاعلة','h2');
+  const E=makeEnzyme(L1,{x:500,y:300,k:1.15,p:IF0});
+  const stT=T(L1,500,470,'إنزيم حرّ','state');
+  let phase='wait',sub=null,prods=null,cycles=0,made=0;
+  panel.append(H(`<div class="card"><h3>مراحل التفاعل</h3><ol class="steps" id="chips">
+    <li>١. تكوّن معقّد الإنزيم–المادة المتفاعلة</li><li>٢. تحوّل المادة: معقّد الإنزيم–النواتج</li><li>٣. تحرّر النواتج</li><li>٤. جزيء جديد للإنزيم نفسه</li></ol></div>`));
+  panel.append(H(`<div class="card"><div class="counter"><span>مرات عمل الإنزيم نفسه</span><b id="cyc">٠</b></div><div class="counter"><span>النواتج المتكوّنة</span><b id="made">٠</b></div></div>`));
+  const disc=H(`<div class="card q" hidden><h3>ماذا اكتشفتِ؟</h3><p>الإنزيم نفسه شارك في تفاعل جديد. لم يتغيّر شكله ولم يُستهلك بعد التفاعل، فيمكنه تحفيز التفاعل مرّات كثيرة. فمثلًا يفكّك جزيء إنزيم الكتاليز بيروكسيد الهيدروجين بمعدل ١٠ ملايين جزيء في الثانية.</p></div>`);
+  panel.append(disc);
+  const chips=[...panel.querySelectorAll('#chips li')];
+  function chip(i){chips.forEach((c,j)=>{c.className=j===i?'on':(j<i?'past':'');});}
+  function counters(){panel.querySelector('#cyc').textContent=ar(cycles);panel.querySelector('#made').textContent=ar(made);}
+  const binX=i=>62+(i%4)*40,binY=i=>428+Math.min(2,Math.floor(i/4))*58;
+  function spawn(){sub=subShape(L2,884,578,.85);sub.fade(0);tween(700,t=>sub.fade(t)).catch(()=>{});const r=ring(L2,884,532,56);sub.ring=r;
+    draggable(sub,svg,{dragK:1.15,drop:p=>{if(phase==='wait'&&Math.hypot(p.x-E.x,p.y-(E.y-10))<170)run(formES).then(ok=>{if(!ok&&phase==='wait')goHome(p);});else{goHome(p);say('أفلتي المادة فوق الموقع النشط للإنزيم.');}}});}
+  async function formES(){phase='busy';sub.locked=true;sub.g.classList.remove('drag');if(sub.ring)sub.ring.remove();chip(0);
+    say('ترتبط المادة المتفاعلة بالموقع النشط…');
+    if(sub.y>470)await moveTo(sub,sub.x-60,380,600,1.15);
+    await moveTo(sub,E.x,E.floor(),1400,1.15);await wait(300);
+    const y0=sub.y;await tween(2400,t=>{E.set(lerpP(IF0,IF1,t));sub.at(E.x,lerp(y0,E.floor(),t));});
+    stT.textContent='معقّد الإنزيم–المادة المتفاعلة';
+    say('تكوّن معقّد الإنزيم–المادة المتفاعلة: تغيّر شكل الموقع النشط قليلًا فأحاط بالمادة. اضغطي «خطوة واحدة».','ok');phase='ES';}
+  async function convert(){phase='busy';chip(1);say('تتحوّل المادة المتفاعلة إلى نواتج داخل الموقع النشط…');
+    const a=P(L2,sub.x,sub.y,1.15),b=P(L2,sub.x,sub.y,1.15);S('path',{d:HALF_L,class:'prodA'},a.g);S('path',{d:HALF_R,class:'prodB'},b.g);a.fade(0);b.fade(0);
+    const fl=S('circle',{cx:E.x,cy:E.floor()-55,r:10,class:'flash'},L3);
+    await tween(2000,t=>{sub.fade(1-t);a.fade(t);b.fade(t);fl.setAttribute('r',10+90*t);fl.setAttribute('opacity',1-t);});
+    fl.remove();sub.g.remove();sub=null;
+    await tween(800,t=>{a.at(E.x-4*t,E.floor());b.at(E.x+4*t,E.floor());});
+    prods=[a,b];stT.textContent='معقّد الإنزيم–النواتج';
+    say('تحوّلت المادة المتفاعلة إلى ناتجين ما زالا في الموقع النشط: هذا معقّد الإنزيم–النواتج. اضغطي «خطوة واحدة».','ok');phase='EP';}
+  async function release(){phase='busy';chip(2);say('تتحرّر النواتج من الموقع النشط…');
+    const[a,b]=prods;const ya=a.y;
+    await tween(2000,t=>{E.set(lerpP(IF1,IF0,t));a.at(E.x-4-70*t,ya-100*t,1.15,-20*t);b.at(E.x+4+70*t,ya-100*t,1.15,20*t);});
+    stT.textContent='إنزيم حرّ لم يتغيّر';
+    const i=made;await Promise.all([moveTo(a,binX(i),binY(i),1500,.42,0),moveTo(b,binX(i+1),binY(i+1),1500,.42,0)]);
+    made+=2;cycles++;counters();chip(3);
+    if(cycles===1)say('تحرّرت النواتج وعاد الموقع النشط إلى شكله الأصلي. اسحبي جزيئًا جديدًا من المادة المتفاعلة إلى الإنزيم نفسه.','ok');
+    else{say('عمل الإنزيم نفسه مرة أخرى دون أن يتغيّر. يمكنكِ الاستمرار بسحب جزيئات جديدة.','ok');disc.hidden=false;ctx.done();}
+    spawn();phase='wait';}
+  spawn();counters();chip(-1);
+  say('اسحبي المادة المتفاعلة البرتقالية إلى الموقع النشط، أو اضغطي «خطوة واحدة».');
+  return{step(){if(phase==='wait'&&sub)run(formES);else if(phase==='ES')run(convert);else if(phase==='EP')run(release);}};
+}
+
+/* ======================= Station 3 ======================= */
+let st3Tab='break';
+const A_D='M -48 0 L -2 0 L -2 -56 A 23 23 0 0 0 -48 -56 Z';
+const B_D='M 2 0 L 48 0 L 48 -56 L 25 -96 L 2 -56 Z';
+function st3(ctx){
+  const svg=ctx.svg,panel=ctx.panel;
+  const E0={bw:100,d:56,s:.25,lift:0,W:135},E1={bw:96,d:56,s:.05,lift:8,W:135};
+  const L1=S('g',null,svg),L2=S('g',null,svg),L3=S('g',null,svg);
+  const isBreak=st3Tab==='break';
+  T(L1,500,60,isBreak?'التجربة ١: تفكيك جزيء إلى ناتجين':'التجربة ٢: ربط جزيئين في ناتج واحد','h');
+  const E=makeEnzyme(L1,{x:500,y:290,k:1.1,p:E0});
+  const stT=T(L1,500,452,'إنزيم حرّ','state');
+  S('rect',{x:200,y:474,width:600,height:118,rx:24,class:'tray'},L1);
+  const mkA=(par,x,y,k)=>{const p=P(par,x,y,k);S('path',{d:A_D,class:'pA'},p.g);return p;};
+  const mkB=(par,x,y,k)=>{const p=P(par,x,y,k);S('path',{d:B_D,class:'pB'},p.g);return p;};
+  const mkBond=(par,x,y,k)=>{const p=P(par,x,y,k);S('rect',{x:-10,y:-35,width:20,height:13,rx:5,class:'bond'},p.g);return p;};
+  let pred=null,phase='wait';
+  const expected=isBreak?2:1;
+  panel.append(H(`<div class="tabs" role="tablist"><button class="btn ${isBreak?'':'line'}" data-t="break" type="button">التجربة ١: التفكيك</button><button class="btn ${isBreak?'line':''}" data-t="build" type="button">التجربة ٢: البناء</button></div>`));
+  panel.querySelectorAll('[data-t]').forEach(b=>b.onclick=()=>{if(st3Tab!==b.dataset.t){st3Tab=b.dataset.t;ctx.reload();}});
+  const pc=H(`<div class="card q"><h3>توقّعي قبل التشغيل</h3><p>${isBreak?'سيدخل جزيء واحد من المادة المتفاعلة إلى الموقع النشط.':'سيدخل جزيئان من المادة المتفاعلة إلى الموقع النشط.'} كم جزيئًا سينتج في نهاية التجربة؟</p>
+    <div class="choices"><button class="btn line" data-n="1" type="button">١</button><button class="btn line" data-n="2" type="button">٢</button><button class="btn line" data-n="3" type="button">٣</button></div><p class="fb" id="pfb"></p></div>`);
+  panel.append(pc);
+  const res=H(`<div class="card" hidden><h3>النتيجة</h3><div class="counter"><span>عدد الجزيئات الناتجة</span><b id="rn">٠</b></div><p class="fb" id="rfb"></p></div>`);panel.append(res);
+  panel.append(H(`<div class="card book"><h3>من الكتاب</h3><p style="margin:0">${isBreak?'الشكل ٣-١: يحفّز الإنزيم تفكيك جزيء المادة المتفاعلة إلى جزيئين ناتجين، ثم يتحرّر الإنزيم دون أي تغيير ليرتبط بجزيء آخر.':'الشكل ٣-٢: يحفّز الإنزيم ارتباط جزيئين معًا، مثل تكوين ثنائي الببتيد من حمضين أمينيين. قد يتغيّر شكل الإنزيم قليلًا عند ارتباطه بالمادة المتفاعلة، لكنه يعود إلى شكله السابق بعد تحفيز التفاعل.'}</p></div>`));
+  const pfb=pc.querySelector('#pfb');
+  pc.querySelectorAll('[data-n]').forEach(b=>b.onclick=()=>{if(phase!=='wait'||(placed&&placed>0))return;pred=+b.dataset.n;pc.querySelectorAll('[data-n]').forEach(x=>x.setAttribute('aria-pressed',x===b?'true':'false'));pfb.className='fb';pfb.textContent='توقّعكِ: '+ar(pred)+'. شغّلي التجربة الآن.';say(isBreak?'اسحبي الجزيء إلى الموقع النشط، أو اضغطي «خطوة واحدة».':'اسحبي الجزيئين إلى الموقع النشط واحدًا تلو الآخر، أو اضغطي «خطوة واحدة».');});
+  const need=()=>pred!==null,blocked=()=>say('سجّلي توقّعكِ أولًا: كم جزيئًا سينتج؟','warn');
+  const near=p=>Math.hypot(p.x-E.x,p.y-(E.y-10))<170;
+  function result(n,labels){res.hidden=false;res.querySelector('#rn').textContent=ar(n);const rf=res.querySelector('#rfb');
+    if(pred===n){rf.className='fb ok';rf.textContent='توقّعكِ صحيح ✓ '+(isBreak?'تفكّك جزيء واحد إلى ناتجين.':'ارتبط جزيئان في ناتج واحد.');}
+    else{rf.className='fb warn';rf.textContent='توقّعتِ '+ar(pred)+'، والنتيجة '+ar(n)+'. '+(isBreak?'تتبّعي الألوان: الجزء البرتقالي والجزء الذهبي انفصلا فصارا ناتجين.':'تتبّعي الألوان: الجزء البرتقالي والجزء الذهبي ارتبطا فصارا ناتجًا واحدًا.');}
+    ctx.markSub(st3Tab);}
+  let placed=0;
+  if(isBreak){
+    const M=P(L2,500,584,.9);const a=mkA(M.g,0,0,1),b=mkB(M.g,0,0,1),bd=mkBond(M.g,0,0,1);
+    T(L2,500,500,'جزيء واحد من المادة المتفاعلة','mini');
+    draggable(M,svg,{dragK:1.1,can:need,blocked,drop:p=>{if(phase==='wait'&&near(p))run(dock).then(ok=>{if(!ok&&phase==='wait')goHome(p);});else{goHome(p);if(phase==='wait')say('أفلتي الجزيء فوق الموقع النشط.');}}});
+    async function dock(){phase='busy';placed=1;M.locked=true;M.g.classList.remove('drag');say('يدخل الجزيء الموقع النشط…');
+      if(M.y>470)await moveTo(M,M.x,400,600,1.1);
+      await moveTo(M,E.x,E.floor(),1400,1.1);await tween(1800,t=>E.set(lerpP(E0,E1,t)));
+      stT.textContent='معقّد الإنزيم–المادة المتفاعلة';say('تكوّن معقّد الإنزيم–المادة المتفاعلة. اضغطي «خطوة واحدة» وراقبي الرابطة البيضاء بين الجزأين.','ok');phase='ES';}
+    async function split(){phase='busy';say('تضعف الرابطة بين الجزأين ثم تنكسر…');
+      await tween(1600,t=>{const s=Math.sin(t*70)*2.6;a.at(-s*.5,0);b.at(s*.5,0);});
+      await tween(900,t=>{bd.fade(1-t);bd.at(0,0,1+t*.7);a.at(-5*t,0);b.at(5*t,0);});
+      stT.textContent='معقّد الإنزيم–النواتج';say('انكسرت الرابطة، والناتجان ما زالا في الموقع النشط: معقّد الإنزيم–النواتج. اضغطي «خطوة واحدة».','ok');phase='EP';}
+    async function rel(){phase='busy';say('يتحرّر الناتجان ويعود الإنزيم إلى شكله…');
+      const lx=gx=>(gx-M.x)/M.k,ly=gy=>(gy-M.y)/M.k;
+      await tween(1800,t=>{E.set(lerpP(E1,E0,t));a.at(lerp(-5,-40,t),lerp(0,-70,t),1,-10*t);b.at(lerp(5,40,t),lerp(0,-70,t),1,10*t);});
+      await Promise.all([moveTo(a,lx(220),ly(250),1600,1/M.k,-8),moveTo(b,lx(780),ly(250),1600,1/M.k,8)]);
+      tag(L3,220-25+25,290,'ناتج ١','o');tag(L3,780,290,'ناتج ٢','o');
+      stT.textContent='إنزيم حرّ لم يتغيّر';say('تفكّك جزيء واحد إلى ناتجين، وتحرّر الإنزيم دون تغيير.','ok');phase='done';result(2);}
+    say('قبل التشغيل: سجّلي توقّعكِ في اللوحة الجانبية.');
+    return{step(){if(!need())return blocked();if(phase==='wait')run(dock);else if(phase==='ES')run(split);else if(phase==='EP')run(rel);}};
+  }else{
+    const a=mkA(L2,330,584,.9),b=mkB(L2,670,584,.9);let inA=false,inB=false,bd=null;
+    T(L2,330,500,'الجزيء الأول','mini');T(L2,670,500,'الجزيء الثاني','mini');
+    const onDrop=p=>{if(phase==='wait'&&near(p))run(()=>place(p)).then(ok=>{if(!ok&&!p.locked)goHome(p);});else{goHome(p);if(phase==='wait')say('أفلتي الجزيء فوق الموقع النشط.');}};
+    draggable(a,svg,{dragK:1.1,can:need,blocked,drop:onDrop});draggable(b,svg,{dragK:1.1,can:need,blocked,drop:onDrop});
+    async function place(p){p.locked=true;p.g.classList.remove('drag');placed++;
+      if(p.y>470)await moveTo(p,p.x,400,600,1.1);
+      await moveTo(p,E.x,E.floor(),1300,1.1);if(p===a)inA=true;else inB=true;
+      if(inA&&inB){phase='busy';await tween(1800,t=>E.set(lerpP(E0,E1,t)));stT.textContent='معقّد الإنزيم–المادة المتفاعلة';say('الجزيئان معًا في الموقع النشط: معقّد الإنزيم–المادة المتفاعلة. اضغطي «خطوة واحدة» لترَي ارتباطهما.','ok');phase='ES';}
+      else say('ممتاز. ضعي الجزيء الآخر في الموقع النشط.');}
+    async function join(){phase='busy';say('تتكوّن رابطة بين الجزيئين…');
+      bd=mkBond(L2,E.x,E.floor(),1.1);bd.fade(0);const fl=S('circle',{cx:E.x,cy:E.floor()-31,r:6,class:'flash'},L3);
+      await tween(1600,t=>{bd.fade(t);fl.setAttribute('r',6+60*t);fl.setAttribute('opacity',1-t);});fl.remove();
+      stT.textContent='معقّد الإنزيم–الناتج';say('ارتبط الجزيئان برابطة جديدة وتكوّن ناتج واحد داخل الموقع النشط. اضغطي «خطوة واحدة».','ok');phase='EP';}
+    async function rel(){phase='busy';say('يتحرّر الناتج ويعود الإنزيم إلى شكله…');
+      const y0=a.y;await tween(1800,t=>{E.set(lerpP(E1,E0,t));[a,b,bd].forEach(p=>p.at(E.x,y0-60*t,1.1));});
+      await Promise.all([a,b,bd].map(p=>moveTo(p,800,250,1600,1,10)));
+      tag(L3,800,290,'ناتج واحد','o');
+      stT.textContent='إنزيم حرّ لم يتغيّر';say('ارتبط جزيئان في ناتج واحد، وتحرّر الإنزيم بشكله السابق.','ok');phase='done';result(1);}
+    say('قبل التشغيل: سجّلي توقّعكِ في اللوحة الجانبية.');
+    return{step(){if(!need())return blocked();if(phase==='wait'){const p=!inA&&!a.locked?a:(!inB&&!b.locked?b:null);if(p)run(()=>place(p));}else if(phase==='ES')run(join);else if(phase==='EP')run(rel);}};
+  }
+}
+
+/* ======================= Station 4 ======================= */
+function st4(ctx){
+  const svg=ctx.svg,panel=ctx.panel;
+  const LEVELS=['قطرة الدمع','داخل القطرة','جدار الخلية البكتيرية','الموقع النشط لليزوزيم','البكتيريا كاملة'];
+  const LZ0={bw:220,d:42,s:.45,lift:0,W:180},LZ1={bw:214,d:42,s:.3,lift:6,W:180};
+  const CUTS=[[1,4],[0,2],[2,6],[0,6],[2,1],[1,7],[1,1],[0,4],[2,4],[0,7],[2,3],[1,3]];
+  let level=-1,visited=0,cuts=0,sceneG=null,E3=null,chain=null,docked=false,burst=false,insetG=null,cellG=null;
+  const root=S('g',null,svg);
+  panel.append(H(`<div class="card"><h3>مسار التكبير</h3><div class="crumbs" id="crumbs"></div></div>`));
+  panel.append(H(`<div class="card"><div class="counter"><span>روابط قطعها الليزوزيم</span><b id="cutN">٠</b></div><p style="font-size:15px;color:var(--muted)">كرّري القطع ثلاث مرات على الأقل، ثم اعرضي البكتيريا كاملة.</p><button class="btn orange" id="wholeBtn" type="button" disabled>عرض البكتيريا كاملة</button></div>`));
+  const qc=H(`<div class="card q" hidden><h3>سؤال</h3><p>كيف أدّى قطع روابط صغيرة في السلسلة إلى إضعاف الجدار؟</p><label for="ans4" style="font-size:14px;color:var(--muted)">اكتبي إجابتكِ</label><textarea id="ans4"></textarea><p style="margin-top:8px"><button class="btn line small" id="model4" type="button">إظهار الإجابة النموذجية</button></p><div class="model" hidden id="m4">يتكوّن جدار الخلية البكتيرية من سلاسل ببتيدوجلايكان مترابطة تعطيه صلابته. يفكّك الليزوزيم الروابط بين وحدات السكر في هذه السلاسل بالتحلّل المائي، ومع تكرار القطع في مواضع كثيرة تتحوّل السلاسل الطويلة إلى أجزاء قصيرة فتفقد الشبكة تماسكها. يضعف الجدار فلا يقاوم ضغط الماء الداخل إلى الخلية بالأسموزية، فتنتفخ الخلية وتنفجر.</div></div>`);
+  panel.append(qc);
+  panel.append(H(`<div class="card book"><h3>من الكتاب</h3><p style="margin:0">يتشكّل الليزوزيم في الدموع واللعاب وإفرازات أخرى، ويعمل كدفاع طبيعي ضد البكتيريا بتفكيك سلاسل الببتيدوجلايكان المكوّنة لجدران خلاياها. عندما تتفكّك السلاسل تفقد الجدران صلابتها وتنفجر الخلية البكتيرية بالأسموزية.</p></div>`));
+  qc.querySelector('#model4').onclick=()=>{qc.querySelector('#m4').hidden=false;};
+  const wholeBtn=panel.querySelector('#wholeBtn');wholeBtn.onclick=()=>run(()=>go(4,{x:500,y:300}));
+  function crumbs(){const c=panel.querySelector('#crumbs');c.innerHTML='';LEVELS.forEach((n,i)=>{const b=H(`<button type="button">${ar(i+1)}. ${n}</button>`);if(i===level)b.className='on';b.disabled=i===4?cuts<3:i>visited;b.onclick=()=>{if(i!==level)run(()=>go(i));};c.append(b);});
+    panel.querySelector('#cutN').textContent=ar(cuts);wholeBtn.disabled=cuts<3;}
+  async function go(n,f){f=f||{x:500,y:300};
+    if(sceneG){const old=sceneG;await tween(1200,t=>{const k=1+t*2.4;old.setAttribute('transform',`translate(${f.x} ${f.y}) scale(${k}) translate(${-f.x} ${-f.y})`);old.setAttribute('opacity',1-t);});old.remove();}
+    level=n;visited=Math.max(visited,n);sceneG=S('g',null,root);SC[n](sceneG);crumbs();
+    await tween(800,t=>{const k=.8+.2*t;sceneG.setAttribute('transform',`translate(500 300) scale(${k}) translate(-500 -300)`);sceneG.setAttribute('opacity',t);});
+    sceneG.removeAttribute('transform');}
+  function dropD(cx,cy,r){return `M ${cx} ${cy-1.9*r} C ${cx+.35*r} ${cy-1.3*r} ${cx+r} ${cy-.75*r} ${cx+r} ${cy} A ${r} ${r} 0 1 1 ${cx-r} ${cy} C ${cx-r} ${cy-.75*r} ${cx-.35*r} ${cy-1.3*r} ${cx} ${cy-1.9*r} Z`;}
+  function bacterium(par,x,y,rot,k){const g=S('g',{transform:`translate(${x} ${y}) rotate(${rot}) scale(${k||1})`},par);S('rect',{x:-60,y:-22,width:120,height:44,rx:22,fill:'#9BCF92',stroke:'#3E8E4A','stroke-width':5},g);[[-30,-4],[0,6],[26,-6]].forEach(([a,b])=>S('circle',{cx:a,cy:b,r:5,fill:'#3E8E4A',opacity:.5},g));return g;}
+  const SC=[
+    g=>{ // tear
+      S('path',{d:'M 255 130 Q 500 40 745 120',fill:'none',stroke:'#4A3626','stroke-width':16,'stroke-linecap':'round'},g);
+      S('path',{d:'M 250 260 Q 500 90 750 260 Q 500 400 250 260 Z',fill:'#fff',stroke:'#4A3626','stroke-width':6},g);
+      S('circle',{cx:500,cy:252,r:80,fill:'#7A4E2D'},g);S('circle',{cx:500,cy:252,r:38,fill:'#1d140e'},g);S('circle',{cx:524,cy:228,r:14,fill:'#fff'},g);
+      for(let i=0;i<9;i++){const t=.12+i*.095,x=lerp(lerp(250,500,t),lerp(500,750,t),t),y=lerp(lerp(260,90,t),lerp(90,260,t),t);S('line',{x1:x,y1:y,x2:x+(x-500)*.06,y2:y-26,stroke:'#4A3626','stroke-width':5,'stroke-linecap':'round'},g);}
+      const tr=S('g',{class:'tap'},g);S('path',{d:dropD(610,420,48),fill:'#BFE4F8',stroke:'#4FA3D1','stroke-width':4},tr);S('ellipse',{cx:596,cy:410,rx:9,ry:16,fill:'#fff',opacity:.8},tr);ring(tr,610,400,80);
+      tag(g,610,540,'قطرة دمع: اضغطي عليها للتكبير','o');
+      tr.addEventListener('click',()=>run(()=>go(1,{x:610,y:400})));
+    },
+    g=>{ // inside drop
+      S('path',{d:dropD(500,395,190),fill:'#E2F3FC',stroke:'#7EC3E8','stroke-width':5},g);
+      for(let i=0;i<26;i++){const a=i*2.4,r=40+(i*37)%150;S('circle',{cx:500+Math.cos(a)*r*.9,cy:400+Math.sin(a)*r*.75,r:3,fill:'#9DD2EE'},g);}
+      [[410,300],[590,330],[430,470],[640,450],[520,240],[360,390]].forEach(([x,y],i)=>{const b=S('g',{class:'bob',style:`animation-delay:${-i*.5}s`},g);makeEnzyme(b,{x,y,k:.2,p:LZ0});});
+      bacterium(g,560,535-60,-12,.9);bacterium(g,380,520-40,18,.8);
+      const tb=S('g',{class:'tap'},g);bacterium(tb,520,380,6,1);ring(tb,520,380,72);
+      tag(g,300,240,'ليزوزيم','');tag(g,520,320,'بكتيريا: اضغطي للتكبير','o');tag(g,830,180,'ماء الدمع','');
+      tb.addEventListener('click',()=>run(()=>go(2,{x:520,y:380})));
+    },
+    g=>{ // wall mesh
+      S('rect',{x:60,y:110,width:880,height:400,rx:30,fill:'#F1F8EE',stroke:'#9CCB98','stroke-width':3},g);
+      T(g,500,90,'جدار الخلية البكتيرية: سلاسل ببتيدوجلايكان مترابطة','lbl');
+      for(let r=0;r<4;r++){const y=180+r*85;
+        for(let i=0;i<17;i++)S('line',{x1:120+i*44,y1:y,x2:164+i*44,y2:y,class:'glyc'},g);
+        if(r<3)for(let i=0;i<18;i++)if((i+r)%3===0)S('line',{x1:120+i*44,y1:y+15,x2:120+i*44,y2:y+70,class:'cross'},g);
+        for(let i=0;i<18;i++)S('circle',{cx:120+i*44,cy:y,r:15,fill:i%2?'#F9B66B':'#F28C28',stroke:'#B25A0E','stroke-width':2.5},g);}
+      const fr=S('g',{class:'tap'},g);S('rect',{x:376,y:236,width:256,height:58,rx:16,fill:'#fff','fill-opacity':.01,stroke:'#B25A0E','stroke-width':4,'stroke-dasharray':'10 7'},fr);ring(fr,504,265,70);
+      const lb=S('g',{class:'bob'},g);makeEnzyme(lb,{x:760,y:150,k:.3,p:LZ0});
+      tag(g,250,545,'وحدات سكر (سلسلة)','o');tag(g,720,545,'روابط بين السلاسل','');tag(g,504,215,'اضغطي لتكبير هذا الجزء','o');
+      fr.addEventListener('click',()=>run(()=>go(3,{x:504,y:265})));
+    },
+    g=>{ // active site
+      const lyE=S('g',null,g),lyM=S('g',null,g),lyT=S('g',null,g);g._ly={lyM,lyT};
+      E3=makeEnzyme(lyE,{x:500,y:395,k:1.3,p:LZ0});T(lyE,500,575,'إنزيم الليزوزيم: الأخدود هو الموقع النشط','state');
+      insetG=S('g',null,g);drawInset();
+      spawnChain(lyM);
+    },
+    g=>{ // whole bacterium
+      cellG=S('g',null,g);
+      S('rect',{x:250,y:205,width:500,height:190,rx:95,class:'cell'},cellG);
+      for(let i=0;i<40;i++){const a=i*2.39,r=(i*29)%80;S('circle',{cx:500+Math.cos(a)*r*2.6,cy:300+Math.sin(a)*r*.95,r:5,fill:'#3E8E4A',opacity:.45,class:'dot'},cellG);}
+      const w=Math.min(cuts,9);const wall=S('rect',{x:250,y:205,width:500,height:190,rx:95,class:'wall','stroke-dasharray':`${70-5*w} ${6+5*w}`},cellG);cellG._wall=wall;
+      g._water=[];for(let i=0;i<18;i++){const a=i/18*Math.PI*2,x=500+Math.cos(a)*400,y=300+Math.sin(a)*190;const m=P(g,x,y,1);S('circle',{cx:0,cy:0,r:9,class:'h2o'},m.g);m.a=a;g._water.push(m);}
+      const ar1=S('g',{opacity:0},g);g._arr=ar1;
+      [[150,300,225,300],[850,300,775,300],[500,80,500,170],[500,525,500,435]].forEach(([a,b,c,d])=>S('line',{x1:a,y1:b,x2:c,y2:d,stroke:'#2F7FC4','stroke-width':6,'marker-end':'url(#arwB)'},ar1));
+      tag(ar1,500,58,'دخول الماء بالأسموزية','');
+      tag(g,500,450+40,cuts>=3?'جدار ضعيف بعد قطع '+ar(cuts)+' روابط':'جدار الخلية','o');
+    }
+  ];
+  function drawInset(){insetG.innerHTML='';S('rect',{x:24,y:24,width:236,height:126,rx:14,class:'inset'},insetG);T(insetG,142,46,'جزء من الجدار','mini');
+    const cut=new Set(CUTS.slice(0,cuts).map(c=>c.join('-')));
+    for(let r=0;r<3;r++){const y=74+r*28;for(let i=0;i<8;i++){if(!cut.has(r+'-'+i))S('line',{x1:44+i*24,y1:y,x2:68+i*24,y2:y,stroke:'#8A4B12','stroke-width':3},insetG);else{const x=56+i*24;S('path',{d:`M ${x-5} ${y-5} L ${x+5} ${y+5} M ${x+5} ${y-5} L ${x-5} ${y+5}`,stroke:'#D2402F','stroke-width':3},insetG);}}
+      for(let i=0;i<9;i++)S('circle',{cx:44+i*24,cy:y,r:7,fill:i%2?'#F9B66B':'#F28C28'},insetG);}}
+  function spawnChain(ly){const c=P(ly,500,150,1);
+    S('line',{x1:-21,y1:0,x2:21,y2:0,class:'glyc'},c.g);const bondL=c.g.lastChild;
+    const Lg=P(c.g,0,0,1),Rg=P(c.g,0,0,1);
+    for(let i=0;i<5;i++){if(i===2)continue;const x=(i-2.5)*42;S('line',{x1:x,y1:0,x2:x+42,y2:0,class:'glyc'},i<2?Lg.g:Rg.g);}
+    for(let i=0;i<6;i++){S('circle',{cx:(i-2.5)*42,cy:0,r:17,fill:i%2?'#F9B66B':'#F28C28',stroke:'#B25A0E','stroke-width':2.5},i<3?Lg.g:Rg.g);}
+    const lab=tag(c.g,0,-46,'جزء من سلسلة الببتيدوجلايكان: اسحبيه إلى الموقع النشط','o');
+    c.parts={Lg,Rg,bondL,lab};chain=c;docked=false;c.fade(0);tween(600,t=>c.fade(t)).catch(()=>{});
+    draggable(c,svg,{drop:p=>{if(!docked&&Math.hypot(p.x-E3.x,p.y-(E3.floor()-18))<140)run(dockChain).then(ok=>{if(!ok&&!docked)goHome(p);});else{goHome(p);say('أفلتي السلسلة داخل الأخدود (الموقع النشط) لليزوزيم.');}}});}
+  async function dockChain(){const c=chain;c.locked=true;c.g.classList.remove('drag');c.parts.lab.style.display='none';say('تدخل السلسلة الأخدود في الليزوزيم…');
+    await moveTo(c,E3.x,E3.floor()-18,1400,1);await tween(1500,t=>E3.set(lerpP(LZ0,LZ1,t)));docked=true;
+    say('استقرت السلسلة في الموقع النشط وتغيّر شكله قليلًا ليحيط بها. اضغطي «خطوة واحدة» لبدء التحلّل المائي.','ok');}
+  async function hydrolyze(){const c=chain,ly=sceneG._ly;say('يقترب جزيء ماء من الرابطة بين وحدتي السكر…');
+    const w=P(ly.lyT,880,130,1);S('circle',{cx:0,cy:0,r:19,fill:'#3B8FD9'},w.g);S('circle',{cx:-17,cy:13,r:10,fill:'#fff',stroke:'#3B8FD9','stroke-width':3},w.g);S('circle',{cx:17,cy:13,r:10,fill:'#fff',stroke:'#3B8FD9','stroke-width':3},w.g);T(w.g,0,-28,'H₂O','chem');
+    await moveTo(w,c.x,c.y-70,1800,1);await wait(300);
+    const fl=S('circle',{cx:c.x,cy:c.y,r:6,class:'flash'},ly.lyT);
+    await tween(1200,t=>{w.at(c.x,lerp(c.y-70,c.y,t),1-t*.7);w.fade(1-t);fl.setAttribute('r',6+40*t);fl.setAttribute('opacity',1-t);c.parts.bondL.setAttribute('opacity',1-t);});w.g.remove();fl.remove();
+    T(c.parts.Lg.g,-6,-26,'OH','chem');T(c.parts.Rg.g,6,-26,'H','chem');
+    await tween(1300,t=>{c.parts.Lg.at(-34*t,0,1,-6*t);c.parts.Rg.at(34*t,0,1,6*t);});
+    say('انكسرت الرابطة بإضافة جزيء ماء: هذا هو التحلّل المائي. تنفصل القطعتان…','ok');
+    await tween(1600,t=>{E3.set(lerpP(LZ1,LZ0,t));c.parts.Lg.at(lerp(-34,-330,t),-140*t,1,lerp(-6,-30,t));c.parts.Rg.at(lerp(34,330,t),-140*t,1,lerp(6,30,t));c.fade(1-t*.9);});
+    c.g.remove();chain=null;docked=false;cuts++;drawInset();crumbs();
+    if(cuts<3)say('قُطعت رابطة واحدة، وظهر موضعها في جزء الجدار أعلى الرسم. كرّري العملية مع جزء جديد من السلسلة.','ok');
+    else say('قطع الليزوزيم '+ar(cuts)+' روابط في سلاسل الجدار. كرّري إن شئتِ، أو اضغطي «عرض البكتيريا كاملة».','ok');
+    await wait(500);spawnChain(ly.lyM);}
+  async function burstAnim(){const g=sceneG;burst=true;say('يدخل الماء إلى الخلية بالأسموزية…');
+    await tween(700,t=>g._arr.setAttribute('opacity',t));
+    await tween(2600,t=>{g._water.forEach(m=>{const r=lerp(1,.62,t);m.at(500+Math.cos(m.a)*400*r,300+Math.sin(m.a)*190*r);m.fade(1-t*.6);});});
+    say('تنتفخ الخلية، والجدار الضعيف لا يقاوم الضغط…');
+    const w=Math.min(cuts,9);
+    await tween(2200,t=>{const k=1+.16*t;cellG.setAttribute('transform',`translate(500 300) scale(${k}) translate(-500 -300)`);cellG._wall.setAttribute('stroke-dasharray',`${(70-5*w)*(1-.35*t)} ${(6+5*w)*(1+1.4*t)}`);});
+    const frags=[];for(let i=0;i<14;i++){const a=i/14*Math.PI*2;const f=P(g,500+Math.cos(a)*290,300+Math.sin(a)*112,1);S('line',{x1:-26,y1:0,x2:26,y2:0,stroke:'#3E8E4A','stroke-width':14,'stroke-linecap':'round'},f.g);f.r=(a*180/Math.PI)+90;f.at(f.x,f.y,1,f.r);f.a=a;frags.push(f);}
+    const dots=[...cellG.querySelectorAll('.dot')];const d0=dots.map(d=>[+d.getAttribute('cx'),+d.getAttribute('cy')]);
+    cellG._wall.style.display='none';
+    await tween(1800,t=>{frags.forEach(f=>{f.at(500+Math.cos(f.a)*(290+150*t),300+Math.sin(f.a)*(112+120*t),1,f.r+40*t);f.fade(1-t*.5);});cellG.firstChild.setAttribute('opacity',1-t);dots.forEach((d,i)=>{d.setAttribute('cx',500+(d0[i][0]-500)*(1+1.2*t));d.setAttribute('cy',300+(d0[i][1]-300)*(1+1.6*t));});});
+    tag(g,500,300,'انفجرت الخلية البكتيرية','ok');
+    say('ضعُف الجدار بعد قطع سلاسله، فلم يقاوم ضغط الماء الداخل بالأسموزية وانفجرت الخلية. أجيبي عن السؤال في اللوحة الجانبية.','ok');
+    qc.hidden=false;ctx.done();}
+  run(()=>go(0));
+  say('ابدئي بقطرة الدمع: اضغطي عليها أو على «خطوة واحدة» للتكبير.');
+  return{step(){if(level===0)run(()=>go(1,{x:610,y:400}));else if(level===1)run(()=>go(2,{x:520,y:380}));else if(level===2)run(()=>go(3,{x:504,y:265}));
+    else if(level===3){if(chain&&docked)run(hydrolyze);else if(cuts>=3)run(()=>go(4));else if(chain)run(dockChain);}
+    else if(level===4&&!burst)run(burstAnim);}};
+}
+
+/* ======================= Station 5 ======================= */
+function st5(ctx){
+  const svg=ctx.svg,panel=ctx.panel;
+  const GX0=130,GX1=920,GY0=60,GY1=515,yR=380,yP=460,pkU=120,pkC=292,pkX=520;
+  let phase='predict',pred=null;
+  const L1=S('g',null,svg),L2=S('g',null,svg),L3=S('g',null,svg);
+  const cards=S('g',null,L1);
+  function pcard(x,title,withE,key){const g=S('g',{class:'pcard-g tap'},cards);S('rect',{x,y:110,width:400,height:350,rx:26,class:'pcard'},g);T(g,x+200,160,title,'h');
+    const th=S('g',{transform:`translate(${x+60} 250)`},g);S('rect',{x:-9,y:-60,width:18,height:80,rx:9,fill:'#fff',stroke:'#655C7A','stroke-width':3},th);S('circle',{cx:0,cy:30,r:16,fill:'#D2402F'},th);S('rect',{x:-4,y:-30,width:8,height:56,fill:'#D2402F'},th);
+    T(g,x+60,310,'٣٧°س','lbl');
+    for(let i=0;i<3;i++){const m=S('g',{transform:`translate(${x+170+i*58} ${withE?222:250})`},g);S('circle',{cx:-11,cy:0,r:14,fill:'#E25B4B'},m);S('circle',{cx:11,cy:0,r:14,fill:'#E25B4B'},m);S('circle',{cx:-24,cy:-12,r:8,fill:'#fff',stroke:'#C9C2DA','stroke-width':2},m);S('circle',{cx:24,cy:12,r:8,fill:'#fff',stroke:'#C9C2DA','stroke-width':2},m);}
+    if(withE)makeEnzyme(g,{x:x+228,y:310,k:.36,p:{bw:76,d:44,s:.55,lift:0,W:125}});
+    T(g,x+200,400,'بيروكسيد الهيدروجين ← ماء + أكسجين','mini');
+    T(g,x+200,436,'اضغطي لاختيار هذا المسار','mini');
+    g.addEventListener('click',()=>{if(phase!=='predict'&&phase!=='predicted')return;pred=key;cards.querySelectorAll('.pcard-g').forEach(c=>c.classList.toggle('sel',c===g));phase='predicted';
+      say('سجّلتِ توقّعكِ. اضغطي «خطوة واحدة» لإظهار المنحنيين على المحورين نفسيهما.','ok');pfb.textContent='توقّعكِ: '+(key==='C'?'المسار بوجود الإنزيم':'المسار بدون إنزيم')+'.';});
+    return g;}
+  T(cards,500,64,'التفاعل نفسه عند درجة الحرارة نفسها','h2');
+  pcard(70,'بدون إنزيم',false,'U');pcard(530,'بوجود الإنزيم',true,'C');
+  const pc=H(`<div class="card q"><h3>توقّعي أولًا</h3><p>التفاعل نفسه يحدث في المسارين عند درجة الحرارة نفسها. أيّ المسارين طاقة تنشيطه أقل؟ اضغطي على البطاقة التي تتوقّعينها.</p><p class="fb" id="pfb5"></p></div>`);panel.append(pc);const pfb=pc.querySelector('#pfb5');
+  const task=H(`<div class="card" hidden><h3>ارسمي أسهم طاقة التنشيط</h3><p id="taskTxt"></p><p class="fb" id="afb"></p></div>`);panel.append(task);
+  const extra=H(`<div class="card" hidden><h3>عند درجة الحرارة نفسها</h3><p style="font-size:15px">كل نقطة جزيء من المادة المتفاعلة، وارتفاعها يمثّل طاقته. الجزيئات فوق الخط تملك طاقة كافية لتجاوز قمّة المنحنى.</p><svg class="mol-fig" id="molFig" viewBox="0 0 320 200" role="img" aria-label="مقارنة عدد الجزيئات التي تملك طاقة كافية في المسارين"></svg></div>`);panel.append(extra);
+  const fq=H(`<div class="card q" hidden><h3>السؤال الختامي</h3><p>كيف يفسّر الفرق بين السهمين زيادة معدل التفاعل بوجود الإنزيم؟</p><label for="ans5" style="font-size:14px;color:var(--muted)">اكتبي إجابتكِ</label><textarea id="ans5"></textarea><p style="margin-top:8px"><button class="btn line small" id="model5" type="button">إظهار الإجابة النموذجية</button></p><div class="model" hidden id="m5">سهم طاقة التنشيط بوجود الإنزيم أقصر، أي أن الإنزيم يخفض الطاقة اللازمة لتحويل المادة المتفاعلة إلى ناتج، مع بقاء مستويي طاقة المتفاعلات والنواتج كما هما. لذلك يمتلك عدد أكبر من الجزيئات عند درجة الحرارة نفسها طاقة كافية لتجاوز القمة المنخفضة، فتتحوّل جزيئات أكثر إلى نواتج في وحدة الزمن، فيزداد معدل التفاعل دون حاجة إلى رفع درجة الحرارة.</div></div>`);panel.append(fq);
+  fq.querySelector('#model5').onclick=()=>{fq.querySelector('#m5').hidden=false;};
+  panel.append(H(`<div class="card book"><h3>من الكتاب</h3><p style="margin:0"><b>طاقة التنشيط:</b> الطاقة التي يجب توفيرها لحدوث التفاعل. تخفض الإنزيمات طاقة التنشيط اللازمة لتحويل المادة المتفاعلة إلى ناتج، فتحدث التفاعلات المحفّزة بالإنزيمات بسرعة في درجة حرارة أقل بكثير ممّا تحتاج إليه أي طريقة أخرى.</p></div>`));
+  const curveD=pk=>`M ${GX0+4} ${yR} L 300 ${yR} C 430 ${yR} 450 ${pk} ${pkX} ${pk} C 590 ${pk} 610 ${yP} 740 ${yP} L ${GX1-14} ${yP}`;
+  const ax={U:pkX-24,C:pkX+24},pk={U:pkU,C:pkC};
+  let cU,cC,cur=null,drawing=null;
+  async function reveal(){phase='busy';say('يظهر المنحنيان على المحورين نفسيهما…');
+    await tween(900,t=>cards.setAttribute('opacity',1-t));cards.remove();
+    for(let y=GY0+40;y<GY1;y+=40)S('line',{x1:GX0,y1:y,x2:GX1,y2:y,class:'grid-l'},L1);
+    S('line',{x1:GX0,y1:GY1,x2:GX0,y2:GY0,class:'axis','marker-end':'url(#arwK)'},L1);S('line',{x1:GX0,y1:GY1,x2:GX1,y2:GY1,class:'axis','marker-end':'url(#arwK)'},L1);
+    const yl=T(L1,0,0,'الطاقة','axis-l');yl.setAttribute('transform',`translate(${GX0-40} ${(GY0+GY1)/2}) rotate(-90)`);T(L1,(GX0+GX1)/2,GY1+52,'سير التفاعل','axis-l');
+    S('line',{x1:GX0,y1:yR,x2:GX1,y2:yR,class:'lvl'},L1);S('line',{x1:GX0,y1:yP,x2:GX1,y2:yP,class:'lvl'},L1);
+    T(L1,230,yR-14,'مستوى طاقة المتفاعلات','mini');T(L1,840,yP-14,'مستوى طاقة النواتج','mini');
+    tag(L1,800,92,'درجة الحرارة نفسها: ٣٧°س','');
+    const lg=S('g',null,L1);S('line',{x1:330,y1:96,x2:380,y2:96,class:'cU'},lg);T(lg,290,103,'بدون إنزيم','mini');S('line',{x1:330,y1:130,x2:380,y2:130,class:'cC'},lg);T(lg,280,137,'بوجود الإنزيم','mini');
+    cU=S('path',{d:curveD(pkU),class:'cU'},L1);cC=S('path',{d:curveD(pkC),class:'cC'},L1);
+    for(const c of[cU,cC]){const L=c.getTotalLength();c.style.strokeDasharray=L;c.style.strokeDashoffset=L;}
+    for(const c of[cU,cC]){const L=c.getTotalLength();await tween(2800,t=>c.style.strokeDashoffset=L*(1-t),t=>t);await wait(300);}
+    task.hidden=false;startArrow('U');}
+  function startArrow(k){phase='arrow';cur=k;task.querySelector('#taskTxt').textContent=k==='U'?'السهم الأول (بدون إنزيم): اضغطي على خط مستوى طاقة المتفاعلات واسحبي إلى أعلى حتى قمّة المنحنى الرمادي.':'السهم الثاني (بوجود الإنزيم): اسحبي من خط مستوى طاقة المتفاعلات إلى أعلى حتى قمّة المنحنى البنفسجي.';
+    say(task.querySelector('#taskTxt').textContent);}
+  function arrowPts(x,yb,yt){yt=Math.min(yt,yb-30);return `${x-6},${yb} ${x+6},${yb} ${x+6},${yt+22} ${x+14},${yt+22} ${x},${yt} ${x-14},${yt+22} ${x-6},${yt+22}`;}
+  const arrows={};
+  function drawArrow(k,yt){if(!arrows[k])arrows[k]=S('polygon',{fill:'url(#gEa)',stroke:'#9B2A1E','stroke-width':1.5},L2);arrows[k].setAttribute('points',arrowPts(ax[k],yR,yt));}
+  async function finishArrow(k){drawArrow(k,pk[k]);const afb=task.querySelector('#afb');afb.className='fb ok';
+    if(k==='U'){tag(L3,ax.U-120,(yR+pkU)/2,'طاقة التنشيط بدون إنزيم','o');afb.textContent='أحسنتِ، وصل السهم إلى القمة.';await wait(400);startArrow('C');}
+    else{tag(L3,ax.C+128,(yR+pkC)/2+6,'طاقة التنشيط بوجود الإنزيم','');phase='done';afb.textContent='اكتمل السهمان. قارني طوليهما.';
+      const ok=pred==='C';pfb.className='fb '+(ok?'ok':'warn');pfb.textContent=ok?'توقّعكِ صحيح ✓ قمّة المسار بوجود الإنزيم أقل، فسهم طاقة التنشيط أقصر.':'توقّعتِ المسار بدون إنزيم، لكن السهمين يبيّنان أن طاقة التنشيط بوجود الإنزيم أقل (السهم أقصر).';
+      say('السهم بوجود الإنزيم أقصر: طاقة التنشيط أقل، ومستويا طاقة المتفاعلات والنواتج لم يتغيّرا. أجيبي عن السؤال الختامي.','ok');
+      extra.hidden=false;molFig();fq.hidden=false;ctx.done();}}
+  svg.addEventListener('pointerdown',e=>{if(phase!=='arrow'||busy&&busyGen===A.gen)return;const p=svgPt(svg,e);if(Math.abs(p.y-yR)>40||p.x<GX0||p.x>GX1){say('ابدئي السهم من خط مستوى طاقة المتفاعلات (الخط المنقّط العلوي).','warn');return;}
+    drawing=cur;drawArrow(cur,Math.min(p.y,yR-30));});
+  svg.addEventListener('pointermove',e=>{if(!drawing)return;const p=svgPt(svg,e);drawArrow(drawing,Math.max(GY0+10,Math.min(p.y,yR-30)));});
+  const endDraw=e=>{if(!drawing)return;const k=drawing;drawing=null;const p=svgPt(svg,e);const yt=Math.max(GY0+10,Math.min(p.y,yR-30));const afb=task.querySelector('#afb');
+    if(Math.abs(yt-pk[k])<=18)run(()=>finishArrow(k));
+    else{afb.className='fb warn';afb.textContent=yt>pk[k]?'السهم أقصر من المطلوب: ارفعيه حتى قمّة المنحنى.':'السهم تجاوز القمّة: توقّفي عند أعلى نقطة في المنحنى.';arrows[k].remove();arrows[k]=null;}};
+  svg.addEventListener('pointerup',endDraw);svg.addEventListener('pointercancel',endDraw);
+  async function autoArrow(k){const t0=yR-30;await tween(1800,t=>drawArrow(k,lerp(t0,pk[k],t)));await finishArrow(k);}
+  function molFig(){const s=panel.querySelector('#molFig');let sd=11;const rnd=()=>(sd=(sd*9301+49297)%233280)/233280;const en=[];for(let i=0;i<30;i++)en.push(Math.min(.97,-Math.log(1-rnd()*.995)*.26));
+    const thU=.72,thC=.3;
+    [[0,'بدون إنزيم',thU,'#5E5873'],[165,'بوجود الإنزيم',thC,'#6B4BD0']].forEach(([x0,t,th,c])=>{const g=S('g',{transform:`translate(${x0} 0)`},s);S('rect',{x:4,y:24,width:148,height:150,rx:10,fill:'#F7F4FD'},g);
+      const y=v=>168-v*140;let n=0;en.forEach((v,i)=>{const hi=v>=th;if(hi)n++;S('circle',{cx:14+(i%10)*13.5,cy:y(v),r:5,fill:hi?'#F28C28':'#C9C2DA'},g);});
+      S('line',{x1:6,y1:y(th),x2:150,y2:y(th),stroke:c,'stroke-width':2.5,'stroke-dasharray':'6 4'},g);
+      T(g,78,16,t,'mini');const r=T(g,78,194,ar(n)+' من '+ar(30)+' جزيئًا','mini');r.style.fill='#22193A';});}
+  say('توقّعي أولًا: اضغطي على المسار الذي تتوقّعين أن طاقة تنشيطه أقل.');
+  return{step(){if(phase==='predict')say('اختاري توقّعكِ أولًا بالضغط على إحدى البطاقتين.','warn');else if(phase==='predicted')run(reveal);else if(phase==='arrow'&&!drawing)run(()=>autoArrow(cur));}};
+}
+
+/* ---------- Registry & routing ---------- */
+const ST={
+  s1:{n:1,title:'القفل والمفتاح والتلاؤم المستحث',desc:'اسحبي المادة المتفاعلة إلى نموذجين وقارني الموقع النشط قبل الارتباط وبعده.',build:st1},
+  s2:{n:2,title:'ماذا يحدث بعد الارتباط؟',desc:'حرّكي التفاعل خطوة خطوة حتى يتحرّر الناتج، ثم أعيدي استخدام الإنزيم نفسه.',build:st2},
+  s3:{n:3,title:'التفكيك والبناء',desc:'تجربتان: جزيء يتفكّك إلى ناتجين، وجزيئان يرتبطان في ناتج واحد.',build:st3},
+  s4:{n:4,title:'الليزوزيم في قطرة دمع',desc:'كبّري المشهد من قطرة الدمع حتى جدار الخلية البكتيرية وتابعي التحلّل المائي.',build:st4},
+  s5:{n:5,title:'خفض طاقة التنشيط',desc:'المحطة الختامية: توقّعي، قارني المنحنيين، وارسمي سهمي طاقة التنشيط.',build:st5,final:true}
+};
+const IDS=Object.keys(ST);
+function renderCards(){const c=$('#cards');c.innerHTML='';
+  IDS.forEach(id=>{const s=ST[id];const done=store.done[id];const b=H(`<button class="st-card ${s.final?'final':''}" type="button"><span class="st-num">${ar(s.n)}</span><h3>${s.title}</h3><p>${s.desc}</p><span class="chip ${done?'done':''}">${done?'مكتملة ✓':(s.final?'المحطة الختامية':'لم تكتمل بعد')}</span></button>`);b.onclick=()=>{location.hash=id;};c.append(b);});
+  const rb=$('#resumeBtn');if(store.last&&ST[store.last]){rb.textContent='متابعة: المحطة '+ar(ST[store.last].n);rb.onclick=()=>{location.hash=store.last;};}else{rb.textContent='ابدئي من المحطة الأولى';rb.onclick=()=>{location.hash='s1';};}}
+$('#clearBtn').onclick=()=>{store={done:{},last:null};save();renderCards();};
+function showHome(){A.gen++;setPause(false);$('#lab').hidden=true;$('#home').hidden=false;renderCards();window.scrollTo(0,0);}
+function openStation(id){
+  A.gen++;setPause(false);busy=false;
+  const box=$('#stageBox');box.innerHTML='';
+  const svg=S('svg',{id:'stage',viewBox:'0 0 1000 600',role:'img','aria-label':'مسرح التجربة'},box);defs(svg);
+  const panel=$('#panel');panel.innerHTML='';say('');
+  const s=ST[id];$('#labNum').textContent=ar(s.n);$('#labTitle').textContent=s.title;document.title='نموش في مختبر الإنزيمات · '+s.title;
+  $('#labNum').style.background=s.final?'var(--orange-l)':'';$('#labNum').style.color=s.final?'var(--orange-d)':'';
+  const i=IDS.indexOf(id);$('#prevBtn').disabled=i===0;$('#nextBtn').disabled=i===IDS.length-1;
+  const ctx={svg,panel,done:()=>markDone(id),reload:()=>openStation(id),markSub:k=>{store['s3'+k]=true;if(store.s3break&&store.s3build)markDone('s3');else save();}};
+  cur={id,api:s.build(ctx)};
+}
+function showLab(id){$('#home').hidden=true;$('#lab').hidden=false;store.last=id;save();window.scrollTo(0,0);openStation(id);}
+function route(){const h=location.hash.replace('#','');if(ST[h])showLab(h);else showHome();}
+$('#menuBtn').onclick=()=>{location.hash='home';};
+$('#prevBtn').onclick=()=>{const i=IDS.indexOf(cur.id);if(i>0)location.hash=IDS[i-1];};
+$('#nextBtn').onclick=()=>{const i=IDS.indexOf(cur.id);if(i<IDS.length-1)location.hash=IDS[i+1];};
+$('#stepBtn').onclick=()=>{if(A.paused){say('التجربة متوقّفة. اضغطي «متابعة» أولًا.','warn');return;}if(cur&&cur.api)cur.api.step();};
+$('#pauseBtn').onclick=()=>setPause(!A.paused);
+$('#resetBtn').onclick=()=>{if(cur)openStation(cur.id);};
+window.addEventListener('hashchange',route);
+const ready=document.fonts&&document.fonts.ready?Promise.race([document.fonts.ready,new Promise(r=>setTimeout(r,1500))]):Promise.resolve();
+ready.then(route);
+})();
+</script>
