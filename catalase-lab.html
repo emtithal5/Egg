@@ -1,0 +1,370 @@
+<title>أيّ العوامل الحفّازة أسرع؟</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+Bhaijaan+2:wght@600;800&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: white lab bench (SVG rack of 7 tubes) on top, controls + fixed variables beneath, then observation table, questions and interpretation as stacked cards */
+:root{
+  --bg:#FFFFFF; --ink:#1F2433; --muted:#5D6478; --line:#E3E6EE; --soft:#F5F7FB;
+  --accent:#0E7C86; --accent-d:#0A5A61; --accent-l:#E3F4F5;
+  --hot:#D9622B; --hot-l:#FDEEE5; --liver:#7B1E22;
+  --ok:#137A53; --ok-l:#E2F4EB; --warn:#B0421A; --warn-l:#FDEEE6;
+  --f-display:'Baloo Bhaijaan 2','IBM Plex Sans Arabic',Tahoma,sans-serif;
+  --f-body:'IBM Plex Sans Arabic','Segoe UI',Tahoma,sans-serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{min-height:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:18px;line-height:1.7;direction:rtl}
+button,select,input,textarea{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--hot);outline-offset:2px}
+.wrap{max-width:1400px;margin-inline:auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 90px;display:grid;gap:16px}
+header.top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:10px 20px}
+.eyebrow{font-size:15px;font-weight:600;color:var(--accent-d)}
+h1{font-family:var(--f-display);font-weight:800;font-size:clamp(30px,4.4vw,50px);line-height:1.15;margin:0;text-wrap:balance}
+.stepper{display:flex;flex-wrap:wrap;gap:6px;list-style:none;margin:0;padding:0}
+.stepper li{padding:4px 14px;border-radius:999px;background:var(--soft);color:var(--muted);font-size:15px;font-weight:600}
+.stepper li.on{background:var(--accent);color:#fff}
+.stepper li.past{background:var(--accent-l);color:var(--accent-d)}
+.card{border:1px solid var(--line);border-radius:20px;padding:16px 18px;background:#fff;min-width:0}
+.card h2{font-family:var(--f-display);font-size:24px;margin:0 0 6px;color:var(--accent-d)}
+.card p{margin:0 0 8px}
+.card.q{border:2px solid var(--hot);background:var(--hot-l)}
+.card.q h2{color:var(--hot)}
+.predict .choices{display:flex;flex-wrap:wrap;gap:8px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:52px;padding:8px 20px;border-radius:14px;border:2px solid var(--accent);background:var(--accent);color:#fff;font-weight:700;cursor:pointer;touch-action:manipulation}
+.btn:hover{background:var(--accent-d);border-color:var(--accent-d)}
+.btn.line{background:#fff;color:var(--accent-d)}
+.btn.line:hover{background:var(--accent-l)}
+.btn.hot{background:var(--hot);border-color:var(--hot)}
+.btn.hot:hover{background:#b94f1f;border-color:#b94f1f}
+.btn.small{min-height:42px;padding:4px 14px;font-size:16px}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
+.bench{border:1px solid var(--line);border-radius:24px;overflow:hidden;background:#fff}
+#lab{display:block;width:100%;height:auto;touch-action:none;user-select:none;-webkit-user-select:none}
+.bar{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.bar .btn{flex:1 1 150px}
+.timer{flex:0 0 auto;display:flex;align-items:baseline;gap:8px;padding:6px 18px;border-radius:14px;background:var(--soft);font-weight:700}
+.timer b{font-family:var(--f-display);font-size:34px;color:var(--accent-d);font-variant-numeric:tabular-nums;direction:ltr}
+.status{margin:0;min-height:54px;padding:10px 16px;border-radius:14px;background:var(--soft);font-weight:500}
+.status.ok{background:var(--ok-l);color:var(--ok)} .status.warn{background:var(--warn-l);color:var(--warn)}
+.vars{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
+.vars span{padding:4px 12px;border-radius:999px;background:var(--accent-l);color:var(--accent-d);font-size:15px;font-weight:600}
+.sim{display:inline-block;padding:1px 10px;border-radius:999px;background:#FFF6D9;color:#7A5A00;font-size:13px;font-weight:700;border:1px solid #F0D88A}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:16px;align-items:start}
+.tbl-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:16px;min-width:760px}
+th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:right;vertical-align:middle}
+th{background:var(--soft);font-weight:700;font-size:15px}
+td.num{font-variant-numeric:tabular-nums;font-weight:600}
+select{min-height:42px;border:1px solid var(--line);border-radius:10px;padding:2px 8px;background:#fff}
+.vbar{height:12px;border-radius:6px;background:var(--accent);min-width:2px}
+.mark{font-weight:700} .mark.ok{color:var(--ok)} .mark.no{color:var(--warn)}
+.qs{display:grid;gap:12px}
+.qitem{border:1px solid var(--line);border-radius:16px;padding:12px 14px}
+.qitem h3{margin:0 0 8px;font-size:18px}
+.opts{display:grid;gap:6px}
+.opt{display:flex;gap:10px;align-items:center;text-align:right;width:100%;min-height:46px;padding:6px 12px;border:1px solid var(--line);border-radius:12px;background:#fff;cursor:pointer}
+.opt:hover{border-color:var(--accent)}
+.opt.right{background:var(--ok-l);border-color:var(--ok)}
+.opt.wrong{background:var(--warn-l);border-color:var(--warn)}
+.opt input{width:20px;height:20px}
+.fb{margin-top:8px!important;font-weight:500}
+.fb.ok{color:var(--ok)} .fb.warn{color:var(--warn)}
+.eq{display:inline-flex;align-items:flex-end;gap:10px;direction:ltr;font-size:26px;font-weight:700;padding:10px 18px;border-radius:14px;background:var(--soft);font-variant-numeric:tabular-nums}
+.arrow{display:inline-flex;flex-direction:column;align-items:center;line-height:1}
+.arrow small{font-size:15px;color:var(--accent-d);font-weight:700;direction:rtl}
+.arrow span{font-size:30px}
+ul.clean{margin:0;padding-inline-start:20px}
+.note{font-size:15px;color:var(--muted)}
+/* svg */
+svg text{font-family:var(--f-body)}
+.tname{font-size:19px;font-weight:700;fill:var(--ink);text-anchor:middle}
+.tsub{font-size:14px;fill:var(--muted);text-anchor:middle}
+.tnum{font-family:var(--f-display);font-size:20px;font-weight:800;fill:#fff;text-anchor:middle}
+.rd{font-size:17px;font-weight:700;fill:var(--accent-d);text-anchor:middle;direction:ltr}
+.glass{fill:rgba(225,238,248,.25);stroke:#8FA6BD;stroke-width:4}
+.liq{fill:#CBE8F8;opacity:.9}
+.drag{cursor:grab}
+@keyframes pulse{0%,100%{opacity:.25}50%{opacity:.9}}
+.hl{fill:none;stroke:var(--hot);stroke-width:5;stroke-dasharray:10 7;opacity:0}
+.hl.on{opacity:1}
+.pred-ring{fill:none;stroke:var(--hot);stroke-width:4}
+@media (prefers-reduced-motion:reduce){*{scroll-behavior:auto}}
+.sig{position:fixed;inset:auto 0 0 0;z-index:30;background:rgba(255,255,255,.96);border-top:1px solid var(--line);text-align:center;font-family:var(--f-display);font-weight:800;font-size:18px;color:var(--accent-d);padding:8px max(16px,env(safe-area-inset-right,0px)) calc(8px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div>
+      <div class="eyebrow">الأحياء · الصف الحادي عشر · الوحدة الثالثة: الإنزيمات</div>
+      <h1>أيّ العوامل الحفّازة أسرع؟</h1>
+    </div>
+    <ol class="stepper" id="stepper">
+      <li>١ توقّعي</li><li>٢ أضيفي بيروكسيد الهيدروجين</li><li>٣ شغّلي التجربة</li><li>٤ سجّلي الملاحظات</li><li>٥ أجيبي وفسّري</li>
+    </ol>
+  </header>
+
+  <section class="card q predict" id="predictCard">
+    <h2>توقّعي قبل البدء</h2>
+    <p>أيّ عامل حفّاز سيعطي أسرع تفكّك لبيروكسيد الهيدروجين إلى ماء وأكسجين؟</p>
+    <div class="choices" id="predChoices"></div>
+    <p class="fb" id="predFb"></p>
+  </section>
+
+  <div class="bench"><svg id="lab" viewBox="0 0 1400 660" role="img" aria-label="حامل يحمل سبعة أنابيب اختبار وقطّارة بيروكسيد الهيدروجين"></svg></div>
+
+  <div class="bar">
+    <button class="btn line" id="allBtn" type="button">إضافة للجميع</button>
+    <button class="btn hot" id="startBtn" type="button" disabled>ابدئي التجربة</button>
+    <button class="btn line" id="pauseBtn" type="button" disabled>إيقاف مؤقت</button>
+    <button class="btn line" id="resetBtn" type="button">إعادة التجربة</button>
+    <div class="timer"><span>المؤقّت</span><b id="timer">00:00</b><span class="note">من ٣٠ ث</span></div>
+  </div>
+  <p class="status" id="status" aria-live="polite"></p>
+
+  <section class="card">
+    <h2>متغيّرات ثابتة في كل الأنابيب</h2>
+    <div class="vars">
+      <span>درجة الحرارة ٢٥°س</span><span>حجم بيروكسيد الهيدروجين ٥ سم³</span><span>تركيزه ٣٪</span><span>زمن الملاحظة ٣٠ ثانية</span><span>كتلة كل عيّنة صلبة ١ غ (قطع الكبد = الكبد المطحون)</span>
+    </div>
+    <p class="note" style="margin-top:8px">المتغيّر المستقل: نوع العامل الحفّاز. المتغيّر التابع: سرعة تكوّن الأكسجين. ارتفاع الرغوة مؤشر تقريبي للمقارنة، أمّا قياس حجم الأكسجين المتكوّن خلال زمن محدّد (بمحقن غازي مثلًا) فيعطي قياسًا أدقّ لسرعة التفاعل. <span class="sim">قيم محاكاة تعليمية</span></p>
+  </section>
+
+  <section class="card" id="tableCard" hidden>
+    <h2>جدول الملاحظات</h2>
+    <p>سجّلي ملاحظتكِ عن الفقاعات لكل أنبوب، ورتّبي الأنابيب من الأسرع (١) إلى الأبطأ (٧)، ثم تحقّقي. <span class="sim">قيم محاكاة تعليمية</span></p>
+    <div class="tbl-wrap"><table>
+      <thead><tr><th>الأنبوب</th><th>ملاحظتكِ عن الفقاعات</th><th>ترتيبكِ</th><th>ارتفاع الرغوة (مم)</th><th>حجم O₂ بعد ٣٠ ث (سم³)</th><th style="width:22%">مقارنة الحجوم</th><th>التحقّق</th></tr></thead>
+      <tbody id="tbody"></tbody>
+    </table></div>
+    <p style="margin-top:10px"><button class="btn" id="checkBtn" type="button">تحقّقي من جدولي</button></p>
+    <p class="fb" id="tblFb"></p>
+    <p class="note">برادة الحديد وثاني أكسيد المنغنيز: الكتاب لا يحدّد أيّهما أسرع، لذلك تختلف قيمتاهما قليلًا من تجربة إلى أخرى، ويُقبل أيّ ترتيب بينهما.</p>
+  </section>
+
+  <div class="cols" id="after" hidden>
+    <section class="card">
+      <h2>أسئلة</h2>
+      <div class="qs" id="qs"></div>
+    </section>
+    <section class="card">
+      <h2>تفسير النتائج</h2>
+      <p><span class="eq">2H₂O₂ <span class="arrow"><small>كاتاليز</small><span>→</span></span> 2H₂O + O₂</span></p>
+      <ul class="clean">
+        <li>يحفّز إنزيم الكاتاليز تفكّك بيروكسيد الهيدروجين إلى ماء وأكسجين، والأكسجين هو الغاز الذي يكوّن الفقاعات والرغوة.</li>
+        <li>الكاتاليز النقي أسرع لأن كل ما في الأنبوب إنزيم؛ أما الكبد والبطاطس فيحتويان على الكاتاليز ضمن خلاياهما، والكبد يحتوي على كمية أكبر منه، فاختلاف النشاط يرتبط بكمية الإنزيم المتاحة.</li>
+        <li>طحن الكبد يزيد مساحة السطح المعرّضة للتفاعل ويكشف مزيدًا من الإنزيم من داخل الخلايا، فيصبح أسرع من القطع بالكتلة نفسها.</li>
+        <li>العوامل الحفّازة غير العضوية (برادة الحديد وثاني أكسيد المنغنيز) سرّعت التفكّك، لكنها كانت أبطأ من العيّنات الحيوية في ظروف هذه المحاكاة.</li>
+        <li>بيروكسيد الهيدروجين وحده يتفكّك ببطء شديد، فهو أنبوب ضابط يبيّن أن الفرق في الأنابيب الأخرى سببه العامل الحفّاز.</li>
+      </ul>
+    </section>
+  </div>
+</div>
+<footer class="sig">أ.إمتثال العطابي</footer>
+
+<script>
+(function(){
+'use strict';
+document.documentElement.lang='ar';document.documentElement.dir='rtl';
+const $=s=>document.querySelector(s);
+const NS='http://www.w3.org/2000/svg';
+function S(t,a,p){const e=document.createElementNS(NS,t);if(a)for(const k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e;}
+function T(p,x,y,txt,cls){const e=S('text',{x,y,class:cls},p);e.textContent=txt;return e;}
+const AR='٠١٢٣٤٥٦٧٨٩';const ar=n=>String(n).replace(/\d/g,d=>AR[d]);
+const fmt=(v,d)=>ar(v.toFixed(d===undefined?1:d));
+
+/* ---- Model (educational simulated values) ---- */
+const VMAX=50, DURATION=30, FOAM_MAX=270; // cm3, s, px
+const TUBES=[
+  {id:'fe',lines:['برادة الحديد'],sub:'١ غ',k0:.0045,open:true},
+  {id:'mn',lines:['ثاني أكسيد','المنغنيز'],sub:'١ غ',k0:.0045,open:true},
+  {id:'cat',lines:['إنزيم الكاتاليز','النقي'],sub:'١ سم³',k0:.24},
+  {id:'lp',lines:['قطع الكبد'],sub:'١ غ',k0:.03},
+  {id:'lg',lines:['الكبد المطحون'],sub:'١ غ',k0:.07},
+  {id:'po',lines:['قطع البطاطس'],sub:'١ غ',k0:.012},
+  {id:'h',lines:['بيروكسيد الهيدروجين','وحده'],sub:'أنبوب المقارنة',k0:.00015}
+];
+const nameOf=t=>t.lines.join(' ');
+const X0=1300,DX=160,TOP=150,BOT=520,LIQ=430;
+TUBES.forEach((t,i)=>{t.x=X0-i*DX;});
+
+/* ---- State ---- */
+let phase='predict',pred=null,elapsed=0,paused=false,dropBusy=false;
+
+/* ---- Draw bench ---- */
+const svg=$('#lab');
+const defs=S('defs',null,svg);
+const pat=S('pattern',{id:'foam',width:18,height:16,patternUnits:'userSpaceOnUse'},defs);
+S('rect',{width:18,height:16,fill:'#FDFEFF'},pat);
+S('circle',{cx:5,cy:5,r:4,fill:'none',stroke:'#C9D9E6','stroke-width':1.4},pat);S('circle',{cx:13,cy:11,r:5,fill:'none',stroke:'#C9D9E6','stroke-width':1.4},pat);S('circle',{cx:14,cy:3,r:2,fill:'none',stroke:'#D7E3EC','stroke-width':1.2},pat);
+// table surface + rack
+S('rect',{x:0,y:528,width:1400,height:132,fill:'#F6F8FB'},svg);
+S('rect',{x:300,y:250,width:1080,height:22,rx:6,fill:'#C9A77C'},svg);
+T(svg,120,46,'قيم محاكاة تعليمية','tsub').setAttribute('fill','#7A5A00');
+// reagent bottle
+const bottle=S('g',null,svg);
+S('path',{d:'M 70 300 L 70 500 Q 70 520 90 520 L 190 520 Q 210 520 210 500 L 210 300 Z',fill:'rgba(225,238,248,.4)',stroke:'#8FA6BD','stroke-width':4},bottle);
+S('rect',{x:74,y:380,width:132,height:136,rx:10,fill:'#CBE8F8'},bottle);
+S('rect',{x:86,y:420,width:108,height:62,rx:8,fill:'#fff',stroke:'#8FA6BD','stroke-width':2},bottle);
+T(bottle,140,445,'بيروكسيد','tsub');T(bottle,140,468,'الهيدروجين ٣٪','tsub');
+T(svg,140,560,'القطّارة: اسحبيها','tname');T(svg,140,584,'إلى فوهة الأنبوب','tsub');
+
+const G=[];
+TUBES.forEach((t,i)=>{
+  const g=S('g',null,svg);t.g=g;const x=t.x;
+  const cp=S('clipPath',{id:'cp'+i},defs);S('path',{d:`M ${x-28} ${TOP} L ${x-28} ${BOT-30} A 28 28 0 0 0 ${x+28} ${BOT-30} L ${x+28} ${TOP} Z`},cp);
+  const inner=S('g',{'clip-path':`url(#cp${i})`},g);
+  drawSample(inner,t.id,x);
+  t.liq=S('rect',{x:x-30,y:BOT,width:60,height:0,class:'liq'},inner);
+  t.bub=S('g',null,inner);
+  t.foam=S('g',null,inner);
+  t.foamRect=S('rect',{x:x-30,y:LIQ,width:60,height:0,fill:'url(#foam)'},t.foam);
+  t.foamTop=[];for(let j=0;j<5;j++)t.foamTop.push(S('circle',{cx:x-26+j*13,cy:LIQ,r:0,fill:'#FDFEFF',stroke:'#C9D9E6','stroke-width':1.4},t.foam));
+  S('path',{d:`M ${x-31} ${TOP-6} L ${x-31} ${BOT-30} A 31 31 0 0 0 ${x+31} ${BOT-30} L ${x+31} ${TOP-6}`,class:'glass'},g);
+  S('ellipse',{cx:x,cy:TOP-6,rx:36,ry:7,fill:'none',stroke:'#8FA6BD','stroke-width':4},g);
+  S('line',{x1:x-18,y1:TOP+20,x2:x-18,y2:BOT-50,stroke:'#fff','stroke-width':5,'stroke-linecap':'round',opacity:.7},g);
+  t.hl=S('rect',{x:x-50,y:TOP-40,width:100,height:BOT-TOP+60,rx:20,class:'hl'},g);
+  t.predRing=S('circle',{cx:x,cy:556,r:19,class:'pred-ring',opacity:0},g);
+  S('circle',{cx:x,cy:556,r:15,fill:'#0E7C86'},g);T(g,x,563,ar(i+1),'tnum');
+  t.lines.forEach((l,j)=>T(g,x,592+j*22,l,'tname'));
+  T(g,x,592+t.lines.length*22-2,t.sub,'tsub');
+  t.rd=T(g,x,120,'','rd');
+});
+function drawSample(p,id,x){
+  if(id==='fe'){for(let i=0;i<46;i++){const a=i*2.4,r=(i*7)%24;S('rect',{x:x-22+((i*13)%44),y:505+((i*5)%12)-(r%6),width:3,height:2+(i%3),fill:i%3?'#6E7480':'#4A4F58',transform:`rotate(${(i*37)%180} ${x} 510)`},p);}S('ellipse',{cx:x,cy:512,rx:24,ry:6,fill:'#5E646E',opacity:.5},p);}
+  else if(id==='mn'){S('path',{d:`M ${x-27} 520 Q ${x} 488 ${x+27} 520 Z`,fill:'#2A2A2E'},p);for(let i=0;i<10;i++)S('circle',{cx:x-16+i*3.5,cy:510-(i%3)*3,r:1.6,fill:'#55555c'},p);}
+  else if(id==='cat'){S('rect',{x:x-30,y:500,width:60,height:24,fill:'#F2E6B3',opacity:.9},p);}
+  else if(id==='lp'){[[-12,506,13],[10,503,12],[0,514,11]].forEach(([dx,y,r],j)=>S('path',{d:`M ${x+dx-r} ${y} q ${r*.4} ${-r} ${r} ${-r*.8} q ${r*.9} ${r*.1} ${r} ${r*.9} q ${-r*.3} ${r*.9} ${-r} ${r*.8} q ${-r*.8} ${-.2*r} ${-r} ${-r*.9} z`,fill:j===1?'#8A2328':'#7B1E22',stroke:'#4E1114','stroke-width':1.5},p));}
+  else if(id==='lg'){S('path',{d:`M ${x-30} 520 L ${x-30} 502 Q ${x-15} 495 ${x} 501 Q ${x+15} 495 ${x+30} 502 L ${x+30} 520 Z`,fill:'#8E2A2A'},p);for(let i=0;i<14;i++)S('circle',{cx:x-24+(i*7)%48,cy:506+(i*3)%12,r:1.8,fill:'#B54848'},p);}
+  else if(id==='po'){[[-14,500],[6,496],[-2,508],[14,508]].forEach(([dx,y],j)=>S('rect',{x:x+dx-8,y,width:16,height:14,rx:3,fill:j%2?'#EADBA8':'#E3D095',stroke:'#B59C55','stroke-width':1.5,transform:`rotate(${j*17-20} ${x+dx} ${y+7})`},p));}
+}
+
+/* ---- Dropper ---- */
+const REST={x:140,y:350};
+const dropper=S('g',{class:'drag'},svg);
+S('rect',{x:-6,y:-120,width:12,height:120,rx:5,fill:'rgba(225,238,248,.9)',stroke:'#8FA6BD','stroke-width':3},dropper);
+S('rect',{x:-4,y:-60,width:8,height:56,rx:3,fill:'#CBE8F8'},dropper);
+S('path',{d:'M -14 -120 Q -18 -175 0 -178 Q 18 -175 14 -120 Z',fill:'#D9622B',stroke:'#9E4219','stroke-width':3},dropper);
+let dp={x:REST.x,y:REST.y};
+function placeDropper(x,y){dp={x,y};dropper.setAttribute('transform',`translate(${x} ${y})`);}
+placeDropper(REST.x,REST.y);
+function pt(e){const m=svg.getScreenCTM();return new DOMPoint(e.clientX,e.clientY).matrixTransform(m.inverse());}
+function tubeAt(x,y){return TUBES.find(t=>Math.abs(x-t.x)<60&&y>40&&y<TOP+90);}
+dropper.addEventListener('pointerdown',e=>{
+  if(dropBusy)return;
+  if(phase==='predict'){say('سجّلي توقّعكِ أولًا في البطاقة البرتقالية.','warn');return;}
+  if(phase!=='fill'&&phase!=='ready'){say('أعيدي التجربة لإضافة بيروكسيد الهيدروجين من جديد.','warn');return;}
+  e.preventDefault();const a=pt(e),ox=dp.x-a.x,oy=dp.y-a.y;svg.appendChild(dropper);
+  const mv=ev=>{const b=pt(ev);placeDropper(Math.max(20,Math.min(1380,b.x+ox)),Math.max(190,Math.min(560,b.y+oy)));const t=tubeAt(dp.x,dp.y);TUBES.forEach(u=>u.hl.classList.toggle('on',u===t&&!u.filled));};
+  const up=()=>{window.removeEventListener('pointermove',mv);window.removeEventListener('pointerup',up);window.removeEventListener('pointercancel',up);TUBES.forEach(u=>u.hl.classList.remove('on'));
+    const t=tubeAt(dp.x,dp.y);if(t&&!t.filled)fill([t]);else{if(t)say('هذا الأنبوب فيه بيروكسيد الهيدروجين بالفعل.','warn');back();}};
+  window.addEventListener('pointermove',mv);window.addEventListener('pointerup',up);window.addEventListener('pointercancel',up);
+});
+function tween(ms,fn){return new Promise(res=>{const s=performance.now();const f=n=>{const t=Math.min(1,(n-s)/ms);const e=t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2;fn(e);t<1?requestAnimationFrame(f):res();};requestAnimationFrame(f);});}
+function back(){const x0=dp.x,y0=dp.y;return tween(450,e=>placeDropper(x0+(REST.x-x0)*e,y0+(REST.y-y0)*e));}
+async function fill(list){
+  dropBusy=true;const fast=list.length>1;
+  for(const t of list){
+    if(t.filled)continue;
+    // refill at bottle if not there
+    const x0=dp.x,y0=dp.y;await tween(Math.min(fast?380:700,200+Math.hypot(t.x-x0,TOP-15-y0)*(fast?.25:.5)),e=>placeDropper(x0+(t.x-x0)*e,y0+(TOP-15-y0)*e));
+    for(let d=0;d<3;d++){const c=S('ellipse',{cx:t.x,cy:TOP-12,rx:4,ry:6,fill:'#9FD3F0'},svg);const target=BOT-(d+1)*30;await tween(fast?150:260,e=>c.setAttribute('cy',TOP-12+(target-TOP+12)*e));c.remove();
+      const h0=+t.liq.getAttribute('height');const h1=(BOT-LIQ)*(d+1)/3;await tween(fast?110:200,e=>{const h=h0+(h1-h0)*e;t.liq.setAttribute('y',BOT-h);t.liq.setAttribute('height',h);});}
+    t.filled=true;
+  }
+  await back();dropBusy=false;
+  const n=TUBES.filter(t=>t.filled).length;
+  if(n===7){phase='ready';$('#startBtn').disabled=false;say('أضيف حجم متساوٍ (٥ سم³) من بيروكسيد الهيدروجين بتركيز ٣٪ إلى الأنابيب السبعة. اضغطي «ابدئي التجربة».','ok');}
+  else say('أضيف ٥ سم³ من بيروكسيد الهيدروجين. بقي '+ar(7-n)+' أنابيب، أو اضغطي «إضافة للجميع».');
+  stepper();
+}
+$('#allBtn').onclick=()=>{if(dropBusy)return;if(phase==='predict'){say('سجّلي توقّعكِ أولًا في البطاقة البرتقالية.','warn');return;}if(phase!=='fill'&&phase!=='ready'){say('أعيدي التجربة لإضافة بيروكسيد الهيدروجين من جديد.','warn');return;}fill(TUBES.filter(t=>!t.filled));};
+
+/* ---- Prediction ---- */
+const pc=$('#predChoices');
+TUBES.forEach((t,i)=>{const b=document.createElement('button');b.type='button';b.className='btn line small';b.textContent=ar(i+1)+'. '+nameOf(t);b.onclick=()=>{if(phase!=='predict'&&phase!=='fill'&&phase!=='ready')return;pred=t.id;pc.querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',x===b?'true':'false'));TUBES.forEach(u=>u.predRing.setAttribute('opacity',u===t?1:0));$('#predFb').textContent='توقّعكِ: '+nameOf(t)+'. الآن اسحبي القطّارة إلى فوهة كل أنبوب، أو اضغطي «إضافة للجميع».';if(phase==='predict')phase='fill';say('اسحبي القطّارة إلى فوهة أنبوب لإضافة ٥ سم³ من بيروكسيد الهيدروجين.');stepper();};pc.appendChild(b);});
+
+/* ---- Run ---- */
+function resetModel(){TUBES.forEach(t=>{t.k=t.open?t.k0*(0.75+Math.random()*0.55):t.k0;t.V=0;t.acc=0;t.bubbles=[];t.bub.innerHTML='';setFoam(t,0);t.rd.textContent='';});}
+function setFoam(t,h){t.foamRect.setAttribute('y',LIQ-h);t.foamRect.setAttribute('height',h);t.foamTop.forEach((c,j)=>{c.setAttribute('cy',LIQ-h);c.setAttribute('r',h>4?6+((j*5)%4):0);});}
+$('#startBtn').onclick=()=>{if(phase!=='ready')return;phase='running';paused=false;elapsed=0;$('#startBtn').disabled=true;$('#pauseBtn').disabled=false;$('#allBtn').disabled=true;say('بدأ المؤقّت المشترك. راقبي سرعة ظهور الفقاعات وارتفاع الرغوة في كل أنبوب.');stepper();};
+$('#pauseBtn').onclick=()=>{if(phase!=='running')return;paused=!paused;$('#pauseBtn').textContent=paused?'متابعة':'إيقاف مؤقت';$('#pauseBtn').setAttribute('aria-pressed',paused);say(paused?'التجربة متوقّفة مؤقتًا. قارني الأنابيب الآن.':'استؤنفت التجربة.');};
+$('#resetBtn').onclick=reset;
+function reset(){phase=pred?'fill':'predict';paused=false;elapsed=0;dropBusy=false;
+  TUBES.forEach(t=>{t.filled=false;t.liq.setAttribute('y',BOT);t.liq.setAttribute('height',0);});resetModel();placeDropper(REST.x,REST.y);
+  $('#startBtn').disabled=true;$('#pauseBtn').disabled=true;$('#pauseBtn').textContent='إيقاف مؤقت';$('#allBtn').disabled=false;$('#timer').textContent='00:00';
+  $('#tableCard').hidden=true;$('#after').hidden=true;$('#tblFb').textContent='';
+  say(pred?'أعيدت التجربة. أضيفي بيروكسيد الهيدروجين إلى الأنابيب من جديد.':'ابدئي بتوقّع العامل الذي سيعطي أسرع تفاعل.');stepper();}
+let last=performance.now();
+function frame(now){const dt=Math.min(.05,(now-last)/1000);last=now;
+  if(phase==='running'&&!paused){
+    elapsed=Math.min(DURATION,elapsed+dt);
+    $('#timer').textContent='00:'+String(Math.floor(elapsed)).padStart(2,'0');
+    TUBES.forEach(t=>{t.V=VMAX*(1-Math.exp(-t.k*elapsed));const rate=VMAX*t.k*Math.exp(-t.k*elapsed);
+      setFoam(t,t.V/VMAX*FOAM_MAX);t.rd.textContent='O₂ '+fmt(t.V)+' cm³';
+      t.acc+=Math.min(45,rate*7+(t.id==='h'?.12:0))*dt;
+      while(t.acc>=1){t.acc-=1;spawnBubble(t);}
+    });
+    if(elapsed>=DURATION)finish();
+  }
+  if(!(phase==='running'&&paused))TUBES.forEach(t=>{const top=LIQ-(t.V/VMAX*FOAM_MAX);t.bubbles=t.bubbles.filter(b=>{b.y-=b.v*dt;b.x+=Math.sin(b.y/9+b.ph)*.4;b.el.setAttribute('cy',b.y);b.el.setAttribute('cx',b.x);if(b.y<top+4){b.el.remove();return false;}return true;});});
+  requestAnimationFrame(frame);}
+function spawnBubble(t){if(t.bubbles.length>60)return;const r=2+Math.random()*4;const el=S('circle',{cx:t.x,cy:508,r,fill:'rgba(255,255,255,.85)',stroke:'#7FB3D5','stroke-width':1.3},t.bub);t.bubbles.push({el,x:t.x-20+Math.random()*40,y:500+Math.random()*12,v:70+Math.random()*80,ph:Math.random()*6});}
+requestAnimationFrame(frame);
+function finish(){phase='done';$('#pauseBtn').disabled=true;$('#timer').textContent='00:30';
+  const fastest=TUBES.reduce((a,b)=>a.V>b.V?a:b);
+  say(pred===fastest.id?'انتهى زمن الملاحظة. توقّعكِ صحيح ✓ أسرع تفاعل في أنبوب '+nameOf(fastest)+'. سجّلي ملاحظاتكِ في الجدول.':'انتهى زمن الملاحظة. توقّعتِ '+nameOf(TUBES.find(t=>t.id===pred))+'، لكن أسرع تفاعل كان في أنبوب '+nameOf(fastest)+'. سجّلي ملاحظاتكِ في الجدول.',pred===fastest.id?'ok':'warn');
+  buildTable();$('#tableCard').hidden=false;$('#after').hidden=false;stepper();}
+
+/* ---- Table ---- */
+const OBS=['لا فقاعات تقريبًا','فقاعات قليلة','فقاعات متوسطة','فقاعات كثيرة','فقاعات كثيرة جدًا'];
+const level=V=>V<1?0:V<9?1:V<24?2:V<40?3:4;
+function buildTable(){const tb=$('#tbody');tb.innerHTML='';
+  TUBES.forEach((t,i)=>{const tr=document.createElement('tr');
+    tr.innerHTML=`<td><b>${ar(i+1)}.</b> ${nameOf(t)}</td>
+      <td><select id="obs-${t.id}"><option value="">اختاري</option>${OBS.map((o,j)=>`<option value="${j}">${o}</option>`).join('')}</select></td>
+      <td><select id="rank-${t.id}"><option value="">—</option>${[1,2,3,4,5,6,7].map(n=>`<option value="${n}">${ar(n)}</option>`).join('')}</select></td>
+      <td class="num">${fmt(t.V/VMAX*FOAM_MAX*0.3,0)}</td><td class="num">${fmt(t.V)}</td>
+      <td><div class="vbar" style="width:${Math.max(1,t.V/VMAX*100)}%"></div></td><td class="mark" id="mk-${t.id}"></td>`;
+    tb.appendChild(tr);});}
+$('#checkBtn').onclick=()=>{
+  const order=[...TUBES].sort((a,b)=>b.V-a.V);const rankOf={};order.forEach((t,i)=>rankOf[t.id]=i+1);
+  let ok=0,missing=0;
+  TUBES.forEach(t=>{const o=$('#obs-'+t.id).value,r=$('#rank-'+t.id).value,mk=$('#mk-'+t.id);
+    if(o===''||r===''){missing++;mk.textContent='—';mk.className='mark';return;}
+    const rOk=t.open?(+r===5||+r===6):+r===rankOf[t.id];const oOk=Math.abs(+o-level(t.V))<=1;
+    if(rOk&&oOk){ok++;mk.textContent='✓';mk.className='mark ok';}else{mk.textContent=!rOk?'✗ الترتيب':'✗ الملاحظة';mk.className='mark no';}});
+  const fb=$('#tblFb');
+  if(missing){fb.className='fb warn';fb.textContent='أكملي كل الخانات ('+ar(missing)+' صفوف ناقصة).';}
+  else if(ok===7){fb.className='fb ok';fb.textContent='جدولكِ صحيح ✓ الترتيب: الكاتاليز النقي، ثم الكبد المطحون، ثم قطع الكبد، ثم البطاطس، ثم العاملان غير العضويين، وأخيرًا بيروكسيد الهيدروجين وحده.';}
+  else{fb.className='fb warn';fb.textContent=ar(ok)+' من ٧ صحيحة. راجعي حجم الأكسجين في كل أنبوب: الأكبر حجمًا هو الأسرع.';}
+};
+
+/* ---- Questions ---- */
+const QS=[
+  {q:'١. ما الغاز الذي تكوّن؟',o:['الأكسجين','الهيدروجين','ثاني أكسيد الكربون','بخار الماء'],a:[0],fb:'الأكسجين. يتفكّك بيروكسيد الهيدروجين إلى ماء وأكسجين: <bdi dir="ltr">2H₂O₂ → 2H₂O + O₂</bdi>، والأكسجين هو الذي كوّن الفقاعات والرغوة.'},
+  {q:'٢. ما العامل الذي أعطى أسرع تفاعل؟',o:['إنزيم الكاتاليز النقي','الكبد المطحون','ثاني أكسيد المنغنيز','برادة الحديد'],a:[0],fb:'الكاتاليز النقي أعطى أكبر حجم من الأكسجين وأعلى رغوة خلال ٣٠ ثانية، لأن الأنبوب يحتوي على أكبر كمية متاحة من الإنزيم.'},
+  {q:'٣. لماذا كان الكبد المطحون أسرع من قطعه؟',o:['لأن الطحن يزيد مساحة السطح المعرّضة للتفاعل ويكشف مزيدًا من الإنزيم','لأن كتلة الكبد المطحون أكبر','لأن الطحن يرفع درجة حرارة الأنبوب','لأن الطحن يغيّر شكل الموقع النشط للإنزيم'],a:[0],fb:'الكتلتان متساويتان (١ غ). الطحن يكسر الخلايا ويزيد مساحة السطح، فيصل بيروكسيد الهيدروجين إلى كمية أكبر من الكاتاليز في الوقت نفسه.'},
+  {q:'٤. لماذا استخدمنا أنبوبًا يحتوي على بيروكسيد الهيدروجين وحده؟',o:['ليكون أنبوبًا ضابطًا نقارن به، فنتأكّد أن الفرق سببه العامل الحفّاز','لأنه أسرع الأنابيب','لزيادة كمية الأكسجين الكلية','لتثبيت درجة الحرارة'],a:[0],fb:'هو أنبوب ضابط: بيروكسيد الهيدروجين يتفكّك وحده ببطء شديد، فإذا ظهرت فقاعات كثيرة في الأنابيب الأخرى عرفنا أن العامل الحفّاز هو السبب.'},
+  {q:'٥. ما المتغيّرات التي ثبّتناها للمقارنة العادلة؟ (اختاري كل ما ينطبق)',o:['درجة الحرارة','حجم بيروكسيد الهيدروجين','تركيز بيروكسيد الهيدروجين','زمن الملاحظة','كتلة عيّنتي الكبد (القطع والمطحون)','نوع العامل الحفّاز','ارتفاع الرغوة'],a:[0,1,2,3,4],multi:true,fb:'ثبّتنا درجة الحرارة، وحجم بيروكسيد الهيدروجين وتركيزه، وزمن الملاحظة، وكتلة عيّنتي الكبد. أمّا نوع العامل الحفّاز فهو المتغيّر المستقل الذي غيّرناه، وارتفاع الرغوة (أو حجم الأكسجين) هو المتغيّر التابع الذي قسناه.'}
+];
+const qs=$('#qs');
+QS.forEach((Q,qi)=>{const d=document.createElement('div');d.className='qitem';d.innerHTML=`<h3>${Q.q}</h3><div class="opts"></div><p class="fb" hidden></p>`;
+  const opts=d.querySelector('.opts'),fb=d.querySelector('.fb');
+  if(Q.multi){Q.o.forEach((o,j)=>{const l=document.createElement('label');l.className='opt';l.innerHTML=`<input type="checkbox" id="q${qi}o${j}"> <span>${o}</span>`;opts.appendChild(l);});
+    const b=document.createElement('button');b.type='button';b.className='btn small';b.textContent='تحقّقي';b.style.marginTop='6px';
+    b.onclick=()=>{let all=true;Q.o.forEach((o,j)=>{const c=d.querySelector('#q'+qi+'o'+j).checked,should=Q.a.includes(j);const l=opts.children[j];l.classList.toggle('right',should);l.classList.toggle('wrong',c&&!should);if(c!==should)all=false;});fb.hidden=false;fb.className='fb '+(all?'ok':'warn');fb.innerHTML=(all?'إجابة صحيحة ✓ ':'راجعي الخيارات الملوّنة. ')+Q.fb;};
+    opts.after(b);}
+  else Q.o.forEach((o,j)=>{const b=document.createElement('button');b.type='button';b.className='opt';b.textContent=o;b.onclick=()=>{opts.querySelectorAll('.opt').forEach(x=>x.classList.remove('right','wrong'));const ok=Q.a.includes(j);b.classList.add(ok?'right':'wrong');if(!ok)opts.children[Q.a[0]].classList.add('right');fb.hidden=false;fb.className='fb '+(ok?'ok':'warn');fb.innerHTML=(ok?'صحيح ✓ ':'ليست هذه. ')+Q.fb;};opts.appendChild(b);});
+  qs.appendChild(d);});
+
+/* ---- Helpers ---- */
+function say(m,k){const s=$('#status');s.textContent=m;s.className='status'+(k?' '+k:'');}
+function stepper(){const idx={predict:0,fill:1,ready:2,running:2,done:3}[phase];[...$('#stepper').children].forEach((li,i)=>li.className=i===idx?'on':(i<idx?'past':''));}
+resetModel();stepper();say('ابدئي بتوقّع العامل الذي سيعطي أسرع تفاعل، ثم أضيفي بيروكسيد الهيدروجين بالقطّارة.');
+})();
+</script>
