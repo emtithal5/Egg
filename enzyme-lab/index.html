@@ -263,11 +263,11 @@ td input{width:96px;min-height:44px;border:2px solid var(--navy);border-radius:1
 .speed select{min-height:50px;border-radius:12px;border:2px solid var(--navy);padding:0 10px;font-weight:800;background:#fff;color:var(--navy);font-size:18px}
 
 /* guide */
-.guide-btn{position:fixed;left:calc(14px + env(safe-area-inset-left,0px));bottom:calc(112px + env(safe-area-inset-bottom,0px));z-index:40;display:flex;align-items:center;gap:6px;border:2.5px solid var(--navy);background:#fff;border-radius:999px;padding:4px 14px 4px 4px;cursor:pointer;box-shadow:0 4px 0 var(--navy);font-weight:800;color:var(--navy);font-size:17px}
-.guide-btn svg{width:56px;height:56px}
-.guide-btn span{display:none}
-.guide-btn{padding:4px}
-.bubble-box{position:fixed;left:calc(14px + env(safe-area-inset-left,0px));bottom:calc(190px + env(safe-area-inset-bottom,0px));z-index:41;width:min(380px,calc(100vw - 32px));background:#fff;border:2.5px solid var(--navy);border-radius:20px;padding:14px 16px;box-shadow:5px 5px 0 var(--peri)}
+.top-actions{display:flex;gap:8px;align-items:center}
+.guide-btn{display:inline-flex;align-items:center;gap:6px;border:2px solid var(--navy);background:#fff;border-radius:999px;padding:2px 14px 2px 4px;cursor:pointer;box-shadow:0 3px 0 var(--navy);font-weight:800;color:var(--navy);font-size:16px;min-height:50px}
+.guide-btn svg{width:42px;height:42px}
+.guide-btn[aria-expanded="true"]{background:var(--orange-soft)}
+.bubble-box{position:fixed;left:calc(14px + env(safe-area-inset-left,0px));top:calc(78px + env(safe-area-inset-top,0px));z-index:41;width:min(380px,calc(100vw - 32px));background:#fff;border:2.5px solid var(--navy);border-radius:20px;padding:14px 16px;box-shadow:5px 5px 0 var(--peri)}
 .bubble-box h4{margin:0 0 6px;font-family:var(--display);color:var(--purple);font-size:21px}
 .bubble-box p{font-size:17px}
 .bubble-box .x{position:absolute;top:8px;left:8px;width:40px;height:40px;border-radius:50%;border:2px solid var(--navy);background:var(--peri-soft);font-weight:800;cursor:pointer;color:var(--navy)}
@@ -287,9 +287,117 @@ footer.sig{margin-top:22px;display:flex;justify-content:space-between;align-item
 footer.sig .name{font-family:var(--display);font-size:24px;font-weight:800}
 footer.sig .slashes{width:60px;height:14px;background:repeating-linear-gradient(-60deg,var(--orange) 0 6px,transparent 6px 12px)}
 
+.ptabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;flex:none}
+.ptab{min-height:46px;padding:0 14px;border-radius:12px;border:2px solid var(--peri);background:var(--peri-soft);color:var(--navy);font-weight:800;font-size:16px;cursor:pointer}
+.ptab[aria-selected="true"]{background:var(--navy);border-color:var(--navy);color:#fff}
+.ptab .badge{display:inline-block;min-width:22px;height:22px;border-radius:11px;background:var(--orange);color:var(--ink);font-size:13px;line-height:22px;margin-inline-start:6px;padding:0 6px}
+.chart-panel .ptitle .seg{margin-inline-start:auto}
+.btnrow{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:8px}
+.cguide{display:flex;gap:14px;flex-wrap:wrap;margin-top:8px;font-size:15px;font-weight:700;color:var(--navy)}
+.cguide>span{display:inline-flex;align-items:center;gap:6px}
+.cguide .swatch{width:28px;height:18px}
+.lens-note{font-size:14px;margin-top:6px}
+.cstepbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.cstep{min-height:48px;padding:0 16px;border-radius:14px;border:2px solid var(--navy);background:#fff;color:var(--navy);font-weight:800;font-size:16px;cursor:pointer}
+.cstep[aria-selected="true"]{background:var(--navy);color:#fff;box-shadow:0 3px 0 var(--orange)}
+.cstep.done::after{content:" ✓";color:var(--orange)}
+.ch-grid{display:flex;flex-direction:column;gap:14px}
+.c1-inner{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;align-items:start}
 #printArea{display:none}
+/* Fit mode: the whole lab fills the open screen; panels scroll inside themselves */
+@media (min-width:700px) and (min-height:560px){
+  html,body{height:100%;overflow:hidden}
+  .wrap{height:100%;max-width:none;display:flex;flex-direction:column;gap:8px;padding-block:8px}
+  .topbar{margin:0;flex:none}
+  .tab{min-height:44px}
+  .brand svg{width:40px;height:40px}
+  main{flex:1 1 0;min-height:0;display:flex;flex-direction:column}
+  .view{flex:1 1 0;min-height:0;display:flex;flex-direction:column;overflow:auto}
+  footer.sig{margin:0;flex:none;padding:2px 16px;border-radius:12px}
+  footer.sig .name{font-size:19px}
+  .controls{position:static;margin:0;flex:none;padding:6px 10px;box-shadow:none;border-radius:16px}
+  .controls .btn{min-height:46px}
+  .clock b{font-size:19px}
+  .station-head{flex:none;margin-bottom:8px;align-items:center;gap:8px 14px}
+  .station-head .eyebrow{display:none}
+  .station-head h2{font-size:clamp(20px,1.9vw,28px)}
+  .station-head .steps{margin:0;flex:1 1 520px;order:2}
+  .station-head .eq{order:3;padding:4px 14px;font-size:clamp(18px,1.6vw,24px)}
+  .steps li{font-size:14px;padding:2px 12px 2px 4px}
+  .steps li .n{width:24px;height:24px}
+  .view .grid2{flex:1 1 0;min-height:0;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);grid-template-rows:minmax(0,1fr);gap:12px}
+  .col{min-height:0;height:100%;gap:12px}
+  .col>.panel{flex:1 1 0;min-height:0;display:flex;flex-direction:column;padding:10px 14px;box-shadow:4px 4px 0 var(--peri)}
+  .col>.chart-panel{flex:1.1 1 0}
+  .app-svg,.chart{flex:1 1 0;min-height:0;width:100%;height:100%}
+  .caption{display:none}
+  .ptitle{margin-bottom:6px;flex:none}
+  .ptitle .note{font-size:14px}
+  .panel>.note,.btnrow,.cguide,.lens-note,.legend,.counters{flex:none}
+  .panel>.note{font-size:13px}
+  .pbody{flex:1 1 0;min-height:0;overflow:auto;display:flex;flex-direction:column}
+  .pbody .tbl-wrap{flex:1 1 0;min-height:120px;max-height:none}
+  .pbody .msg{flex:none}
+  .lens-wrap{flex:1 1 0;min-height:0}
+  .lens-wrap canvas{position:absolute;inset:0;margin:auto}
+  .counters{grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:6px;margin-top:6px}
+  .counter{padding:2px 8px} .counter span{font-size:12px;line-height:1.3} .counter b{font-size:17px}
+  .legend{margin-top:4px;font-size:13px;gap:10px}
+  .legend svg{width:26px;height:18px}
+  .lens-note{font-size:12.5px;margin-top:2px;line-height:1.45}
+  .qgrid{grid-template-columns:minmax(0,1fr)}
+  .cguide{font-size:14px;margin-top:6px}
+  #view-home{gap:14px;justify-content:center}
+  #view-home .cards{margin-top:0}
+  #view-home .idea{margin-top:0}
+  .cstepbar{flex:none}
+  .ch-grid{flex:1 1 0;min-height:0}
+  .ch-grid>.panel{flex:1 1 0;min-height:0;overflow:auto}
+  #view-ch .station-head{margin-bottom:6px}
+}
+@media (min-width:700px) and (min-height:560px) and (orientation:portrait){
+  .view .grid2{grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(0,1.5fr) minmax(0,1fr)}
+  .view .grid2>.col:last-child{flex-direction:row}
+  .view .grid2>.col:last-child>.panel{flex:1 1 0;min-width:0}
+}
+@media (min-width:700px) and (min-height:560px) and (max-width:1100px){
+  .brand span{display:none}
+  .tab{padding:0 12px;font-size:16px}
+  .guide-btn span,#bFullTxt{display:none}
+  .guide-btn{padding:2px 4px} #bFull{padding:0 10px}
+  .station-head .steps{display:none}
+  .controls{gap:6px} .controls .btn{padding:0 12px;font-size:16px}
+}
+@media (min-width:700px) and (min-height:560px) and (max-height:860px), (min-width:700px) and (min-height:560px) and (orientation:portrait){
+  .station-head .steps{display:none}
+  .station-head{margin-bottom:6px}
+  .topbar .tab,.top-actions .btn{min-height:42px}
+  .guide-btn{min-height:44px} .guide-btn svg{width:36px;height:36px}
+  .brand svg{width:34px;height:34px} .brand{font-size:20px}
+  .wrap{gap:6px;padding-block:6px}
+  .col>.panel{padding:8px 12px}
+  .col>.lens-panel{flex:.85 1 0}
+  .col>.chart-panel{flex:1.45 1 0}
+  .ptitle h3{font-size:19px}
+  .ptitle h3::after{width:24px;height:8px}
+  .app-panel .ptitle .note{display:none}
+  .ptab{min-height:40px;font-size:15px}
+  .ptabs{margin-bottom:6px}
+  .chart-panel .seg button{min-height:38px;font-size:14px;padding:0 10px}
+  .lens-note{display:none}
+  .counter span{font-size:11px} .counter b{font-size:15px} .meter{height:10px}
+  .legend{font-size:12px}
+  .btnrow{margin-top:4px;gap:6px} .btnrow .btn{min-height:40px;font-size:14px;padding:0 10px}
+  .cguide{font-size:13px;gap:10px;margin-top:4px}
+  .controls{padding:4px 8px} .controls .btn{min-height:44px;font-size:16px} .speed select{min-height:44px}
+  .clock{padding:2px 12px} .clock b{font-size:17px}
+  footer.sig{padding:0 14px} footer.sig .name{font-size:17px} footer.sig .note{font-size:13px}
+  .panel>.note{font-size:12.5px;line-height:1.45}
+  .idea{display:none} .card .ico{height:84px} .card .ico svg{height:70px} .hero{padding:14px 22px} .hero .mascot{width:120px}
+  .card{gap:6px} .card p{font-size:16px}
+}
 @media (max-width:1080px){ .grid2{grid-template-columns:minmax(0,1fr)} }
-@media (max-width:860px){ .cards,.idea{grid-template-columns:minmax(0,1fr)} .qgrid,.ch-grid,.compare{grid-template-columns:minmax(0,1fr)} .hero{grid-template-columns:minmax(0,1fr)} .hero .mascot{justify-self:center} }
+@media (max-width:860px){ .c1-inner{grid-template-columns:minmax(0,1fr)} .cards,.idea{grid-template-columns:minmax(0,1fr)} .qgrid,.ch-grid,.compare{grid-template-columns:minmax(0,1fr)} .hero{grid-template-columns:minmax(0,1fr)} .hero .mascot{justify-self:center} }
 @media (max-width:700px){ .controls{position:static} }
 @media (max-width:520px){ body{font-size:17px} .btn{padding:0 14px;font-size:16px} .clock{min-width:120px} .guide-btn span{display:none} .bins{grid-template-columns:minmax(0,1fr)} .blank{min-width:110px} }
 @media (prefers-reduced-motion: reduce){ *{transition:none!important;animation:none!important} }
@@ -334,7 +442,8 @@ footer.sig .slashes{width:60px;height:14px;background:repeating-linear-gradient(
       <button class="tab" data-go="station-2">٢. فكّ شفرة اللون<span class="done-dot" id="dot2" hidden></span></button>
       <button class="tab" data-go="challenge">تحدّي باحثات المختبر</button>
     </nav>
-    <button class="btn small soft" id="bFull"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h6v2H6v4H4zM14 4h6v6h-2V6h-4zM4 14h2v4h4v2H4zM18 14h2v6h-6v-2h4z"/></svg><span id="bFullTxt">ملء الشاشة</span></button>
+    <div class="top-actions"><button class="guide-btn" id="guideBtn" title="تلميح من دكستر" aria-expanded="false" aria-controls="guideBox"><svg viewBox="0 0 200 232" aria-hidden="true"><use href="#mascot"/></svg><span>تلميح من دكستر</span></button>
+    <button class="btn small soft" id="bFull"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h6v2H6v4H4zM14 4h6v6h-2V6h-4zM4 14h2v4h4v2H4zM18 14h2v6h-6v-2h4z"/></svg><span id="bFullTxt">ملء الشاشة</span></button></div>
   </header>
 
   <main>
@@ -385,18 +494,18 @@ footer.sig .slashes{width:60px;height:14px;background:repeating-linear-gradient(
   <section id="view-s1" class="view" hidden>
     <div class="station-head">
       <div><span class="eyebrow">المحطة الأولى</span><h2>تتبّع الأكسجين: تجربة الكاتاليز</h2></div>
+      <ol class="steps" id="s1Steps">
+        <li><span class="n">١</span>ضعي أنبوب الكاتاليز داخل الدورق</li>
+        <li><span class="n">٢</span>أغلقي الدورق بالسدادة</li>
+        <li><span class="n">٣</span>«بدء»: لحظة المزج = الزمن صفر</li>
+        <li><span class="n">٤</span>سجّلي الحجم كل ٣٠ s</li>
+        <li><span class="n">٥</span>حلّلي المنحنى</li>
+      </ol>
       <div class="eq" aria-label="معادلة التفاعل: اثنان H2O2 يعطي اثنان H2O زائد O2 بوجود الكاتاليز"><span>2H<sub>2</sub>O<sub>2</sub></span> <span class="arrow"><span class="cat">كاتاليز</span><span class="line"></span></span> <span>2H<sub>2</sub>O + O<sub>2</sub></span></div>
     </div>
-    <ol class="steps" id="s1Steps">
-      <li><span class="n">١</span>ضعي أنبوب الكاتاليز داخل الدورق</li>
-      <li><span class="n">٢</span>أغلقي الدورق بالسدادة</li>
-      <li><span class="n">٣</span>«بدء»: لحظة المزج = الزمن صفر</li>
-      <li><span class="n">٤</span>سجّلي الحجم كل ٣٠ s</li>
-      <li><span class="n">٥</span>حلّلي المنحنى</li>
-    </ol>
     <div class="grid2">
       <div class="col">
-        <div class="panel">
+        <div class="panel app-panel">
           <div class="ptitle"><h3>الجهاز</h3><span class="note">اسحبي الأدوات أو انقريها ثم انقري مكانها</span></div>
           <svg id="s1svg" class="app-svg" viewBox="0 0 800 380" role="img" aria-label="دورق فيه بيروكسيد الهيدروجين متصل بحقنة غاز، ومؤقّت، وأنبوب كاتاليز">
             <defs>
@@ -445,8 +554,8 @@ footer.sig .slashes{width:60px;height:14px;background:repeating-linear-gradient(
           </svg>
           <p class="caption">يوضع أنبوب صغير فيه الكاتاليز داخل الدورق قبل إغلاقه، ثم يُمال الدورق ليختلط الإنزيم بالمادة المتفاعلة. هكذا يبدأ التفاعل والنظام محكم، ونعدّ لحظة المزج الزمن صفرًا. اقرئي الحجم عند الوجه الأمامي لمكبس الحقنة.</p>
         </div>
-        <div class="panel" id="s1LensPanel" hidden>
-          <div class="ptitle"><h3>العدسة الجزيئية</h3><span class="tag-sim">تمثيل مبسّط</span></div>
+        <div class="panel lens-panel" id="s1LensPanel" hidden>
+          <div class="ptitle"><h3>العدسة الجزيئية</h3><span class="tag-sim" title="كل شكل يمثّل عددًا كبيرًا من الجزيئات، والأحجام والسرعات ليست بمقياس حقيقي">تمثيل مبسّط: ليس بمقياس حقيقي</span></div>
           <div class="lens-wrap"><canvas id="lens1" width="520" height="300" aria-label="رسم متحرك لجزيئات بيروكسيد الهيدروجين والكاتاليز"></canvas></div>
           <div class="counters">
             <div class="counter"><span>H₂O₂ المتبقية (مادة متفاعلة)</span><b id="l1s">٤٠</b></div>
@@ -461,36 +570,45 @@ footer.sig .slashes{width:60px;height:14px;background:repeating-linear-gradient(
             <span><svg viewBox="0 0 34 22"><circle cx="17" cy="12" r="6" fill="#E0574A"/><circle cx="9" cy="8" r="3.2" fill="#fff" stroke="#27385B"/><circle cx="25" cy="8" r="3.2" fill="#fff" stroke="#27385B"/></svg>H₂O</span>
             <span><svg viewBox="0 0 34 22"><circle cx="12" cy="11" r="6" fill="#4C7BE0"/><circle cx="22" cy="11" r="6" fill="#4C7BE0"/></svg>O₂ يتجه إلى الحقنة</span>
           </div>
-          <p class="note" style="margin-top:8px">تمثيل مبسّط: كل شكل يمثّل عددًا كبيرًا من الجزيئات، والأحجام والسرعات ليست بمقياس حقيقي. عدد الجزيئات هنا يتبع الزمن الافتراضي نفسه الذي تتبعه الحقنة والجدول والمنحنى: تقلّ المادة المتفاعلة، وتزداد النواتج، ويبقى عدد جزيئات الإنزيم ثابتًا.</p>
+          <p class="note lens-note">تمثيل مبسّط: كل شكل يمثّل عددًا كبيرًا من الجزيئات، والأحجام والسرعات ليست بمقياس حقيقي. عدد الجزيئات هنا يتبع الزمن الافتراضي نفسه الذي تتبعه الحقنة والجدول والمنحنى: تقلّ المادة المتفاعلة، وتزداد النواتج، ويبقى عدد جزيئات الإنزيم ثابتًا.</p>
         </div>
       </div>
       <div class="col">
-        <div class="panel">
-          <div class="ptitle"><h3>جدول القراءات</h3></div>
-          <label class="switch"><input type="checkbox" id="pauseAt" checked> إيقاف تلقائي عند كل قراءة (كل ٣٠ s افتراضية)</label>
-          <div class="tbl-wrap" style="margin-top:10px">
-            <table aria-label="جدول حجم الأكسجين مع الزمن">
-              <thead><tr><th>الزمن (s)</th><th>حجم الأكسجين المتجمّع (mL)</th><th>التحقق</th></tr></thead>
-              <tbody id="t1body"></tbody>
-            </table>
+        <div class="panel data-panel">
+          <div class="ptabs" role="tablist" aria-label="بيانات المحطة الأولى">
+            <button class="ptab" role="tab" data-pt="s1-table" aria-selected="true">جدول القراءات</button>
+            <button class="ptab" role="tab" data-pt="s1-an" aria-selected="false">تحليل المنحنى</button>
+            <button class="ptab" role="tab" data-pt="s1-q" aria-selected="false">أسئلة تكوينية</button>
           </div>
-          <div id="r1msg" class="msg info">اقرئي الحجم من الحقنة عندما يتوقف المؤقت عند كل ٣٠ s، واكتبيه ثم اضغطي «تحقّق».</div>
+          <div class="pbody" id="s1-table" role="tabpanel">
+            <label class="switch"><input type="checkbox" id="pauseAt" checked> إيقاف تلقائي عند كل قراءة (كل ٣٠ s افتراضية)</label>
+            <div class="tbl-wrap" style="margin-top:8px">
+              <table aria-label="جدول حجم الأكسجين مع الزمن">
+                <thead><tr><th>الزمن (s)</th><th>حجم الأكسجين المتجمّع (mL)</th><th>التحقق</th></tr></thead>
+                <tbody id="t1body"></tbody>
+              </table>
+            </div>
+            <div id="r1msg" class="msg info">اقرئي الحجم من الحقنة عندما يتوقف المؤقت عند كل ٣٠ s، واكتبيه ثم اضغطي «تحقّق».</div>
+          </div>
+          <div class="pbody" id="s1-an" role="tabpanel" hidden>
+            <div id="an1" class="analysis"></div>
+          </div>
+          <div class="pbody" id="s1-q" role="tabpanel" hidden>
+            <p class="note" style="margin-bottom:8px">تلميح بعد الخطأ الأول، وتفسير علمي بعد المحاولة الثانية.</p>
+            <div class="qgrid" id="s1Q"></div>
+          </div>
         </div>
-        <div class="panel">
-          <div class="ptitle"><h3>منحنى حجم الأكسجين</h3><span class="tag-sim">بيانات محاكاة تعليمية</span></div>
-          <div class="seg" role="group" aria-label="نوع التحليل">
-            <button id="m1avg" aria-pressed="true">متوسط المعدل خلال فترة</button>
-            <button id="m1tan" aria-pressed="false">المعدل اللحظي عند نقطة</button>
+        <div class="panel chart-panel">
+          <div class="ptitle"><h3>منحنى حجم الأكسجين</h3>
+            <div class="seg" role="group" aria-label="نوع التحليل">
+              <button id="m1avg" aria-pressed="true">متوسط خلال فترة</button>
+              <button id="m1tan" aria-pressed="false">لحظي عند نقطة</button>
+            </div>
           </div>
           <svg id="c1" class="chart" viewBox="0 0 560 370" role="img" aria-label="منحنى حجم الأكسجين المتجمّع مقابل الزمن"></svg>
-          <div id="an1" class="analysis"></div>
-          <p class="note" style="margin-top:8px">القيم ناتجة عن نموذج محاكاة تعليمي، وليست منقولة من الكتاب المدرسي.</p>
+          <p class="note">انقري النقاط لتحليل المعدل. القيم من نموذج محاكاة تعليمي، وليست منقولة من الكتاب المدرسي.</p>
         </div>
       </div>
-    </div>
-    <div class="panel" style="margin-top:18px">
-      <div class="ptitle"><h3>أسئلة تكوينية</h3><span class="note">تلميح بعد الخطأ الأول، وتفسير علمي بعد المحاولة الثانية</span></div>
-      <div class="qgrid" id="s1Q"></div>
     </div>
   </section>
 
@@ -498,18 +616,18 @@ footer.sig .slashes{width:60px;height:14px;background:repeating-linear-gradient(
   <section id="view-s2" class="view" hidden>
     <div class="station-head">
       <div><span class="eyebrow">المحطة الثانية</span><h2>فكّ شفرة اللون: الأميليز والنشا</h2></div>
+      <ol class="steps" id="s2Steps">
+        <li><span class="n">١</span>أضيفي الأميليز إلى النشا (الزمن صفر)</li>
+        <li><span class="n">٢</span>عيّنة متساوية كل ٦٠ s + كمية يود ثابتة</li>
+        <li><span class="n">٣</span>صفّري مقياس الألوان</li>
+        <li><span class="n">٤</span>قيسي امتصاص كل عيّنة وسجّليه</li>
+        <li><span class="n">٥</span>فسّري المنحنى</li>
+      </ol>
       <div class="eq rtl" aria-label="النشا يتحلل إلى مالتوز بوجود الأميليز"><span>نشا</span> <span class="arrow"><span class="cat">أميليز</span><span class="line"></span></span> <span>مالتوز</span></div>
     </div>
-    <ol class="steps" id="s2Steps">
-      <li><span class="n">١</span>أضيفي الأميليز إلى النشا (الزمن صفر)</li>
-      <li><span class="n">٢</span>عيّنة متساوية كل ٦٠ s + كمية يود ثابتة</li>
-      <li><span class="n">٣</span>صفّري مقياس الألوان</li>
-      <li><span class="n">٤</span>قيسي امتصاص كل عيّنة وسجّليه</li>
-      <li><span class="n">٥</span>فسّري المنحنى</li>
-    </ol>
     <div class="grid2">
       <div class="col">
-        <div class="panel">
+        <div class="panel app-panel">
           <div class="ptitle"><h3>الجهاز</h3><span class="note">اسحبي العيّنة إلى مقياس الألوان، أو انقريها ثم انقري الجهاز</span></div>
           <svg id="s2svg" class="app-svg" viewBox="0 0 800 380" role="img" aria-label="كأس نشا، أنبوب أميليز، يود، حامل عيّنات، ومقياس ألوان">
             <defs><clipPath id="beakerClip"><path d="M34 140 L40 326 Q40 334 48 334 L152 334 Q160 334 160 326 L166 140 Z"/></clipPath></defs>
@@ -563,24 +681,17 @@ footer.sig .slashes{width:60px;height:14px;background:repeating-linear-gradient(
               <rect id="coloriTarget" x="556" y="108" width="238" height="230" rx="20" class="hl-target" opacity="0"/>
             </g>
           </svg>
-          <div class="row" style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:10px">
+          <div class="row btnrow">
             <button class="btn small" id="bZero">تصفير الجهاز بأنبوب ماء مقطّر</button>
             <button class="btn small primary" id="bRec2" disabled>سجّلي القراءة في الجدول</button>
+            <button class="btn small soft" id="bHow">كيف يعمل مقياس الألوان؟</button>
             <button class="btn small soft" id="bWhy">لماذا لا نضيف اليود مباشرة؟</button>
           </div>
+          <div class="cguide"><span><span class="swatch" style="background:#1E2256"></span>نشا كثير + يود: أزرق قاتم</span><span><span class="swatch" style="background:#5B5F86"></span>نشا أقل: لون أفتح</span><span><span class="swatch" style="background:#C48A2E"></span>لا نشا: لون اليود الأصفر البني (ليس عديم اللون)</span></div>
           <p class="caption">مسار الضوء: مصدر ضوء ← مرشّح ← عيّنة ← كاشف ← قراءة رقمية. يمرّر المرشّح الأحمر ضوءًا بطول موجي يمتصّه معقّد النشا واليود الأزرق القاتم بقوة؛ لذلك كلما كان اللون الأزرق أقوى كان الامتصاص أعلى، بشرط ثبات ظروف القياس (الأنبوب نفسه، والمرشّح نفسه، وحجم العيّنة وكمية اليود نفسهما).</p>
         </div>
-        <div class="panel">
-          <div class="ptitle"><h3>دليل الألوان</h3></div>
-          <div style="display:flex;gap:16px;flex-wrap:wrap;align-items:center">
-            <span><span class="swatch" style="background:#1E2256"></span> نشا كثير + يود: أزرق قاتم</span>
-            <span><span class="swatch" style="background:#5B5F86"></span> نشا أقل: لون أفتح</span>
-            <span><span class="swatch" style="background:#C48A2E"></span> لا نشا: يبقى لون اليود الأصفر البني</span>
-          </div>
-          <p class="note" style="margin-top:8px">العيّنة التي لا نشا فيها ليست عديمة اللون؛ يظهر فيها لون محلول اليود نفسه.</p>
-        </div>
-        <div class="panel" id="s2LensPanel" hidden>
-          <div class="ptitle"><h3>العدسة الجزيئية</h3><span class="tag-sim">تمثيل مبسّط</span></div>
+        <div class="panel lens-panel" id="s2LensPanel" hidden>
+          <div class="ptitle"><h3>العدسة الجزيئية</h3><span class="tag-sim" title="كل شكل يمثّل عددًا كبيرًا من الجزيئات، والأحجام والسرعات ليست بمقياس حقيقي">تمثيل مبسّط: ليس بمقياس حقيقي</span></div>
           <div class="lens-wrap"><canvas id="lens2" width="520" height="300" aria-label="رسم متحرك لسلاسل النشا والأميليز"></canvas></div>
           <div class="counters">
             <div class="counter"><span>سلاسل النشا المتبقية</span><b id="l2s">٨</b></div>
@@ -593,30 +704,35 @@ footer.sig .slashes{width:60px;height:14px;background:repeating-linear-gradient(
             <span><svg viewBox="0 0 34 22"><g fill="#5BAE8C" stroke="#27385B" stroke-width="1"><circle cx="5" cy="11" r="4"/><circle cx="13" cy="11" r="4"/><circle cx="21" cy="11" r="4"/><circle cx="29" cy="11" r="4"/></g></svg>سلسلة نشا</span>
             <span><svg viewBox="0 0 34 22"><g fill="#F3B562" stroke="#27385B" stroke-width="1"><circle cx="12" cy="11" r="5"/><circle cx="22" cy="11" r="5"/></g></svg>مالتوز</span>
           </div>
-          <p class="note" style="margin-top:8px">تمثيل مبسّط: السلاسل أقصر بكثير من جزيئات النشا الحقيقية. يقلّ النشا ويزداد المالتوز مع الزمن الافتراضي نفسه، ويبقى عدد جزيئات الأميليز ثابتًا.</p>
+          <p class="note lens-note">تمثيل مبسّط: السلاسل أقصر بكثير من جزيئات النشا الحقيقية. يقلّ النشا ويزداد المالتوز مع الزمن الافتراضي نفسه، ويبقى عدد جزيئات الأميليز ثابتًا.</p>
         </div>
       </div>
       <div class="col">
-        <div class="panel">
-          <div class="ptitle"><h3>جدول القراءات</h3></div>
-          <div class="tbl-wrap">
-            <table aria-label="جدول الامتصاص مع الزمن">
-              <thead><tr><th>زمن سحب العيّنة (s)</th><th>لون العيّنة بعد اليود</th><th>الامتصاص</th></tr></thead>
-              <tbody id="t2body"></tbody>
-            </table>
+        <div class="panel data-panel">
+          <div class="ptabs" role="tablist" aria-label="بيانات المحطة الثانية">
+            <button class="ptab" role="tab" data-pt="s2-table" aria-selected="true">جدول القراءات</button>
+            <button class="ptab" role="tab" data-pt="s2-q" aria-selected="false">أسئلة تكوينية</button>
           </div>
-          <div id="r2msg" class="msg info">ابدئي التفاعل أولًا: اسحبي أنبوب الأميليز إلى كأس النشا، أو اضغطي «بدء».</div>
+          <div class="pbody" id="s2-table" role="tabpanel">
+            <div class="tbl-wrap">
+              <table aria-label="جدول الامتصاص مع الزمن">
+                <thead><tr><th>زمن سحب العيّنة (s)</th><th>لون العيّنة بعد اليود</th><th>الامتصاص</th></tr></thead>
+                <tbody id="t2body"></tbody>
+              </table>
+            </div>
+            <div id="r2msg" class="msg info">ابدئي التفاعل أولًا: اسحبي أنبوب الأميليز إلى كأس النشا، أو اضغطي «بدء».</div>
+          </div>
+          <div class="pbody" id="s2-q" role="tabpanel" hidden>
+            <p class="note" style="margin-bottom:8px">تلميح بعد الخطأ الأول، وتفسير علمي بعد المحاولة الثانية.</p>
+            <div class="qgrid" id="s2Q"></div>
+          </div>
         </div>
-        <div class="panel">
-          <div class="ptitle"><h3>منحنى الامتصاص مقابل الزمن</h3><span class="tag-sim">بيانات محاكاة تعليمية</span></div>
+        <div class="panel chart-panel">
+          <div class="ptitle"><h3>الامتصاص مقابل الزمن</h3></div>
           <svg id="c2" class="chart" viewBox="0 0 560 370" role="img" aria-label="منحنى الامتصاص مقابل الزمن"></svg>
-          <p class="note" style="margin-top:6px">الامتصاص مؤشّر على كمية النشا المتبقية وليس كمية النشا نفسها؛ تحويله إلى تركيز دقيق يحتاج منحنى معايرة بمحاليل نشا معلومة التركيز. القيم ناتجة عن نموذج محاكاة تعليمي، وليست منقولة من الكتاب المدرسي.</p>
+          <p class="note">الامتصاص مؤشّر على النشا المتبقي وليس كميته نفسها؛ تحويله إلى تركيز دقيق يحتاج منحنى معايرة. القيم من نموذج محاكاة تعليمي، وليست من الكتاب المدرسي.</p>
         </div>
       </div>
-    </div>
-    <div class="panel" style="margin-top:18px">
-      <div class="ptitle"><h3>أسئلة تكوينية</h3><span class="note">تلميح بعد الخطأ الأول، وتفسير علمي بعد المحاولة الثانية</span></div>
-      <div class="qgrid" id="s2Q"></div>
     </div>
   </section>
 
@@ -626,17 +742,23 @@ footer.sig .slashes{width:60px;height:14px;background:repeating-linear-gradient(
       <div><span class="eyebrow">الختام</span><h2>تحدّي باحثات المختبر</h2></div>
       <p class="muted" style="max-width:520px">بعد أول خطأ يظهر تلميح، وبعد المحاولة الثانية يظهر التفسير العلمي.</p>
     </div>
-    <div class="ch-grid">
-      <div class="panel" id="c1box">
-        <div class="ptitle"><h3>١. أيّ الفترتين أسرع؟</h3></div>
-        <svg id="cc1" class="chart" viewBox="0 0 560 330" role="img" aria-label="منحنى أكسجين عليه فترتان مظللتان"></svg>
-        <div id="cq1"></div>
-      </div>
-      <div class="panel"><div class="ptitle"><h3>٢. صحّحي العبارة</h3></div><div id="cq2"></div></div>
-      <div class="panel"><div class="ptitle"><h3>٣. فسّري انخفاض الامتصاص</h3></div><div id="cq3"></div></div>
-      <div class="panel"><div class="ptitle"><h3>٤. صنّفي طريقتي المتابعة</h3></div><div id="cq4"></div></div>
+    <div class="cstepbar" role="tablist" aria-label="أسئلة التحدي">
+      <button class="cstep" role="tab" data-cs="0" aria-selected="true">١. الفترة الأسرع</button>
+      <button class="cstep" role="tab" data-cs="1" aria-selected="false">٢. تصحيح العبارة</button>
+      <button class="cstep" role="tab" data-cs="2" aria-selected="false">٣. تفسير الامتصاص</button>
+      <button class="cstep" role="tab" data-cs="3" aria-selected="false">٤. تصنيف الطريقتين</button>
+      <button class="cstep" role="tab" data-cs="4" aria-selected="false">المقارنة والنتائج</button>
     </div>
-    <div class="panel" style="margin-top:18px" id="finalPanel">
+    <div class="ch-grid">
+      <div class="panel cpanel" data-cs="0" id="c1box">
+        <div class="ptitle"><h3>١. أيّ الفترتين أسرع؟</h3></div>
+        <div class="c1-inner"><svg id="cc1" class="chart" viewBox="0 0 560 330" role="img" aria-label="منحنى أكسجين عليه فترتان مظللتان"></svg>
+        <div id="cq1"></div></div>
+      </div>
+      <div class="panel cpanel" data-cs="1" hidden><div class="ptitle"><h3>٢. صحّحي العبارة</h3></div><div id="cq2"></div></div>
+      <div class="panel cpanel" data-cs="2" hidden><div class="ptitle"><h3>٣. فسّري انخفاض الامتصاص</h3></div><div id="cq3"></div></div>
+      <div class="panel cpanel" data-cs="3" hidden><div class="ptitle"><h3>٤. صنّفي طريقتي المتابعة</h3></div><div id="cq4"></div></div>
+    <div class="panel cpanel" data-cs="4" id="finalPanel" hidden>
       <div class="ptitle"><h3>مقارنة بين التجربتين</h3></div>
       <p class="lockmsg" id="cmpLock">يظهر جدول المقارنة بعد محاولة الأسئلة الأربعة.</p>
       <div id="cmpBox" hidden>
@@ -663,6 +785,7 @@ footer.sig .slashes{width:60px;height:14px;background:repeating-linear-gradient(
       </div>
       <p class="note" id="printNote" style="margin-top:8px">إذا لم تظهر نافذة الطباعة في هذه الصفحة، افتحي ملف التطبيق مباشرة في المتصفح، أو انسخي النتائج.</p>
     </div>
+    </div>
   </section>
   </main>
 
@@ -685,7 +808,6 @@ footer.sig .slashes{width:60px;height:14px;background:repeating-linear-gradient(
   </footer>
 </div>
 
-<button class="guide-btn" id="guideBtn" title="تلميح من دكستر" aria-expanded="false" aria-controls="guideBox"><svg viewBox="0 0 200 232" aria-hidden="true"><use href="#mascot"/></svg><span>تلميح من دكستر</span></button>
 <div class="bubble-box" id="guideBox" role="dialog" aria-label="تلميح من دكستر" hidden>
   <button class="x" id="guideX" aria-label="إغلاق">×</button>
   <h4>دكستر يقول:</h4>
@@ -696,7 +818,7 @@ footer.sig .slashes{width:60px;height:14px;background:repeating-linear-gradient(
   <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
     <div style="display:flex;justify-content:space-between;align-items:center;gap:10px">
       <h3 id="modalTitle">لماذا لا نضيف اليود مباشرة إلى مزيج التفاعل؟</h3>
-      <button class="btn small" id="modalX">إغلاق</button>
+      <button class="btn small mclose" id="modalX">إغلاق</button>
     </div>
     <div class="compare">
       <div class="a">
@@ -721,6 +843,31 @@ footer.sig .slashes{width:60px;height:14px;background:repeating-linear-gradient(
   </div>
 </div>
 
+<div class="modal-back" id="modal2Back" hidden>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal2Title">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:10px">
+      <h3 id="modal2Title">كيف يعمل مقياس الألوان؟</h3>
+      <button class="btn small mclose">إغلاق</button>
+    </div>
+    <svg viewBox="0 0 640 120" style="width:100%;height:auto;margin-top:10px" aria-hidden="true">
+      <rect x="0" y="0" width="640" height="120" rx="14" fill="#E9EDFB"/>
+      <rect x="40" y="52" width="520" height="16" fill="#F06A55" opacity=".25"/>
+      <circle cx="580" cy="60" r="20" fill="#FFE27A" stroke="#27385B" stroke-width="3"/>
+      <rect x="470" y="30" width="12" height="60" fill="#E25B4A" stroke="#27385B" stroke-width="2"/>
+      <rect x="320" y="24" width="34" height="76" rx="8" fill="#3B4A9A" stroke="#27385B" stroke-width="2"/>
+      <rect x="150" y="36" width="24" height="48" fill="#7C86A8" stroke="#27385B" stroke-width="2"/>
+      <rect x="20" y="40" width="90" height="40" rx="8" fill="#14203A"/><text x="65" y="67" text-anchor="middle" fill="#FFC28F" font-size="18" font-weight="800">٠٫٦٦</text>
+      <g font-size="15" font-weight="700" fill="#27385B" text-anchor="middle"><text x="580" y="110">مصدر ضوء</text><text x="476" y="110">مرشّح</text><text x="337" y="114">عيّنة</text><text x="162" y="110">كاشف</text><text x="65" y="30">قراءة رقمية</text></g>
+    </svg>
+    <ul style="margin-top:10px;padding-inline-start:22px">
+      <li>مسار الضوء: مصدر ضوء ← مرشّح ← عيّنة ← كاشف ← قراءة رقمية.</li>
+      <li>يمرّر المرشّح الأحمر ضوءًا بطول موجي مناسب يمتصّه معقّد النشا واليود الأزرق القاتم بقوة.</li>
+      <li>يقيس الكاشف الضوء الذي عبر العيّنة، ويعرض الجهاز <b>الامتصاص</b>: كلما كان اللون الأزرق أقوى قلّ الضوء الواصل وارتفع الامتصاص.</li>
+      <li>المقارنة صحيحة فقط تحت ظروف القياس نفسها: المرشّح نفسه، وحجم العيّنة نفسه، وكمية اليود نفسها، بعد تصفير الجهاز بالماء المقطّر.</li>
+      <li>الامتصاص مؤشّر على كمية النشا؛ تحويله إلى تركيز دقيق يحتاج منحنى معايرة.</li>
+    </ul>
+  </div>
+</div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 <div id="printArea"></div>
 
@@ -740,6 +887,7 @@ function parseNum(str){ if(str==null) return null;
   if(!/^[-+]?(\d+\.?\d*|\.\d+)$/.test(s)) return null; return parseFloat(s); }
 function mmss(t){ const s=Math.max(0,Math.floor(t+1e-6)); return ar(String(Math.floor(s/60)).padStart(2,'0'))+':'+ar(String(s%60).padStart(2,'0')); }
 const reduceMotion = !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
+const FIT_MQ = window.matchMedia ? matchMedia('(min-width:700px) and (min-height:560px)') : {matches:false};
 const finePointer = !!(window.matchMedia && matchMedia('(pointer:fine)').matches);
 let speed=5, view='home';
 function toast(msg){ const el=$('#toast'); el.textContent=msg; el.classList.add('show'); clearTimeout(toast._t); toast._t=setTimeout(()=>el.classList.remove('show'),4200); }
@@ -825,7 +973,12 @@ class Lens{
     this.prods=this.prods.filter(p=>!(p.type==='o2'&&p.y<-14));
     for(const e of this.enz){ e.ph+=dt*0.8; e.x=e.bx+Math.sin(e.ph)*10; e.y=e.by+Math.cos(e.ph*0.8)*8; e.a+= (e.busy?0:0.25*dt*(e.bx>W/2?1:-1)); }
   }
-  fit(){ const w=this.c.clientWidth||520; const dpr=Math.min(2,window.devicePixelRatio||1); if(Math.abs(w-this.cw)>1||dpr!==this.dpr){ this.cw=w; this.dpr=dpr; this.c.width=Math.round(w*dpr); this.c.height=Math.round(w*this.H/this.W*dpr); } this.ctx.setTransform(this.c.width/this.W,0,0,this.c.height/this.H,0,0); }
+  fit(){ const wrap=this.c.parentElement, fitMode=FIT_MQ.matches; let w, h;
+    if(fitMode){ const aw=Math.max(60,wrap.clientWidth), ah=Math.max(40,wrap.clientHeight); this.setW(Math.max(300,Math.min(1100,this.H*aw/ah))); w=aw; h=Math.min(ah,aw*this.H/this.W); this.c.style.width=w+'px'; this.c.style.height=h+'px'; }
+    else { this.setW(520); this.c.style.width=''; this.c.style.height=''; w=this.c.clientWidth||520; h=w*this.H/this.W; }
+    const dpr=Math.min(2,window.devicePixelRatio||1); if(Math.abs(w-this.cw)>1||dpr!==this.dpr){ this.cw=w; this.dpr=dpr; this.c.width=Math.round(w*dpr); this.c.height=Math.round(h*dpr); } this.ctx.setTransform(this.c.width/this.W,0,0,this.c.height/this.H,0,0); }
+  setW(nw){ if(Math.abs(nw-this.W)<2) return; this.W=nw; const n=this.enz.length; this.enz.forEach((e,i)=>{ e.bx=nw*(i+0.5)/n; e.x=e.bx; });
+    for(const p of this.subs.concat(this.prods)){ if(p.x>nw-14) p.x=14+Math.random()*(nw-28); } }
   draw(){ if(!this.c.offsetParent) return; this.fit(); const g=this.ctx, c=this.cfg;
     g.clearRect(0,0,this.W,this.H); g.fillStyle='#F3F5FD'; g.fillRect(0,0,this.W,this.H);
     if(c.kind==='cat'){ g.fillStyle='rgba(76,123,224,.10)'; g.fillRect(0,0,this.W,16); g.fillStyle='#27385B'; g.font='700 11px Tajawal, sans-serif'; g.textAlign='center'; g.fillText('↑ الأكسجين يغادر المحلول إلى الحقنة',this.W/2,12); }
@@ -930,7 +1083,7 @@ function start1(){
   }
 }
 function pause1(){ if(S1.phase==='running') S1.phase='paused'; }
-function activateRow(m){ const r=S1.readings[m]; if(r.status==='pending') r.status='active'; S1.awaiting=m; renderTable1();
+function activateRow(m){ showTab('s1-table'); const r=S1.readings[m]; if(r.status==='pending') r.status='active'; S1.awaiting=m; renderTable1();
   setMsg1(`توقّف المؤقت عند ${ar(m)} s. اقرئي حجم الأكسجين من الحقنة واكتبيه في الجدول.`,'info');
   const inp=$(`#r1-${m}`); if(inp&&finePointer) inp.focus({preventScroll:true}); }
 function autoRecord(m){ const r=S1.readings[m]; if(r.val==null&&r.status!=='missed'){ r.val=Math.round(V1(m)); r.status='auto'; } }
@@ -992,6 +1145,7 @@ function drawChart1(){
   for(let t=0;t<=420;t+=60){ h+=`<line class="grid" x1="${X1(t)}" x2="${X1(t)}" y1="40" y2="310"/><text class="tick" x="${X1(t)}" y="330" text-anchor="middle">${ar(t)}</text>`; }
   h+=`<line class="axis" x1="70" y1="310" x2="535" y2="310"/><line class="axis" x1="70" y1="310" x2="70" y2="34"/>`;
   h+=`<text class="axt" x="300" y="358" text-anchor="middle">الزمن (s)</text><text class="axt" x="18" y="175" text-anchor="middle" transform="rotate(-90 18 175)">حجم الأكسجين المتجمّع (mL)</text>`;
+  h+='<rect x="372" y="4" width="160" height="27" rx="8" fill="#FEEBDC" stroke="#F39349" stroke-dasharray="4 3"/><text class="ann-o" x="452" y="23" text-anchor="middle">بيانات محاكاة تعليمية</text>';
   if(pts.length>=2) h+=`<path class="curve" d="${monotonePath(pts.map(p=>[X1(p.t),Y1(p.v)]))}"/>`;
   const byT={}; pts.forEach(p=>byT[p.t]=p);
   if(S1.mode==='avg' && S1.sel.length===2){ const [a,b]=S1.sel.map(t=>byT[t]).sort((p,q)=>p.t-q.t);
@@ -1013,7 +1167,7 @@ function drawChart1(){
 function pickPoint1(t){
   if(S1.mode==='avg'){ if(S1.sel.includes(t)) S1.sel=S1.sel.filter(x=>x!==t); else if(S1.sel.length>=2) S1.sel=[t]; else S1.sel.push(t); }
   else S1.tanT=(S1.tanT===t?null:t);
-  drawChart1(); renderAnalysis1();
+  drawChart1(); renderAnalysis1(); showTab('s1-an');
 }
 $('#c1').addEventListener('click',e=>{ const g=e.target.closest('.pt'); if(g) pickPoint1(+g.dataset.t); });
 $('#c1').addEventListener('keydown',e=>{ const g=e.target.closest('.pt'); if(g&&(e.key==='Enter'||e.key===' ')){ e.preventDefault(); pickPoint1(+g.dataset.t); } });
@@ -1182,6 +1336,7 @@ function drawChart2(){ let h='';
   h+=`<line class="axis" x1="70" y1="310" x2="535" y2="310"/><line class="axis" x1="70" y1="310" x2="70" y2="34"/>`;
   h+=`<text class="axt" x="300" y="358" text-anchor="middle">الزمن (s)</text><text class="axt" x="16" y="175" text-anchor="middle" transform="rotate(-90 16 175)">الامتصاص (مؤشّر على النشا المتبقي)</text>`;
   const pts=MARKS2.filter(m=>S2.recorded[m]!=null).map(m=>({t:m,a:S2.recorded[m]}));
+  h+='<rect x="372" y="4" width="160" height="27" rx="8" fill="#FEEBDC" stroke="#F39349" stroke-dasharray="4 3"/><text class="ann-o" x="452" y="23" text-anchor="middle">بيانات محاكاة تعليمية</text>';
   if(pts.length>=2) h+=`<path class="curve" d="${monotonePath(pts.map(p=>[X2(p.t),Y2(p.a)]))}"/>`;
   if(S2.mixed&&S2.phase!=='done') h+=`<line class="nowline" id="c2now" x1="${X2(S2.t)}" x2="${X2(S2.t)}" y1="40" y2="310"/>`;
   for(const p of pts) h+=`<circle cx="${X2(p.t)}" cy="${Y2(p.a)}" r="6.5" fill="#fff" stroke="#513778" stroke-width="3"><title>${ar(p.t)} s : ${ar(p.a,2)}</title></circle>`;
@@ -1189,16 +1344,26 @@ function drawChart2(){ let h='';
   $('#c2').innerHTML=h; }
 function updateLensCounters2(){ const c=lens2.counts(); $('#l2s').textContent=ar(c.subs); $('#l2p').textContent=ar(c.done*3);
   const f=c.subs/N2; $('#l2o').style.width=(f*100).toFixed(0)+'%'; $('#l2oTxt').textContent=f>0.6?'عالية':(f>0.3?'متوسطة':(f>0?'منخفضة':'لا يوجد نشا تقريبًا')); }
-$('#bWhy').addEventListener('click',()=>openModal());
-function openModal(){ $('#modalBack').hidden=false; $('#modalX').focus(); }
-function closeModal(){ $('#modalBack').hidden=true; $('#bWhy').focus(); }
-$('#modalX').addEventListener('click',closeModal);
-$('#modalBack').addEventListener('click',e=>{ if(e.target.id==='modalBack') closeModal(); });
+$('#bWhy').addEventListener('click',()=>openModal('modalBack',$('#bWhy')));
+let modalReturn=null;
+function openModal(id,ret){ modalReturn=ret||null; const m=$('#'+id); m.hidden=false; m.querySelector('.mclose').focus(); }
+function closeModal(){ $$('.modal-back').forEach(m=>m.hidden=true); if(modalReturn) modalReturn.focus(); }
+$$('.mclose').forEach(b=>b.addEventListener('click',closeModal));
+$$('.modal-back').forEach(m=>m.addEventListener('click',e=>{ if(e.target===m) closeModal(); }));
+$('#bHow').addEventListener('click',()=>openModal('modal2Back',$('#bHow')));
 
 /* ================= Questions (shared attempt policy) ================= */
 const RES={};
 const LABELS={s1q1:'م١: الحجم والسرعة',s1q2:'م١: ميل المنحنى',s1q3:'م١: هل استُهلك الإنزيم؟',s1q4:'م١: الجزء الأفقي',s2q1:'م٢: انخفاض اللون',s2q2:'م٢: مقياس الألوان',s2q3:'م٢: تثبيت العيّنة واليود',s2q4:'م٢: اليود في المزيج',c1:'تحدٍّ ١: الفترة الأسرع',c2:'تحدٍّ ٢: تصحيح العبارة',c3:'تحدٍّ ٣: تفسير الامتصاص',c4:'تحدٍّ ٤: تصنيف الطريقتين'};
-function record(key,attempts,correct){ RES[key]={done:true,attempts,correct}; updateHome(); updateFinal(); }
+function record(key,attempts,correct){ RES[key]={done:true,attempts,correct}; updateHome(); updateFinal();
+  const ci=['c1','c2','c3','c4'].indexOf(key); if(ci>=0){ const b=$(`.cstep[data-cs="${ci}"]`); b.classList.add('done'); } updateQBadges(); }
+function showTab(id){ const body=$('#'+id); if(!body) return; const panel=body.closest('.data-panel'); $$('.ptab',panel).forEach(t=>t.setAttribute('aria-selected',String(t.dataset.pt===id))); $$('.pbody',panel).forEach(b=>b.hidden=b.id!==id); }
+document.addEventListener('click',e=>{ const t=e.target.closest('.ptab'); if(t) showTab(t.dataset.pt); });
+function showStep(i){ $$('.cstep').forEach(b=>b.setAttribute('aria-selected',String(+b.dataset.cs===i))); $$('.cpanel').forEach(p=>p.hidden=+p.dataset.cs!==i); }
+document.addEventListener('click',e=>{ const b=e.target.closest('.cstep'); if(b) showStep(+b.dataset.cs); });
+function updateQBadges(){ [['s1-q',Object.keys(Q1)],['s2-q',Object.keys(Q2)]].forEach(([id,keys])=>{ const tab=$(`.ptab[data-pt="${id}"]`); if(!tab) return;
+    const open=keys.filter(k=>!RES[k]&&!qBoxes[k].classList.contains('locked')).length; let bd=tab.querySelector('.badge');
+    if(open){ if(!bd){ bd=document.createElement('span'); bd.className='badge'; tab.appendChild(bd); } bd.textContent=ar(open); } else if(bd) bd.remove(); }); }
 function makeMCQ(container,key,q){
   const box=document.createElement('div'); box.className='q'; box.dataset.key=key;
   box.innerHTML=`<h4>${q.q}</h4><div class="opts">${q.o.map((o,i)=>`<button class="opt" data-i="${i}">${o[0]}</button>`).join('')}</div><div class="fbs"></div>`;
@@ -1255,8 +1420,8 @@ Object.entries(Q1).forEach(([k,q])=>qBoxes[k]=makeMCQ($('#s1Q'),k,q));
 Object.entries(Q2).forEach(([k,q])=>qBoxes[k]=makeMCQ($('#s2Q'),k,q));
 function updateQ1Locks(){ const n=points1().length-1; const late=S1.t>=TPLAT+STEP1||S1.phase==='done';
   ['s1q1','s1q2','s1q3'].forEach(k=>{ if(!RES[k]) lockQ(qBoxes[k], n<4, 'يُفتح السؤال بعد تسجيل ٤ قراءات على الأقل.'); });
-  if(!RES.s1q4) lockQ(qBoxes.s1q4, !late, 'يُفتح السؤال بعد أن يثبت حجم الغاز على المنحنى.'); }
-function updateQ2Locks(){ const n=Object.keys(S2.recorded).length; Object.keys(Q2).forEach(k=>{ if(!RES[k]) lockQ(qBoxes[k], n<3, 'يُفتح السؤال بعد تسجيل ٣ قراءات امتصاص على الأقل.'); }); }
+  if(!RES.s1q4) lockQ(qBoxes.s1q4, !late, 'يُفتح السؤال بعد أن يثبت حجم الغاز على المنحنى.'); updateQBadges(); }
+function updateQ2Locks(){ const n=Object.keys(S2.recorded).length; Object.keys(Q2).forEach(k=>{ if(!RES[k]) lockQ(qBoxes[k], n<3, 'يُفتح السؤال بعد تسجيل ٣ قراءات امتصاص على الأقل.'); }); updateQBadges(); }
 
 /* ================= Challenge ================= */
 (function drawCC1(){ const X=t=>70+t/420*460, Y=v=>290-v/60*250; let h='';
@@ -1389,7 +1554,7 @@ $('#bMol').addEventListener('click',()=>{ const s=station(); if(!s) return; s.S.
 $('#speedSel').addEventListener('change',e=>{ speed=+e.target.value; });
 $('#bFull').addEventListener('click',()=>{ const d=document; try{ if(!d.fullscreenElement){ const r=d.documentElement.requestFullscreen||d.documentElement.webkitRequestFullscreen; const pr=r&&r.call(d.documentElement); if(pr&&pr.catch) pr.catch(()=>toast('ملء الشاشة غير متاح في هذا العرض.')); if(!r) toast('ملء الشاشة غير متاح في هذا المتصفح.'); } else { (d.exitFullscreen||d.webkitExitFullscreen).call(d); } }catch(_){ toast('ملء الشاشة غير متاح في هذا العرض.'); } });
 document.addEventListener('fullscreenchange',()=>{ $('#bFullTxt').textContent=document.fullscreenElement?'الخروج من ملء الشاشة':'ملء الشاشة'; });
-document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ if(!$('#modalBack').hidden) closeModal(); $('#guideBox').hidden=true; $('#guideBtn').setAttribute('aria-expanded','false'); } });
+document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ if($$('.modal-back').some(m=>!m.hidden)) closeModal(); $('#guideBox').hidden=true; $('#guideBtn').setAttribute('aria-expanded','false'); } });
 
 /* guide hints */
 function getHint(){
