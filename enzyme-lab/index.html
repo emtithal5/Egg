@@ -1,0 +1,1438 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>داخل مختبر دكستر</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+Bhaijaan+2:wght@600;700;800&family=Tajawal:wght@400;500;700;800&display=swap">
+<style>
+/* Layout: lab-bench app — header + tabs, station = apparatus column | data column, sticky control bar, floating guide */
+:root{
+  --purple:#513778; --navy:#27385B; --peri:#A9B8E8; --orange:#F39349; --bg:#F8F7FC;
+  --paper:#FFFFFF; --peri-soft:#E9EDFB; --peri-mid:#D3DBF5; --orange-soft:#FEEBDC;
+  --ink:#1F2546; --muted:#565E86; --line:#D5DAF0;
+  --ok:#1F7A52; --ok-soft:#E0F3E9; --bad:#B23A33; --bad-soft:#FBE5E3;
+  --display:"Baloo Bhaijaan 2","Tajawal",system-ui,sans-serif;
+  --body:"Tajawal","Segoe UI",Tahoma,system-ui,sans-serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html,body{background:var(--bg);color:var(--ink)}
+body{margin:0;font-family:var(--body);font-size:18px;line-height:1.65;
+  background-image:linear-gradient(var(--peri-soft) 1px,transparent 1px),linear-gradient(90deg,var(--peri-soft) 1px,transparent 1px);
+  background-size:34px 34px;}
+.wrap{max-width:1380px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:14px 28px}
+h1,h2,h3{font-family:var(--display);color:var(--navy);line-height:1.25;margin:0;text-wrap:balance}
+h1{font-size:clamp(30px,4.4vw,54px);font-weight:800}
+h2{font-size:clamp(24px,2.8vw,34px);font-weight:800}
+h3{font-size:clamp(20px,2vw,24px);font-weight:700}
+p{margin:0}
+button,input,select{font:inherit}
+:focus-visible{outline:3px solid var(--orange);outline-offset:3px}
+[hidden]{display:none!important}
+
+/* header */
+.topbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:space-between;margin-bottom:14px}
+.brand{display:flex;align-items:center;gap:10px;font-family:var(--display);font-weight:800;font-size:22px;color:var(--purple)}
+.brand svg{width:46px;height:46px}
+.tabs{display:flex;gap:8px;flex-wrap:wrap}
+.tab{min-height:50px;padding:0 18px;border-radius:14px;border:2px solid var(--navy);background:var(--paper);color:var(--navy);font-weight:700;cursor:pointer;box-shadow:0 3px 0 var(--peri)}
+.tab[aria-current="page"]{background:var(--navy);color:#fff;box-shadow:0 3px 0 var(--orange)}
+.tab .done-dot{display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--orange);margin-inline-start:6px;vertical-align:middle}
+
+/* buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:54px;padding:0 20px;border-radius:15px;border:2px solid var(--navy);
+  background:var(--paper);color:var(--navy);font-weight:800;font-size:18px;cursor:pointer;box-shadow:0 4px 0 var(--navy);transition:transform .08s, box-shadow .08s, background .2s;touch-action:manipulation}
+.btn:active{transform:translateY(3px);box-shadow:0 1px 0 var(--navy)}
+.btn svg{width:22px;height:22px;fill:currentColor;flex:none}
+.btn.primary{background:var(--purple);color:#fff}
+.btn.accent{background:var(--orange);color:var(--ink)}
+.btn.soft{background:var(--peri-soft)}
+.btn.small{min-height:44px;padding:0 14px;font-size:16px;border-radius:12px;box-shadow:0 3px 0 var(--navy)}
+.btn[aria-pressed="true"]{background:var(--navy);color:#fff}
+.btn.glow{animation:glow 1.6s ease-in-out infinite}
+@keyframes glow{0%,100%{box-shadow:0 4px 0 var(--navy),0 0 0 0 rgba(243,147,73,.0)}50%{box-shadow:0 4px 0 var(--navy),0 0 0 7px rgba(243,147,73,.45)}}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+
+/* panels */
+.panel{background:var(--paper);border:2px solid var(--navy);border-radius:22px;box-shadow:6px 6px 0 var(--peri);padding:18px;min-width:0}
+.ptitle{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.ptitle h3::after{content:"";display:inline-block;width:34px;height:10px;margin-inline-start:10px;vertical-align:middle;
+  background:repeating-linear-gradient(-60deg,var(--orange) 0 5px,transparent 5px 10px)}
+.eyebrow{display:inline-block;font-weight:800;font-size:15px;letter-spacing:.02em;color:var(--purple);background:var(--peri-soft);border:1.5px solid var(--peri);border-radius:999px;padding:2px 12px;margin-bottom:6px}
+.muted{color:var(--muted)}
+.note{font-size:15px;color:var(--muted)}
+.tag-sim{display:inline-block;font-size:14px;font-weight:700;color:var(--purple);background:var(--orange-soft);border:1.5px dashed var(--orange);border-radius:10px;padding:1px 10px}
+
+/* home */
+.hero{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:18px;align-items:center;padding:26px 28px;background:linear-gradient(135deg,#fff 0%,var(--peri-soft) 100%)}
+.hero .mascot{width:clamp(130px,16vw,210px);height:auto}
+.hero p.lead{font-size:clamp(18px,1.8vw,22px);color:var(--muted);margin-top:10px}
+.cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;margin-top:20px}
+.card{display:flex;flex-direction:column;gap:10px}
+.card .ico{height:120px;border-radius:16px;background:var(--peri-soft);display:flex;align-items:center;justify-content:center;border:1.5px solid var(--peri)}
+.card .ico svg{height:100px;width:auto}
+.card p{color:var(--muted);flex:1}
+.card .status{font-size:15px;font-weight:700;color:var(--purple)}
+.idea{margin-top:20px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.idea div{background:var(--peri-soft);border-radius:16px;padding:12px 14px;border:1.5px solid var(--peri)}
+.idea b{color:var(--navy);display:block;font-family:var(--display);font-size:20px}
+
+/* station */
+.station-head{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;margin-bottom:12px}
+.eq{direction:ltr;unicode-bidi:isolate;display:inline-flex;align-items:center;gap:10px;background:var(--paper);border:2px solid var(--navy);border-radius:16px;padding:8px 18px;font-size:clamp(20px,2.2vw,28px);font-weight:800;color:var(--navy);box-shadow:4px 4px 0 var(--orange-soft)}
+.eq .arrow{display:inline-flex;flex-direction:column;align-items:center;line-height:1;font-size:.9em}
+.eq .arrow .cat{font-size:15px;color:var(--purple);font-weight:800;padding:0 6px 3px}
+.eq .arrow .line{display:block;width:92px;height:3px;background:var(--navy);position:relative}
+.eq.rtl{direction:rtl}
+.eq.rtl .arrow .line::after{right:auto;left:-2px;border-left:0;border-right:11px solid var(--navy)}
+.eq .arrow .line::after{content:"";position:absolute;right:-2px;top:-6px;border:7px solid transparent;border-left:11px solid var(--navy);border-right:0}
+.steps{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;padding:0;list-style:none}
+.steps li{display:flex;align-items:center;gap:8px;background:var(--paper);border:2px solid var(--line);border-radius:999px;padding:4px 14px 4px 6px;font-weight:700;font-size:16px;color:var(--muted)}
+.steps li .n{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:var(--peri-soft);color:var(--navy);font-weight:800}
+.steps li.cur{border-color:var(--orange);color:var(--ink);background:var(--orange-soft)}
+.steps li.cur .n{background:var(--orange);color:#fff}
+.steps li.ok{border-color:var(--peri);color:var(--navy)}
+.steps li.ok .n{background:var(--navy);color:#fff}
+.grid2{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:18px;align-items:start}
+.col{display:flex;flex-direction:column;gap:18px;min-width:0}
+.app-svg{width:100%;height:auto;display:block;touch-action:manipulation;user-select:none;-webkit-user-select:none}
+.caption{font-size:16px;color:var(--muted);margin-top:8px}
+
+/* svg apparatus */
+.bench{fill:#C9D1EE}
+.timer-box{fill:var(--navy)}
+.timer-cap{fill:#D3DBF5;font-size:13px;font-weight:700;font-family:var(--body)}
+.timer-num{fill:#FFD9BA;font-size:30px;font-weight:800;font-family:var(--body);letter-spacing:1px}
+.stand{fill:#7C86A8}
+.glass{fill:rgba(233,237,251,.35);stroke:var(--navy);stroke-width:3.5;stroke-linejoin:round}
+.glass-lip{fill:#fff;stroke:var(--navy);stroke-width:3}
+.glass-fill{fill:rgba(255,255,255,.75);stroke:var(--navy);stroke-width:2.5}
+.glass-solid{fill:#fff;stroke:var(--navy);stroke-width:2.5}
+.barrel{fill:rgba(255,255,255,.92);stroke:var(--navy);stroke-width:3}
+.barrel-end{fill:var(--navy)}
+.gas{fill:#DCE5FF}
+.rod{fill:#9AA3C2}
+.plunger{fill:var(--navy)}
+.tick-l{stroke:var(--navy);stroke-width:1.2}
+.tick-n{fill:var(--navy);font-size:11px;font-weight:700;font-family:var(--body)}
+.tubing{fill:none;stroke:#8E99BF;stroke-width:6;stroke-linecap:round}
+.tubing-in{fill:none;stroke:#EEF2FF;stroke-width:2.2;stroke-linecap:round}
+.liq-h2o2{fill:#BFD3FF;transition:fill 1.2s}
+.liq-h2o2.mixed{fill:#C9D3F5}
+.liq-cat{fill:#E9B872}
+.rubber{fill:#6E5A86;stroke:var(--navy);stroke-width:2.5;stroke-linejoin:round}
+.bubble{fill:rgba(255,255,255,.85);stroke:#6F86C9;stroke-width:1.2}
+.lbl{fill:var(--navy);font-size:14px;font-weight:700;font-family:var(--body)}
+.lbl-s{fill:var(--muted);font-size:13.5px;font-weight:700;font-family:var(--body)}
+.mag-ring{fill:none;stroke:var(--orange);stroke-width:6}
+.mag-handle{stroke:var(--orange);stroke-width:10;stroke-linecap:round}
+.draggable{cursor:grab;touch-action:none}
+.draggable:focus{outline:none}
+.draggable:focus-visible .selbox,.sel-on .selbox{opacity:1}
+.selbox{fill:none;stroke:var(--orange);stroke-width:3;stroke-dasharray:6 5;opacity:0;transition:opacity .2s}
+.drop-target{cursor:pointer}
+.hl-target{pointer-events:none;fill:rgba(243,147,73,.12);stroke:var(--orange);stroke-width:2.5;stroke-dasharray:8 6}
+.screen{fill:#14203A}
+.screen-txt{fill:#FFC28F;font-size:28px;font-weight:800;font-family:var(--body)}
+.screen-cap{fill:#A9B8E8;font-size:12px;font-weight:700;font-family:var(--body)}
+.colori{fill:#33466F;stroke:var(--navy);stroke-width:3}
+.colori-in{fill:#E9EDFB;stroke:var(--navy);stroke-width:2}
+.rtube-glass{fill:rgba(255,255,255,.8);stroke:var(--navy);stroke-width:2}
+.rtube-liq{transition:fill .9s ease}
+.rtube{cursor:pointer;touch-action:none}
+.rtube.measured .rtube-glass{stroke:var(--ok);stroke-width:3}
+
+/* tables */
+.tbl-wrap{overflow-x:auto;max-height:430px;overflow-y:auto;border-radius:14px;border:1.5px solid var(--line)}
+table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}
+th,td{padding:7px 10px;text-align:center;border-bottom:1px solid var(--line);font-size:17px}
+th{background:var(--peri-soft);color:var(--navy);font-weight:800;position:sticky;top:0;z-index:1}
+tr.active td{background:var(--orange-soft)}
+td input{width:96px;min-height:44px;border:2px solid var(--navy);border-radius:10px;text-align:center;font-size:19px;font-weight:700;background:#fff;color:var(--ink)}
+.st{font-weight:800;font-size:15px}
+.st.ok{color:var(--ok)} .st.bad{color:var(--bad)} .st.wait{color:var(--muted)} .st.auto{color:var(--purple)}
+.swatch{display:inline-block;width:42px;height:22px;border-radius:7px;border:1.5px solid var(--navy);vertical-align:middle}
+.msg{margin-top:10px;padding:10px 14px;border-radius:12px;font-weight:700;font-size:16px;min-height:0}
+.msg.ok{background:var(--ok-soft);color:var(--ok)} .msg.bad{background:var(--bad-soft);color:var(--bad)} .msg.info{background:var(--peri-soft);color:var(--navy)}
+.switch{display:flex;align-items:center;gap:10px;font-weight:700;font-size:16px;color:var(--navy);cursor:pointer}
+.switch input{width:26px;height:26px;accent-color:var(--purple)}
+
+/* charts */
+.chart{width:100%;height:auto;display:block;touch-action:manipulation}
+.chart .grid{stroke:#E3E7F6;stroke-width:1}
+.chart .axis{stroke:var(--navy);stroke-width:2.5}
+.chart .tick{fill:var(--muted);font-size:13px;font-weight:700;font-family:var(--body)}
+.chart .axt{fill:var(--navy);font-size:15px;font-weight:800;font-family:var(--body)}
+.chart .curve{fill:none;stroke:var(--purple);stroke-width:3.5;stroke-linecap:round}
+.chart .pt{cursor:pointer}
+.chart .pt .hit{fill:transparent}
+.chart .pt .dot{fill:#fff;stroke:var(--purple);stroke-width:3}
+.chart .pt.sel .dot{fill:var(--orange);stroke:var(--navy)}
+.chart .pt:hover .dot,.chart .pt:focus-visible .dot{stroke:var(--orange)}
+.chart .pt:focus{outline:none}
+.chart .band{fill:rgba(243,147,73,.22)}
+.chart .dv{stroke:var(--orange);stroke-width:4}
+.chart .dt{stroke:var(--navy);stroke-width:2.5;stroke-dasharray:6 5}
+.chart .secant{stroke:var(--purple);stroke-width:2.5;stroke-dasharray:3 4}
+.chart .tan{stroke:#C2410C;stroke-width:3}
+.chart .nowline{stroke:var(--orange);stroke-width:2;stroke-dasharray:4 5}
+.chart .ann{fill:var(--navy);font-size:14px;font-weight:800;font-family:var(--body)}
+.chart .ann-o{fill:#B4541A;font-size:14px;font-weight:800;font-family:var(--body)}
+.chart .zone{fill:rgba(169,184,232,.28)}
+.chart .zone2{fill:rgba(243,147,73,.2)}
+.seg{display:inline-flex;border:2px solid var(--navy);border-radius:14px;overflow:hidden}
+.seg button{min-height:46px;padding:0 14px;border:0;background:#fff;color:var(--navy);font-weight:800;cursor:pointer;font-size:16px}
+.seg button[aria-pressed="true"]{background:var(--navy);color:#fff}
+.analysis{margin-top:12px;background:var(--peri-soft);border-radius:16px;padding:14px;border:1.5px solid var(--peri)}
+.analysis .kv{display:flex;justify-content:space-between;gap:10px;border-bottom:1px dashed var(--peri);padding:4px 0}
+.analysis .kv b{font-variant-numeric:tabular-nums}
+.analysis .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:10px}
+.analysis input{width:110px;min-height:46px;border:2px solid var(--navy);border-radius:10px;text-align:center;font-size:19px;font-weight:700;background:#fff;color:var(--ink)}
+.formula{margin-top:10px;background:#fff;border-radius:12px;padding:10px 14px;border:2px solid var(--orange);font-weight:700}
+.formula .ltr{direction:ltr;unicode-bidi:isolate;display:inline-block}
+.explain{margin-top:10px;background:#fff;border-radius:12px;padding:10px 14px;border-inline-start:6px solid var(--purple)}
+
+/* lens */
+.lens-wrap{position:relative;border-radius:18px;overflow:hidden;border:3px solid var(--navy);background:#F3F5FD}
+.lens-wrap canvas{display:block;width:100%;height:auto}
+.counters{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin-top:10px}
+.counter{background:var(--peri-soft);border-radius:12px;padding:6px 10px;border:1.5px solid var(--peri)}
+.counter span{display:block;font-size:14px;color:var(--muted);font-weight:700}
+.counter b{font-size:22px;color:var(--navy);font-variant-numeric:tabular-nums}
+.meter{height:14px;border-radius:999px;background:#fff;border:1.5px solid var(--navy);overflow:hidden;margin-top:4px}
+.meter i{display:block;height:100%;background:var(--orange);width:100%;transition:width .3s}
+.legend{display:flex;flex-wrap:wrap;gap:14px;margin-top:10px;font-size:15px;font-weight:700;color:var(--navy)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend svg{width:34px;height:22px}
+
+/* questions */
+.qgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.q{background:#fff;border:2px solid var(--line);border-radius:18px;padding:14px;min-width:0}
+.q.locked{background:repeating-linear-gradient(-45deg,#fff 0 12px,#F6F7FC 12px 24px)}
+.q h4{margin:0 0 10px;font-size:19px;color:var(--navy);font-family:var(--body);font-weight:800;line-height:1.5}
+.q .opts{display:flex;flex-direction:column;gap:8px}
+.opt{text-align:start;min-height:52px;padding:8px 14px;border-radius:12px;border:2px solid var(--peri);background:var(--paper);color:var(--ink);font-weight:500;font-size:17px;cursor:pointer;line-height:1.5}
+.opt:hover{border-color:var(--purple)}
+.opt.wrong{border-color:var(--bad);background:var(--bad-soft);color:var(--bad)}
+.opt.right{border-color:var(--ok);background:var(--ok-soft);color:var(--ok);font-weight:700}
+.opt:disabled{cursor:default}
+.fb{margin-top:10px;border-radius:12px;padding:10px 14px;font-size:16px}
+.fb.hint{background:var(--orange-soft);color:#7A3A0C;border:1.5px solid var(--orange)}
+.fb.ok{background:var(--ok-soft);color:var(--ok);border:1.5px solid #9BD3B5}
+.fb.exp{background:var(--peri-soft);color:var(--navy);border:1.5px solid var(--peri)}
+.lockmsg{font-weight:700;color:var(--muted);font-size:16px}
+
+/* challenge */
+.ch-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;margin-top:14px}
+.sentence{font-size:20px;line-height:2.4}
+.blank{display:inline-flex;min-width:150px;min-height:46px;align-items:center;justify-content:center;border:2.5px dashed var(--purple);border-radius:12px;padding:0 12px;margin:0 4px;background:var(--peri-soft);cursor:pointer;font-weight:800;color:var(--navy);vertical-align:middle;line-height:1.4}
+.blank.filled{border-style:solid;background:#fff}
+.blank.sel{border-color:var(--orange);box-shadow:0 0 0 4px rgba(243,147,73,.3)}
+.blank.wrong{border-color:var(--bad);background:var(--bad-soft)}
+.blank.right{border-color:var(--ok);background:var(--ok-soft)}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.chip{min-height:48px;padding:0 16px;border-radius:999px;border:2px solid var(--navy);background:#fff;font-weight:800;color:var(--navy);cursor:pointer;font-size:17px;touch-action:none}
+.chip.sel{background:var(--orange);color:var(--ink)}
+.chip.used{opacity:.35}
+.bins{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px}
+.bin{min-height:150px;border:2.5px dashed var(--navy);border-radius:16px;padding:10px;background:var(--peri-soft);cursor:pointer;display:flex;flex-direction:column;gap:8px}
+.bin h5{margin:0;font-size:17px;color:var(--navy);font-weight:800}
+.bin.target{border-color:var(--orange);background:var(--orange-soft)}
+.ccard{min-height:48px;padding:8px 12px;border-radius:12px;border:2px solid var(--purple);background:#fff;font-weight:700;color:var(--ink);cursor:pointer;text-align:start;font-size:16px;line-height:1.45;touch-action:none}
+.ccard.sel{background:var(--orange);border-color:var(--navy)}
+.ccard.wrong{border-color:var(--bad);background:var(--bad-soft)}
+.ccard.right{border-color:var(--ok);background:var(--ok-soft)}
+.pool{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+.cmp th,.cmp td{text-align:start;vertical-align:top;font-size:16px}
+.cmp th:first-child{width:22%}
+.final-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+.res-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:8px;margin-top:10px}
+.res-item{background:var(--peri-soft);border-radius:12px;padding:8px 12px;font-size:15px;border:1.5px solid var(--peri)}
+.res-item b{display:block;color:var(--navy)}
+
+/* controls */
+.controls{position:sticky;bottom:0;z-index:20;margin-top:18px;background:rgba(248,247,252,.96);backdrop-filter:blur(6px);border:2px solid var(--navy);border-radius:20px;padding:10px;display:flex;flex-wrap:wrap;gap:10px;align-items:center;box-shadow:0 -4px 0 var(--peri);margin-bottom:env(safe-area-inset-bottom,0px)}
+.clock{display:flex;flex-direction:column;align-items:center;background:var(--navy);color:#fff;border-radius:14px;padding:4px 14px;min-width:150px}
+.clock span{font-size:13px;color:#D3DBF5;font-weight:700}
+.clock b{font-size:22px;color:#FFD9BA;font-variant-numeric:tabular-nums;line-height:1.2}
+.speed{display:flex;align-items:center;gap:8px;font-weight:800;color:var(--navy)}
+.speed select{min-height:50px;border-radius:12px;border:2px solid var(--navy);padding:0 10px;font-weight:800;background:#fff;color:var(--navy);font-size:18px}
+
+/* guide */
+.guide-btn{position:fixed;left:calc(14px + env(safe-area-inset-left,0px));bottom:calc(112px + env(safe-area-inset-bottom,0px));z-index:40;display:flex;align-items:center;gap:6px;border:2.5px solid var(--navy);background:#fff;border-radius:999px;padding:4px 14px 4px 4px;cursor:pointer;box-shadow:0 4px 0 var(--navy);font-weight:800;color:var(--navy);font-size:17px}
+.guide-btn svg{width:56px;height:56px}
+.guide-btn span{display:none}
+.guide-btn{padding:4px}
+.bubble-box{position:fixed;left:calc(14px + env(safe-area-inset-left,0px));bottom:calc(190px + env(safe-area-inset-bottom,0px));z-index:41;width:min(380px,calc(100vw - 32px));background:#fff;border:2.5px solid var(--navy);border-radius:20px;padding:14px 16px;box-shadow:5px 5px 0 var(--peri)}
+.bubble-box h4{margin:0 0 6px;font-family:var(--display);color:var(--purple);font-size:21px}
+.bubble-box p{font-size:17px}
+.bubble-box .x{position:absolute;top:8px;left:8px;width:40px;height:40px;border-radius:50%;border:2px solid var(--navy);background:var(--peri-soft);font-weight:800;cursor:pointer;color:var(--navy)}
+
+/* modal + toast */
+.modal-back{position:fixed;inset:0;background:rgba(31,37,70,.45);z-index:60;display:flex;align-items:center;justify-content:center;padding:16px}
+.modal{background:#fff;border:3px solid var(--navy);border-radius:24px;max-width:900px;width:100%;max-height:90vh;overflow:auto;padding:20px;box-shadow:8px 8px 0 var(--peri)}
+.compare{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:12px}
+.compare > div{border-radius:16px;padding:14px;border:2px solid var(--line)}
+.compare .a{background:var(--bad-soft);border-color:#E9B1AC}
+.compare .b{background:var(--ok-soft);border-color:#9BD3B5}
+.compare ul{margin:6px 0 0;padding-inline-start:20px}
+.compare svg{width:100%;height:120px}
+.toast{position:fixed;top:calc(14px + env(safe-area-inset-top,0px));left:50%;transform:translate(-50%,-140%);z-index:70;background:var(--navy);color:#fff;padding:12px 20px;border-radius:16px;font-weight:700;max-width:min(680px,calc(100vw - 32px));box-shadow:0 6px 0 var(--orange);transition:transform .3s}
+.toast.show{transform:translate(-50%,0)}
+footer.sig{margin-top:22px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;background:var(--purple);color:#fff;border-radius:18px;padding:12px 20px;border:2px solid var(--navy)}
+footer.sig .name{font-family:var(--display);font-size:24px;font-weight:800}
+footer.sig .slashes{width:60px;height:14px;background:repeating-linear-gradient(-60deg,var(--orange) 0 6px,transparent 6px 12px)}
+
+#printArea{display:none}
+@media (max-width:1080px){ .grid2{grid-template-columns:minmax(0,1fr)} }
+@media (max-width:860px){ .cards,.idea{grid-template-columns:minmax(0,1fr)} .qgrid,.ch-grid,.compare{grid-template-columns:minmax(0,1fr)} .hero{grid-template-columns:minmax(0,1fr)} .hero .mascot{justify-self:center} }
+@media (max-width:700px){ .controls{position:static} }
+@media (max-width:520px){ body{font-size:17px} .btn{padding:0 14px;font-size:16px} .clock{min-width:120px} .guide-btn span{display:none} .bins{grid-template-columns:minmax(0,1fr)} .blank{min-width:110px} }
+@media (prefers-reduced-motion: reduce){ *{transition:none!important;animation:none!important} }
+@media print{
+  body{background:#fff}
+  body > *:not(#printArea){display:none!important}
+  #printArea{display:block;color:#000;font-family:var(--body);font-size:13pt}
+  #printArea h1{font-size:22pt;color:#000} #printArea h2{font-size:16pt;margin-top:14pt;color:#000}
+  #printArea table{margin-top:6pt} #printArea th{position:static;background:#eee;color:#000} #printArea td,#printArea th{border:1px solid #999;font-size:11pt}
+}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <symbol id="mascot" viewBox="0 0 200 232">
+    <path d="M46 232 L56 170 Q100 148 144 170 L154 232 Z" fill="#fff" stroke="#27385B" stroke-width="5" stroke-linejoin="round"/>
+    <path d="M82 158 L100 190 L118 158" fill="none" stroke="#513778" stroke-width="7" stroke-linejoin="round"/>
+    <circle cx="100" cy="202" r="4.5" fill="#513778"/><circle cx="100" cy="220" r="4.5" fill="#513778"/>
+    <rect x="122" y="182" width="16" height="12" rx="3" fill="#F39349" stroke="#27385B" stroke-width="2.5"/>
+    <circle cx="43" cy="104" r="11" fill="#FFDDBF" stroke="#27385B" stroke-width="4"/>
+    <circle cx="157" cy="104" r="11" fill="#FFDDBF" stroke="#27385B" stroke-width="4"/>
+    <circle cx="100" cy="100" r="58" fill="#FFDDBF" stroke="#27385B" stroke-width="5"/>
+    <path d="M42 98 Q38 36 100 34 Q162 36 158 98 Q150 68 128 66 Q118 50 100 62 Q84 48 70 66 Q50 68 42 98 Z" fill="#3B2C55" stroke="#27385B" stroke-width="4" stroke-linejoin="round"/>
+    <path d="M100 36 Q94 14 118 12" fill="none" stroke="#3B2C55" stroke-width="8" stroke-linecap="round"/>
+    <path d="M44 78 Q100 60 156 78" stroke="#F39349" stroke-width="9" fill="none" stroke-linecap="round"/>
+    <circle cx="78" cy="70" r="15" fill="#E9EDFB" stroke="#F39349" stroke-width="6"/>
+    <circle cx="122" cy="70" r="15" fill="#E9EDFB" stroke="#F39349" stroke-width="6"/>
+    <path d="M70 92 Q80 86 90 92 M110 92 Q120 86 130 92" stroke="#27385B" stroke-width="4" fill="none" stroke-linecap="round"/>
+    <ellipse cx="80" cy="106" rx="7" ry="9" fill="#27385B"/><ellipse cx="120" cy="106" rx="7" ry="9" fill="#27385B"/>
+    <circle cx="82.5" cy="102.5" r="2.6" fill="#fff"/><circle cx="122.5" cy="102.5" r="2.6" fill="#fff"/>
+    <circle cx="64" cy="124" r="8" fill="#F39349" opacity=".35"/><circle cx="136" cy="124" r="8" fill="#F39349" opacity=".35"/>
+    <path d="M82 128 Q100 150 118 128 Z" fill="#fff" stroke="#27385B" stroke-width="4" stroke-linejoin="round"/>
+  </symbol>
+</svg>
+
+<div class="wrap">
+  <header class="topbar">
+    <div class="brand"><svg aria-hidden="true"><use href="#mascot"/></svg><span>مختبر دكستر</span></div>
+    <nav class="tabs" aria-label="أقسام المختبر">
+      <button class="tab" data-go="home">الرئيسية</button>
+      <button class="tab" data-go="station-1">١. تتبّع الأكسجين<span class="done-dot" id="dot1" hidden></span></button>
+      <button class="tab" data-go="station-2">٢. فكّ شفرة اللون<span class="done-dot" id="dot2" hidden></span></button>
+      <button class="tab" data-go="challenge">تحدّي باحثات المختبر</button>
+    </nav>
+    <button class="btn small soft" id="bFull"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h6v2H6v4H4zM14 4h6v6h-2V6h-4zM4 14h2v4h4v2H4zM18 14h2v6h-6v-2h4z"/></svg><span id="bFullTxt">ملء الشاشة</span></button>
+  </header>
+
+  <main>
+  <!-- ================= HOME ================= -->
+  <section id="view-home" class="view">
+    <div class="panel hero">
+      <div>
+        <span class="eyebrow">أحياء — الصف الحادي عشر · استقصاء سير تفاعل محفَّز بالإنزيم</span>
+        <h1>داخل مختبر دكستر: كيف نتابع سير التفاعل؟</h1>
+        <p class="lead">في كل محطة تقيسين شيئًا يتغيّر مع الزمن، وتسجّلين القراءات، وترسمين المنحنى، ثم تستنتجين كيف يتغيّر معدل التفاعل.</p>
+      </div>
+      <svg class="mascot" viewBox="0 0 200 232" role="img" aria-label="دكستر مرشد المختبر"><use href="#mascot"/></svg>
+    </div>
+    <div class="cards">
+      <article class="panel card">
+        <div class="ico"><svg viewBox="0 0 160 100" aria-hidden="true"><path d="M40 20v22L18 86h48L44 42V20" fill="#BFD3FF" stroke="#27385B" stroke-width="4" stroke-linejoin="round"/><path d="M42 20V8h60" fill="none" stroke="#8E99BF" stroke-width="5"/><rect x="100" y="0" width="56" height="18" rx="4" fill="#fff" stroke="#27385B" stroke-width="4"/><rect x="104" y="3" width="18" height="12" fill="#DCE5FF"/><circle cx="36" cy="72" r="4" fill="#fff" stroke="#6F86C9"/><circle cx="46" cy="62" r="3" fill="#fff" stroke="#6F86C9"/><circle cx="40" cy="52" r="2.5" fill="#fff" stroke="#6F86C9"/></svg></div>
+        <span class="eyebrow">المحطة الأولى</span>
+        <h3>تتبّع الأكسجين</h3>
+        <p>الكاتاليز يحلّل بيروكسيد الهيدروجين. نجمع الأكسجين في حقنة غاز ونقرأ حجمه كل ٣٠ ثانية.</p>
+        <span class="status" id="home1">لم تبدأ بعد</span>
+        <button class="btn primary" data-go="station-1">ادخلي المحطة الأولى</button>
+      </article>
+      <article class="panel card">
+        <div class="ico"><svg viewBox="0 0 160 100" aria-hidden="true"><g stroke="#27385B" stroke-width="3.5"><rect x="12" y="10" width="20" height="80" rx="9" fill="#fff"/><rect x="44" y="10" width="20" height="80" rx="9" fill="#fff"/><rect x="76" y="10" width="20" height="80" rx="9" fill="#fff"/><rect x="108" y="10" width="20" height="80" rx="9" fill="#fff"/></g><rect x="15" y="50" width="14" height="37" rx="6" fill="#1E2256"/><rect x="47" y="50" width="14" height="37" rx="6" fill="#3B4A9A"/><rect x="79" y="50" width="14" height="37" rx="6" fill="#7A7A6E"/><rect x="111" y="50" width="14" height="37" rx="6" fill="#C48A2E"/></svg></div>
+        <span class="eyebrow">المحطة الثانية</span>
+        <h3>فكّ شفرة اللون</h3>
+        <p>الأميليز يحلّل النشا. نأخذ عيّنات متتالية ونضيف اليود، ثم نقيس شدة اللون بمقياس الألوان.</p>
+        <span class="status" id="home2">لم تبدأ بعد</span>
+        <button class="btn primary" data-go="station-2">ادخلي المحطة الثانية</button>
+      </article>
+      <article class="panel card">
+        <div class="ico"><svg viewBox="0 0 160 100" aria-hidden="true"><path d="M80 10a28 28 0 0 0-16 51v11h32V61A28 28 0 0 0 80 10z" fill="#FFE2A8" stroke="#27385B" stroke-width="4"/><rect x="66" y="76" width="28" height="8" rx="3" fill="#A9B8E8" stroke="#27385B" stroke-width="3"/><rect x="70" y="86" width="20" height="8" rx="3" fill="#A9B8E8" stroke="#27385B" stroke-width="3"/><g stroke="#F39349" stroke-width="5" stroke-linecap="round"><path d="M38 38h-14M136 38h-14M48 14l-9-9M112 14l9-9"/></g></svg></div>
+        <span class="eyebrow">الختام</span>
+        <h3>تحدّي باحثات المختبر</h3>
+        <p>أربعة أسئلة تطبيقية، ثم جدول مقارنة بين التجربتين وطباعة النتائج.</p>
+        <span class="status" id="home3">٠ من ٤ أسئلة</span>
+        <button class="btn accent" data-go="challenge">ابدئي التحدّي</button>
+      </article>
+    </div>
+    <div class="idea">
+      <div><b>نقيس</b>كمية تتغيّر مع الزمن الافتراضي نفسه في الجهاز والجدول والمنحنى.</div>
+      <div><b>نرسم</b>كل قراءة تتحققين منها تظهر نقطةً على المنحنى مباشرة.</div>
+      <div><b>نفسّر</b>العدسة الجزيئية تربط شكل المنحنى بما يحدث للجزيئات.</div>
+    </div>
+  </section>
+
+  <!-- ================= STATION 1 ================= -->
+  <section id="view-s1" class="view" hidden>
+    <div class="station-head">
+      <div><span class="eyebrow">المحطة الأولى</span><h2>تتبّع الأكسجين: تجربة الكاتاليز</h2></div>
+      <div class="eq" aria-label="معادلة التفاعل: اثنان H2O2 يعطي اثنان H2O زائد O2 بوجود الكاتاليز"><span>2H<sub>2</sub>O<sub>2</sub></span> <span class="arrow"><span class="cat">كاتاليز</span><span class="line"></span></span> <span>2H<sub>2</sub>O + O<sub>2</sub></span></div>
+    </div>
+    <ol class="steps" id="s1Steps">
+      <li><span class="n">١</span>ضعي أنبوب الكاتاليز داخل الدورق</li>
+      <li><span class="n">٢</span>أغلقي الدورق بالسدادة</li>
+      <li><span class="n">٣</span>«بدء»: لحظة المزج = الزمن صفر</li>
+      <li><span class="n">٤</span>سجّلي الحجم كل ٣٠ s</li>
+      <li><span class="n">٥</span>حلّلي المنحنى</li>
+    </ol>
+    <div class="grid2">
+      <div class="col">
+        <div class="panel">
+          <div class="ptitle"><h3>الجهاز</h3><span class="note">اسحبي الأدوات أو انقريها ثم انقري مكانها</span></div>
+          <svg id="s1svg" class="app-svg" viewBox="0 0 800 380" role="img" aria-label="دورق فيه بيروكسيد الهيدروجين متصل بحقنة غاز، ومؤقّت، وأنبوب كاتاليز">
+            <defs>
+              <clipPath id="flaskClip"><path d="M222 140 L222 205 L152 318 Q146 332 162 332 L318 332 Q334 332 328 318 L258 205 L258 140 Z"/></clipPath>
+              <clipPath id="magClip"><circle cx="680" cy="250" r="58"/></clipPath>
+            </defs>
+            <rect x="0" y="332" width="800" height="12" rx="3" class="bench"/>
+            <rect x="16" y="16" width="176" height="76" rx="14" class="timer-box"/>
+            <text x="104" y="40" class="timer-cap" text-anchor="middle">المؤقّت · زمن افتراضي</text>
+            <text id="s1TimerTxt" x="104" y="78" class="timer-num" text-anchor="middle">٠٠:٠٠</text>
+            <rect x="556" y="144" width="8" height="188" class="stand"/>
+            <rect x="516" y="324" width="88" height="10" rx="3" class="stand"/>
+            <rect x="546" y="138" width="28" height="12" rx="3" class="stand"/>
+            <g id="syrCore">
+              <rect x="318" y="114" width="14" height="12" class="glass-solid"/>
+              <rect x="330" y="98" width="450" height="44" rx="6" class="barrel"/>
+              <rect id="gas" x="332" y="101" width="8" height="38" class="gas"/>
+              <g id="ticks"></g>
+              <rect id="plRod" x="350" y="114" width="520" height="12" class="rod"/>
+              <rect id="plHead" x="340" y="101" width="10" height="38" rx="2" class="plunger"/>
+              <rect x="778" y="90" width="6" height="60" rx="2" class="barrel-end"/>
+            </g>
+            <text x="448" y="168" class="lbl" text-anchor="middle">حقنة غاز (mL)</text>
+            <path id="tubePath" class="tubing" d="M240 66 C240 11, 280 114, 318 120"/>
+            <path id="tubePathIn" class="tubing-in" d="M240 66 C240 11, 280 114, 318 120"/>
+            <g clip-path="url(#flaskClip)"><rect id="flaskLiquid" x="140" y="272" width="200" height="70" class="liq-h2o2"/><g id="bubbles"></g></g>
+            <path class="glass" d="M222 140 L222 205 L152 318 Q146 332 162 332 L318 332 Q334 332 328 318 L258 205 L258 140 Z"/>
+            <rect id="flaskTarget" x="140" y="112" width="200" height="222" rx="16" class="hl-target" opacity="0"/>
+            <rect id="flaskHit" x="140" y="112" width="200" height="222" fill="transparent" class="drop-target" tabindex="0" role="button" aria-label="الدورق"/>
+            <text x="240" y="362" class="lbl" text-anchor="middle">دورق: محلول بيروكسيد الهيدروجين</text>
+            <g id="vial" class="draggable" tabindex="0" role="button" aria-label="أنبوب الكاتاليز: اسحبيه أو انقريه ثم انقري الدورق">
+              <rect class="selbox" x="-16" y="-78" width="32" height="88" rx="8"/>
+              <rect x="-7" y="-68" width="14" height="68" rx="6" class="glass-fill"/>
+              <rect id="vialLiq" x="-5" y="-30" width="10" height="27" rx="4" class="liq-cat"/>
+            </g>
+            <text id="vialLbl" x="77" y="352" class="lbl" text-anchor="middle">أنبوب الكاتاليز</text>
+            <g id="stopper" class="draggable" tabindex="0" role="button" aria-label="السدادة: اسحبيها إلى فوهة الدورق أو انقريها ثم انقري الدورق">
+              <rect class="selbox" x="208" y="118" width="64" height="44" rx="8"/>
+              <path d="M218 128 L262 128 L258 152 L222 152 Z" class="rubber"/>
+            </g>
+            <text id="stopLbl" x="300" y="62" class="lbl-s" text-anchor="middle">السدادة</text>
+            <g clip-path="url(#magClip)"><rect x="620" y="190" width="120" height="120" fill="#fff"/><use id="magUse" href="#syrCore"/></g>
+            <circle cx="680" cy="250" r="58" class="mag-ring"/>
+            <line x1="722" y1="292" x2="752" y2="322" class="mag-handle"/>
+            <text x="640" y="326" class="lbl-s" text-anchor="middle">مكبّر التدريج</text>
+          </svg>
+          <p class="caption">يوضع أنبوب صغير فيه الكاتاليز داخل الدورق قبل إغلاقه، ثم يُمال الدورق ليختلط الإنزيم بالمادة المتفاعلة. هكذا يبدأ التفاعل والنظام محكم، ونعدّ لحظة المزج الزمن صفرًا. اقرئي الحجم عند الوجه الأمامي لمكبس الحقنة.</p>
+        </div>
+        <div class="panel" id="s1LensPanel" hidden>
+          <div class="ptitle"><h3>العدسة الجزيئية</h3><span class="tag-sim">تمثيل مبسّط</span></div>
+          <div class="lens-wrap"><canvas id="lens1" width="520" height="300" aria-label="رسم متحرك لجزيئات بيروكسيد الهيدروجين والكاتاليز"></canvas></div>
+          <div class="counters">
+            <div class="counter"><span>H₂O₂ المتبقية (مادة متفاعلة)</span><b id="l1s">٤٠</b></div>
+            <div class="counter"><span>جزيئات الإنزيم</span><b id="l1e">٤ (ثابتة)</b></div>
+            <div class="counter"><span>O₂ المتكوّن (ناتج)</span><b id="l1p">٠</b></div>
+            <div class="counter"><span>H₂O المتكوّن (ناتج)</span><b id="l1w">٠</b></div>
+            <div class="counter"><span>فرص الارتباط بالموقع النشط: <em id="l1oTxt">عالية</em></span><div class="meter"><i id="l1o"></i></div></div>
+          </div>
+          <div class="legend">
+            <span><svg viewBox="0 0 34 22"><path d="M17 11 L17 11" /><circle cx="14" cy="11" r="9" fill="#6A4C9C" stroke="#27385B" stroke-width="2"/></svg>إنزيم (كاتاليز) وموقعه النشط</span>
+            <span><svg viewBox="0 0 34 22"><circle cx="12" cy="11" r="5.5" fill="#E0574A"/><circle cx="22" cy="11" r="5.5" fill="#E0574A"/><circle cx="5" cy="7" r="3" fill="#fff" stroke="#27385B"/><circle cx="29" cy="15" r="3" fill="#fff" stroke="#27385B"/></svg>H₂O₂</span>
+            <span><svg viewBox="0 0 34 22"><circle cx="17" cy="12" r="6" fill="#E0574A"/><circle cx="9" cy="8" r="3.2" fill="#fff" stroke="#27385B"/><circle cx="25" cy="8" r="3.2" fill="#fff" stroke="#27385B"/></svg>H₂O</span>
+            <span><svg viewBox="0 0 34 22"><circle cx="12" cy="11" r="6" fill="#4C7BE0"/><circle cx="22" cy="11" r="6" fill="#4C7BE0"/></svg>O₂ يتجه إلى الحقنة</span>
+          </div>
+          <p class="note" style="margin-top:8px">تمثيل مبسّط: كل شكل يمثّل عددًا كبيرًا من الجزيئات، والأحجام والسرعات ليست بمقياس حقيقي. عدد الجزيئات هنا يتبع الزمن الافتراضي نفسه الذي تتبعه الحقنة والجدول والمنحنى: تقلّ المادة المتفاعلة، وتزداد النواتج، ويبقى عدد جزيئات الإنزيم ثابتًا.</p>
+        </div>
+      </div>
+      <div class="col">
+        <div class="panel">
+          <div class="ptitle"><h3>جدول القراءات</h3></div>
+          <label class="switch"><input type="checkbox" id="pauseAt" checked> إيقاف تلقائي عند كل قراءة (كل ٣٠ s افتراضية)</label>
+          <div class="tbl-wrap" style="margin-top:10px">
+            <table aria-label="جدول حجم الأكسجين مع الزمن">
+              <thead><tr><th>الزمن (s)</th><th>حجم الأكسجين المتجمّع (mL)</th><th>التحقق</th></tr></thead>
+              <tbody id="t1body"></tbody>
+            </table>
+          </div>
+          <div id="r1msg" class="msg info">اقرئي الحجم من الحقنة عندما يتوقف المؤقت عند كل ٣٠ s، واكتبيه ثم اضغطي «تحقّق».</div>
+        </div>
+        <div class="panel">
+          <div class="ptitle"><h3>منحنى حجم الأكسجين</h3><span class="tag-sim">بيانات محاكاة تعليمية</span></div>
+          <div class="seg" role="group" aria-label="نوع التحليل">
+            <button id="m1avg" aria-pressed="true">متوسط المعدل خلال فترة</button>
+            <button id="m1tan" aria-pressed="false">المعدل اللحظي عند نقطة</button>
+          </div>
+          <svg id="c1" class="chart" viewBox="0 0 560 370" role="img" aria-label="منحنى حجم الأكسجين المتجمّع مقابل الزمن"></svg>
+          <div id="an1" class="analysis"></div>
+          <p class="note" style="margin-top:8px">القيم ناتجة عن نموذج محاكاة تعليمي، وليست منقولة من الكتاب المدرسي.</p>
+        </div>
+      </div>
+    </div>
+    <div class="panel" style="margin-top:18px">
+      <div class="ptitle"><h3>أسئلة تكوينية</h3><span class="note">تلميح بعد الخطأ الأول، وتفسير علمي بعد المحاولة الثانية</span></div>
+      <div class="qgrid" id="s1Q"></div>
+    </div>
+  </section>
+
+  <!-- ================= STATION 2 ================= -->
+  <section id="view-s2" class="view" hidden>
+    <div class="station-head">
+      <div><span class="eyebrow">المحطة الثانية</span><h2>فكّ شفرة اللون: الأميليز والنشا</h2></div>
+      <div class="eq rtl" aria-label="النشا يتحلل إلى مالتوز بوجود الأميليز"><span>نشا</span> <span class="arrow"><span class="cat">أميليز</span><span class="line"></span></span> <span>مالتوز</span></div>
+    </div>
+    <ol class="steps" id="s2Steps">
+      <li><span class="n">١</span>أضيفي الأميليز إلى النشا (الزمن صفر)</li>
+      <li><span class="n">٢</span>عيّنة متساوية كل ٦٠ s + كمية يود ثابتة</li>
+      <li><span class="n">٣</span>صفّري مقياس الألوان</li>
+      <li><span class="n">٤</span>قيسي امتصاص كل عيّنة وسجّليه</li>
+      <li><span class="n">٥</span>فسّري المنحنى</li>
+    </ol>
+    <div class="grid2">
+      <div class="col">
+        <div class="panel">
+          <div class="ptitle"><h3>الجهاز</h3><span class="note">اسحبي العيّنة إلى مقياس الألوان، أو انقريها ثم انقري الجهاز</span></div>
+          <svg id="s2svg" class="app-svg" viewBox="0 0 800 380" role="img" aria-label="كأس نشا، أنبوب أميليز، يود، حامل عيّنات، ومقياس ألوان">
+            <defs><clipPath id="beakerClip"><path d="M34 140 L40 326 Q40 334 48 334 L152 334 Q160 334 160 326 L166 140 Z"/></clipPath></defs>
+            <rect x="0" y="334" width="800" height="12" rx="3" class="bench"/>
+            <rect x="16" y="16" width="176" height="76" rx="14" class="timer-box"/>
+            <text x="104" y="40" class="timer-cap" text-anchor="middle">المؤقّت · زمن افتراضي</text>
+            <text id="s2TimerTxt" x="104" y="78" class="timer-num" text-anchor="middle">٠٠:٠٠</text>
+            <g clip-path="url(#beakerClip)"><rect id="beakerLiq" x="30" y="196" width="140" height="140" fill="#EEF0F7"/></g>
+            <path class="glass" d="M30 136 L34 140 L40 326 Q40 334 48 334 L152 334 Q160 334 160 326 L166 140 L170 136"/>
+            <rect id="beakerTarget" x="24" y="120" width="152" height="214" rx="14" class="hl-target" opacity="0"/>
+            <rect id="beakerHit" x="24" y="120" width="152" height="214" fill="transparent" class="drop-target" tabindex="0" role="button" aria-label="كأس النشا"/>
+            <text id="beakerLbl" x="100" y="362" class="lbl" text-anchor="middle">محلول النشا</text>
+            <g id="amyl" class="draggable" tabindex="0" role="button" aria-label="أنبوب الأميليز: اسحبيه إلى كأس النشا أو انقريه ثم انقري الكأس" transform="translate(196,320)">
+              <rect class="selbox" x="-16" y="-120" width="32" height="128" rx="8"/>
+              <rect x="-9" y="-110" width="18" height="110" rx="8" class="glass-fill"/>
+              <rect x="-7" y="-48" width="14" height="45" rx="6" fill="#F3E3B5"/>
+            </g>
+            <text id="amylLbl" x="196" y="352" class="lbl-s" text-anchor="middle">أميليز</text>
+            <g aria-hidden="true">
+              <rect x="226" y="262" width="40" height="70" rx="8" fill="#8A5A2B" stroke="#27385B" stroke-width="2.5"/>
+              <rect x="236" y="246" width="20" height="18" rx="3" fill="#27385B"/>
+              <rect x="242" y="224" width="8" height="24" rx="3" fill="#E9EDFB" stroke="#27385B" stroke-width="2"/>
+              <rect x="231" y="284" width="30" height="22" rx="3" fill="#FFF4DD"/>
+              <text x="246" y="300" class="lbl-s" text-anchor="middle">I₂/KI</text>
+            </g>
+            <text x="246" y="352" class="lbl-s" text-anchor="middle">يود</text>
+            <rect x="284" y="296" width="262" height="10" rx="3" fill="#C2CBEA" stroke="#27385B" stroke-width="2"/>
+            <rect x="284" y="236" width="262" height="8" rx="3" fill="#C2CBEA" stroke="#27385B" stroke-width="2"/>
+            <g id="rack"></g>
+            <text x="415" y="372" class="lbl-s" text-anchor="middle">عيّنات الاختبار (زمن سحب العيّنة بالثواني)</text>
+            <g id="dropper" opacity="0" pointer-events="none"><rect x="-4" y="-46" width="8" height="30" rx="3" fill="#E9EDFB" stroke="#27385B" stroke-width="2"/><rect x="-6" y="-56" width="12" height="12" rx="3" fill="#27385B"/><circle cx="0" cy="-10" r="3.5" fill="#8A5A2B"/></g>
+            <g id="colori" class="drop-target" tabindex="0" role="button" aria-label="مقياس الألوان: انقريه لوضع العيّنة المختارة">
+              <rect x="560" y="112" width="230" height="222" rx="18" class="colori"/>
+              <rect x="576" y="126" width="198" height="62" rx="10" class="screen"/>
+              <text x="675" y="144" class="screen-cap" text-anchor="middle">قراءة رقمية: الامتصاص</text>
+              <text id="scrTxt" x="675" y="178" class="screen-txt" text-anchor="middle">- - -</text>
+              <rect x="572" y="200" width="206" height="124" rx="10" class="colori-in"/>
+              <line x1="610" y1="200" x2="610" y2="188" stroke="#FFC28F" stroke-width="3"/>
+              <rect id="beam1" x="722" y="250" width="30" height="14" fill="#FFF3B0"/>
+              <rect id="beam2" x="684" y="250" width="30" height="14" fill="#F06A55" opacity=".9"/>
+              <rect id="beam3" x="618" y="250" width="40" height="14" fill="#F06A55" opacity=".9"/>
+              <circle cx="762" cy="257" r="12" fill="#FFE27A" stroke="#27385B" stroke-width="2.5"/>
+              <rect x="714" y="234" width="8" height="46" rx="2" fill="#E25B4A" stroke="#27385B" stroke-width="2"/>
+              <rect id="slotBox" x="660" y="218" width="24" height="78" rx="6" fill="#fff" stroke="#27385B" stroke-width="2" stroke-dasharray="5 4"/>
+              <rect id="slotLiq" x="663" y="240" width="18" height="52" rx="4" fill="transparent"/>
+              <rect x="602" y="238" width="16" height="38" rx="3" fill="#7C86A8" stroke="#27385B" stroke-width="2"/>
+              <text x="762" y="300" class="lbl-s" text-anchor="middle">مصدر ضوء</text>
+              <text x="718" y="316" class="lbl-s" text-anchor="middle">مرشّح</text>
+              <text x="672" y="310" class="lbl-s" text-anchor="middle">العيّنة</text>
+              <text x="610" y="300" class="lbl-s" text-anchor="middle">كاشف</text>
+              <rect id="coloriTarget" x="556" y="108" width="238" height="230" rx="20" class="hl-target" opacity="0"/>
+            </g>
+          </svg>
+          <div class="row" style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:10px">
+            <button class="btn small" id="bZero">تصفير الجهاز بأنبوب ماء مقطّر</button>
+            <button class="btn small primary" id="bRec2" disabled>سجّلي القراءة في الجدول</button>
+            <button class="btn small soft" id="bWhy">لماذا لا نضيف اليود مباشرة؟</button>
+          </div>
+          <p class="caption">مسار الضوء: مصدر ضوء ← مرشّح ← عيّنة ← كاشف ← قراءة رقمية. يمرّر المرشّح الأحمر ضوءًا بطول موجي يمتصّه معقّد النشا واليود الأزرق القاتم بقوة؛ لذلك كلما كان اللون الأزرق أقوى كان الامتصاص أعلى، بشرط ثبات ظروف القياس (الأنبوب نفسه، والمرشّح نفسه، وحجم العيّنة وكمية اليود نفسهما).</p>
+        </div>
+        <div class="panel">
+          <div class="ptitle"><h3>دليل الألوان</h3></div>
+          <div style="display:flex;gap:16px;flex-wrap:wrap;align-items:center">
+            <span><span class="swatch" style="background:#1E2256"></span> نشا كثير + يود: أزرق قاتم</span>
+            <span><span class="swatch" style="background:#5B5F86"></span> نشا أقل: لون أفتح</span>
+            <span><span class="swatch" style="background:#C48A2E"></span> لا نشا: يبقى لون اليود الأصفر البني</span>
+          </div>
+          <p class="note" style="margin-top:8px">العيّنة التي لا نشا فيها ليست عديمة اللون؛ يظهر فيها لون محلول اليود نفسه.</p>
+        </div>
+        <div class="panel" id="s2LensPanel" hidden>
+          <div class="ptitle"><h3>العدسة الجزيئية</h3><span class="tag-sim">تمثيل مبسّط</span></div>
+          <div class="lens-wrap"><canvas id="lens2" width="520" height="300" aria-label="رسم متحرك لسلاسل النشا والأميليز"></canvas></div>
+          <div class="counters">
+            <div class="counter"><span>سلاسل النشا المتبقية</span><b id="l2s">٨</b></div>
+            <div class="counter"><span>جزيئات الإنزيم</span><b id="l2e">٣ (ثابتة)</b></div>
+            <div class="counter"><span>المالتوز المتكوّن</span><b id="l2p">٠</b></div>
+            <div class="counter"><span>فرص الارتباط بالموقع النشط: <em id="l2oTxt">عالية</em></span><div class="meter"><i id="l2o"></i></div></div>
+          </div>
+          <div class="legend">
+            <span><svg viewBox="0 0 34 22"><circle cx="14" cy="11" r="9" fill="#2F6F8F" stroke="#27385B" stroke-width="2"/></svg>إنزيم (أميليز)</span>
+            <span><svg viewBox="0 0 34 22"><g fill="#5BAE8C" stroke="#27385B" stroke-width="1"><circle cx="5" cy="11" r="4"/><circle cx="13" cy="11" r="4"/><circle cx="21" cy="11" r="4"/><circle cx="29" cy="11" r="4"/></g></svg>سلسلة نشا</span>
+            <span><svg viewBox="0 0 34 22"><g fill="#F3B562" stroke="#27385B" stroke-width="1"><circle cx="12" cy="11" r="5"/><circle cx="22" cy="11" r="5"/></g></svg>مالتوز</span>
+          </div>
+          <p class="note" style="margin-top:8px">تمثيل مبسّط: السلاسل أقصر بكثير من جزيئات النشا الحقيقية. يقلّ النشا ويزداد المالتوز مع الزمن الافتراضي نفسه، ويبقى عدد جزيئات الأميليز ثابتًا.</p>
+        </div>
+      </div>
+      <div class="col">
+        <div class="panel">
+          <div class="ptitle"><h3>جدول القراءات</h3></div>
+          <div class="tbl-wrap">
+            <table aria-label="جدول الامتصاص مع الزمن">
+              <thead><tr><th>زمن سحب العيّنة (s)</th><th>لون العيّنة بعد اليود</th><th>الامتصاص</th></tr></thead>
+              <tbody id="t2body"></tbody>
+            </table>
+          </div>
+          <div id="r2msg" class="msg info">ابدئي التفاعل أولًا: اسحبي أنبوب الأميليز إلى كأس النشا، أو اضغطي «بدء».</div>
+        </div>
+        <div class="panel">
+          <div class="ptitle"><h3>منحنى الامتصاص مقابل الزمن</h3><span class="tag-sim">بيانات محاكاة تعليمية</span></div>
+          <svg id="c2" class="chart" viewBox="0 0 560 370" role="img" aria-label="منحنى الامتصاص مقابل الزمن"></svg>
+          <p class="note" style="margin-top:6px">الامتصاص مؤشّر على كمية النشا المتبقية وليس كمية النشا نفسها؛ تحويله إلى تركيز دقيق يحتاج منحنى معايرة بمحاليل نشا معلومة التركيز. القيم ناتجة عن نموذج محاكاة تعليمي، وليست منقولة من الكتاب المدرسي.</p>
+        </div>
+      </div>
+    </div>
+    <div class="panel" style="margin-top:18px">
+      <div class="ptitle"><h3>أسئلة تكوينية</h3><span class="note">تلميح بعد الخطأ الأول، وتفسير علمي بعد المحاولة الثانية</span></div>
+      <div class="qgrid" id="s2Q"></div>
+    </div>
+  </section>
+
+  <!-- ================= CHALLENGE ================= -->
+  <section id="view-ch" class="view" hidden>
+    <div class="station-head">
+      <div><span class="eyebrow">الختام</span><h2>تحدّي باحثات المختبر</h2></div>
+      <p class="muted" style="max-width:520px">بعد أول خطأ يظهر تلميح، وبعد المحاولة الثانية يظهر التفسير العلمي.</p>
+    </div>
+    <div class="ch-grid">
+      <div class="panel" id="c1box">
+        <div class="ptitle"><h3>١. أيّ الفترتين أسرع؟</h3></div>
+        <svg id="cc1" class="chart" viewBox="0 0 560 330" role="img" aria-label="منحنى أكسجين عليه فترتان مظللتان"></svg>
+        <div id="cq1"></div>
+      </div>
+      <div class="panel"><div class="ptitle"><h3>٢. صحّحي العبارة</h3></div><div id="cq2"></div></div>
+      <div class="panel"><div class="ptitle"><h3>٣. فسّري انخفاض الامتصاص</h3></div><div id="cq3"></div></div>
+      <div class="panel"><div class="ptitle"><h3>٤. صنّفي طريقتي المتابعة</h3></div><div id="cq4"></div></div>
+    </div>
+    <div class="panel" style="margin-top:18px" id="finalPanel">
+      <div class="ptitle"><h3>مقارنة بين التجربتين</h3></div>
+      <p class="lockmsg" id="cmpLock">يظهر جدول المقارنة بعد محاولة الأسئلة الأربعة.</p>
+      <div id="cmpBox" hidden>
+        <div class="tbl-wrap" style="max-height:none">
+          <table class="cmp">
+            <thead><tr><th>وجه المقارنة</th><th>تجربة الكاتاليز</th><th>تجربة الأميليز</th></tr></thead>
+            <tbody>
+              <tr><td>ما الذي نقيسه؟</td><td>حجم الأكسجين المتجمّع في حقنة الغاز (mL)</td><td>امتصاص لون النشا مع اليود بمقياس الألوان</td></tr>
+              <tr><td>نوع المتابعة</td><td>زيادة ناتج (O₂)</td><td>تناقص مادة متفاعلة (النشا)</td></tr>
+              <tr><td>طريقة أخذ القراءات</td><td>قراءة مستمرة من الجهاز نفسه كل ٣٠ s في نظام محكم</td><td>عيّنات منفصلة متساوية الحجم تُسحب على فترات، ويُضاف إليها اليود بكمية ثابتة</td></tr>
+              <tr><td>شكل المنحنى</td><td>يرتفع بسرعة ثم يتباطأ ثم يثبت أفقيًا</td><td>ينخفض بسرعة ثم يتباطأ ثم يقترب من قيمة ثابتة (لون اليود)</td></tr>
+              <tr><td>المعدل الأولي</td><td>أكبر ميل عند بداية المنحنى</td><td>أكبر ميل (انحدار) عند بداية المنحنى</td></tr>
+              <tr><td>سبب تباطؤ التفاعل</td><td colspan="2">يقلّ تركيز المادة المتفاعلة، فتقلّ فرص ارتباطها بالمواقع النشطة. الإنزيم لا يُستهلك.</td></tr>
+              <tr><td>انتباه في القياس</td><td>منع تسرّب الغاز، وبدء المؤقت لحظة المزج</td><td>ثبات حجم العيّنة وكمية اليود، وتصفير الجهاز، والامتصاص مؤشّر يحتاج معايرة لتحويله إلى تركيز</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="ptitle" style="margin-top:18px"><h3>نتائجي</h3><span class="note">لا يُطلب أي اسم أو بيانات شخصية</span></div>
+      <div id="resBox"></div>
+      <div class="final-actions">
+        <button class="btn primary" id="bPrint"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 2h12v6H6zM4 9h16a2 2 0 0 1 2 2v6h-4v5H6v-5H2v-6a2 2 0 0 1 2-2zm4 8v3h8v-3z"/></svg>طباعة النتائج</button>
+        <button class="btn soft" id="bCopy">نسخ النتائج نصًّا</button>
+      </div>
+      <p class="note" id="printNote" style="margin-top:8px">إذا لم تظهر نافذة الطباعة في هذه الصفحة، افتحي ملف التطبيق مباشرة في المتصفح، أو انسخي النتائج.</p>
+    </div>
+  </section>
+  </main>
+
+  <div class="controls" id="controls" hidden>
+    <div class="clock" aria-live="off"><span>الزمن الافتراضي</span><b id="ctlClock" dir="ltr">٠ s</b></div>
+    <button class="btn primary" id="bStart"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4l13 8-13 8z"/></svg>بدء</button>
+    <button class="btn" id="bPause"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 4h4v16H6zM14 4h4v16h-4z"/></svg>إيقاف مؤقت</button>
+    <button class="btn" id="bNext"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4l10 8-10 8zM16 4h3v16h-3z"/></svg>خطوة تالية</button>
+    <button class="btn" id="bReset"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5V1L6 6l6 5V7a5 5 0 1 1-5 5H5a7 7 0 1 0 7-7z"/></svg><span id="bResetTxt">إعادة التجربة</span></button>
+    <button class="btn accent" id="bMol" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="2.6"/><path d="M12 3c-2.2 0-4 4-4 9s1.8 9 4 9 4-4 4-9-1.8-9-4-9zm0 2c.9 0 2 2.8 2 7s-1.1 7-2 7-2-2.8-2-7 1.1-7 2-7z"/></svg><span id="bMolTxt">إظهار الجزيئات</span></button>
+    <label class="speed" for="speedSel">تسريع الزمن
+      <select id="speedSel"><option value="1">×١ (حقيقي)</option><option value="5" selected>×٥</option><option value="10">×١٠</option><option value="20">×٢٠</option></select>
+    </label>
+  </div>
+
+  <footer class="sig">
+    <span class="name">أ.إمتثال العطابي</span>
+    <span class="note" style="color:#E9EDFB">مختبر افتراضي تعليمي · المحاكاة نموذج مبسّط</span>
+    <span class="slashes" aria-hidden="true"></span>
+  </footer>
+</div>
+
+<button class="guide-btn" id="guideBtn" title="تلميح من دكستر" aria-expanded="false" aria-controls="guideBox"><svg viewBox="0 0 200 232" aria-hidden="true"><use href="#mascot"/></svg><span>تلميح من دكستر</span></button>
+<div class="bubble-box" id="guideBox" role="dialog" aria-label="تلميح من دكستر" hidden>
+  <button class="x" id="guideX" aria-label="إغلاق">×</button>
+  <h4>دكستر يقول:</h4>
+  <p id="guideTxt"></p>
+</div>
+
+<div class="modal-back" id="modalBack" hidden>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:10px">
+      <h3 id="modalTitle">لماذا لا نضيف اليود مباشرة إلى مزيج التفاعل؟</h3>
+      <button class="btn small" id="modalX">إغلاق</button>
+    </div>
+    <div class="compare">
+      <div class="a">
+        <b>الطريقة أ: نشا + أميليز + يود في أنبوبة واحدة</b>
+        <svg viewBox="0 0 200 120" aria-hidden="true"><rect x="88" y="8" width="26" height="104" rx="12" fill="#fff" stroke="#27385B" stroke-width="3"/><rect x="91" y="50" width="20" height="59" rx="9" fill="#2A3270"/><text x="150" y="40" font-size="13" fill="#27385B" font-weight="700" text-anchor="middle">يود داخل</text><text x="150" y="58" font-size="13" fill="#27385B" font-weight="700" text-anchor="middle">مزيج التفاعل</text></svg>
+        <ul>
+          <li>متابعة مستمرة سهلة: نراقب اللون يتغيّر في الأنبوبة نفسها.</li>
+          <li>لكن وجود اليود في المزيج يبطّئ عمل الأميليز.</li>
+          <li>فيصبح المعدل المقاس أقل من معدل التفاعل الحقيقي دون يود.</li>
+        </ul>
+      </div>
+      <div class="b">
+        <b>الطريقة ب: عيّنات منفصلة يُضاف إليها اليود</b>
+        <svg viewBox="0 0 200 120" aria-hidden="true"><rect x="14" y="30" width="40" height="80" rx="10" fill="#EEF0F7" stroke="#27385B" stroke-width="3"/><path d="M60 50 h30" stroke="#F39349" stroke-width="4" marker-end="url(#)"/><path d="M86 44 l8 6 -8 6" fill="none" stroke="#F39349" stroke-width="4"/><g stroke="#27385B" stroke-width="2.5"><rect x="104" y="20" width="16" height="90" rx="7" fill="#fff"/><rect x="128" y="20" width="16" height="90" rx="7" fill="#fff"/><rect x="152" y="20" width="16" height="90" rx="7" fill="#fff"/><rect x="176" y="20" width="16" height="90" rx="7" fill="#fff"/></g><rect x="106" y="70" width="12" height="38" rx="5" fill="#1E2256"/><rect x="130" y="70" width="12" height="38" rx="5" fill="#3B4A9A"/><rect x="154" y="70" width="12" height="38" rx="5" fill="#7A7A6E"/><rect x="178" y="70" width="12" height="38" rx="5" fill="#C48A2E"/></svg>
+        <ul>
+          <li>مزيج التفاعل الأصلي يبقى بلا يود، فيعمل الإنزيم دون تأثير خارجي.</li>
+          <li>نسحب عيّنات متساوية في أزمنة محددة، ونضيف كمية ثابتة من اليود لكل عيّنة في أوعية منفصلة.</li>
+          <li>لا تُعاد العيّنات إلى المزيج، ويُقاس لونها بمقياس الألوان.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<div id="printArea"></div>
+
+<script>
+(function(){
+'use strict';
+/* ---------- utilities ---------- */
+const $=(s,r=document)=>r.querySelector(s);
+const $$=(s,r=document)=>Array.from(r.querySelectorAll(s));
+const AR_D='٠١٢٣٤٥٦٧٨٩';
+function ar(n,d){ if(n===null||n===undefined||(typeof n==='number'&&isNaN(n))) return '—';
+  const s=(typeof n==='number')? n.toFixed(d||0) : String(n);
+  return s.replace('-', '−').replace('.', '٫').replace(/\d/g,c=>AR_D[+c]); }
+function parseNum(str){ if(str==null) return null;
+  let s=String(str).trim().replace(/[٠-٩]/g,c=>String(AR_D.indexOf(c))).replace(/[۰-۹]/g,c=>String('۰۱۲۳۴۵۶۷۸۹'.indexOf(c)))
+    .replace(/[٫,،]/g,'.').replace(/\s+/g,'').replace('−','-');
+  if(!/^[-+]?(\d+\.?\d*|\.\d+)$/.test(s)) return null; return parseFloat(s); }
+function mmss(t){ const s=Math.max(0,Math.floor(t+1e-6)); return ar(String(Math.floor(s/60)).padStart(2,'0'))+':'+ar(String(s%60).padStart(2,'0')); }
+const reduceMotion = !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
+const finePointer = !!(window.matchMedia && matchMedia('(pointer:fine)').matches);
+let speed=5, view='home';
+function toast(msg){ const el=$('#toast'); el.textContent=msg; el.classList.add('show'); clearTimeout(toast._t); toast._t=setTimeout(()=>el.classList.remove('show'),4200); }
+function svgPoint(svg,evt){ const p=svg.createSVGPoint(); p.x=evt.clientX; p.y=evt.clientY; return p.matrixTransform(svg.getScreenCTM().inverse()); }
+function inRect(p,r){ return p.x>=r[0]&&p.x<=r[0]+r[2]&&p.y>=r[1]&&p.y<=r[1]+r[3]; }
+function lerp(a,b,k){ return a+(b-a)*k; }
+function rgb(c){ return `rgb(${c.map(v=>Math.round(v)).join(',')})`; }
+
+/* generic pointer drag with tap fallback (SVG) */
+function makeDraggable(o){
+  o.el.addEventListener('pointerdown',e=>{
+    if(!o.canStart()) return; e.preventDefault();
+    const p0=svgPoint(o.svg,e); let moved=false; try{o.el.setPointerCapture(e.pointerId);}catch(_){}
+    const move=ev=>{ const p=svgPoint(o.svg,ev); const dx=p.x-p0.x, dy=p.y-p0.y; if(!moved&&Math.hypot(dx,dy)>7){moved=true; o.onStart&&o.onStart();} if(moved) o.onMove(dx,dy,p); };
+    const up=ev=>{ o.el.removeEventListener('pointermove',move); o.el.removeEventListener('pointerup',up); o.el.removeEventListener('pointercancel',up);
+      const p=svgPoint(o.svg,ev); if(moved) o.onDrop(p); else o.onTap(); };
+    o.el.addEventListener('pointermove',move); o.el.addEventListener('pointerup',up); o.el.addEventListener('pointercancel',up);
+  });
+  o.el.addEventListener('keydown',e=>{ if((e.key==='Enter'||e.key===' ')&&o.canStart()){ e.preventDefault(); (o.onKey||o.onTap)(); } });
+}
+function onActivate(el,fn){ el.addEventListener('click',fn); el.addEventListener('keydown',e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); fn(e); } }); }
+
+/* monotone cubic path (Fritsch–Carlson) — never overshoots, so the volume line never dips */
+function monotonePath(P){
+  const n=P.length; if(n<2) return ''; if(n===2) return `M${P[0][0]},${P[0][1]}L${P[1][0]},${P[1][1]}`;
+  const dx=[],m=[]; for(let i=0;i<n-1;i++){ dx[i]=P[i+1][0]-P[i][0]; m[i]=(P[i+1][1]-P[i][1])/dx[i]; }
+  const tg=[m[0]];
+  for(let i=1;i<n-1;i++){ if(m[i-1]*m[i]<=0) tg[i]=0; else { const w1=2*dx[i]+dx[i-1], w2=dx[i]+2*dx[i-1]; tg[i]=(w1+w2)/(w1/m[i-1]+w2/m[i]); } }
+  tg[n-1]=m[n-2];
+  let d=`M${P[0][0].toFixed(1)},${P[0][1].toFixed(1)}`;
+  for(let i=0;i<n-1;i++){ const h=dx[i]/3; d+=` C${(P[i][0]+h).toFixed(1)},${(P[i][1]+tg[i]*h).toFixed(1)} ${(P[i+1][0]-h).toFixed(1)},${(P[i+1][1]-tg[i+1]*h).toFixed(1)} ${P[i+1][0].toFixed(1)},${P[i+1][1].toFixed(1)}`; }
+  return d;
+}
+
+/* ---------- Molecular lens engine ---------- */
+class Lens{
+  constructor(canvas,cfg){ this.c=canvas; this.ctx=canvas.getContext('2d'); this.cfg=cfg; this.W=520; this.H=300; this.dpr=0; this.reset(); }
+  rnd(){ this.seed=(this.seed*16807)%2147483647; return (this.seed-1)/2147483646; }
+  reset(){ this.seed=this.cfg.seed||11; const c=this.cfg; this.subs=[]; this.prods=[]; this.enz=[]; this.started=0; this.done=0;
+    for(let i=0;i<c.nEnz;i++){ const cols=c.nEnz, x=this.W*(i+0.5)/cols; this.enz.push({x, y:this.H*(i%2?0.62:0.38), bx:x, by:this.H*(i%2?0.62:0.38), a:this.rnd()*6.283, ph:this.rnd()*6.283, busy:null}); }
+    for(let i=0;i<c.nSub;i++) this.subs.push(this.freeParticle(c.subSpeed));
+  }
+  freeParticle(sp){ return {x:24+this.rnd()*(this.W-48), y:24+this.rnd()*(this.H-48), vx:(this.rnd()-.5)*sp, vy:(this.rnd()-.5)*sp, rot:this.rnd()*6.283, vr:(this.rnd()-.5)*1.2, st:'free'}; }
+  site(e){ const R=this.cfg.R; return {x:e.x+Math.cos(e.a)*(R-8), y:e.y+Math.sin(e.a)*(R-8)}; }
+  freeSubs(){ return this.subs.filter(s=>s.st==='free'); }
+  instantOne(){ const per=this.cfg.per; const free=this.freeSubs(); if(free.length<per) return false;
+    const grp=free.slice(0,per); const cx=grp.reduce((a,s)=>a+s.x,0)/per, cy=grp.reduce((a,s)=>a+s.y,0)/per;
+    this.subs=this.subs.filter(s=>!grp.includes(s)); this.makeProducts(cx,cy,-Math.PI/2,true); this.started++; this.done++; return true; }
+  makeProducts(x,y,ang,instant){ for(const p of this.cfg.products){ if(instant&&p.type==='o2') continue; for(let k=0;k<p.n;k++){ const a=ang+(this.rnd()-.5)*2.2;
+      this.prods.push({type:p.type, x:x+Math.cos(a)*6, y:y+Math.sin(a)*6, vx:Math.cos(a)*45, vy:Math.sin(a)*45, rot:this.rnd()*6.283, vr:(this.rnd()-.5)*1.5}); } } }
+  update(dt,target,running){
+    if(target<this.started && target<this.done+0.5){ this.reset(); }
+    if(running){
+      while(target-this.started>this.cfg.nEnz && this.instantOne()){}
+      this.move(dt);
+      while(this.started<target){ const e=this.enz.find(z=>!z.busy); if(!e) break; const site=this.site(e);
+        const free=this.freeSubs(); if(free.length<this.cfg.per) break;
+        free.sort((a,b)=>Math.hypot(a.x-site.x,a.y-site.y)-Math.hypot(b.x-site.x,b.y-site.y));
+        const grp=free.slice(0,this.cfg.per); grp.forEach(s=>{s.st='bind'; s.sx=s.x; s.sy=s.y; s.srot=s.rot;});
+        e.busy={subs:grp, ph:'bind', tt:0}; this.started++; }
+      for(const e of this.enz){ if(!e.busy) continue; const b=e.busy; b.tt+=dt; const site=this.site(e);
+        const n=b.subs.length; const perp=e.a+Math.PI/2;
+        if(b.ph==='bind'){ const k=Math.min(1,b.tt/this.cfg.bindDur), ez=k*k*(3-2*k);
+          b.subs.forEach((s,j)=>{ const off=(j-(n-1)/2)*this.cfg.pairGap; const tx=site.x+Math.cos(perp)*off, ty=site.y+Math.sin(perp)*off; s.x=lerp(s.sx,tx,ez); s.y=lerp(s.sy,ty,ez); s.rot=lerp(s.srot,perp,ez); });
+          if(k>=1){ b.ph='hold'; b.tt=0; } }
+        else { b.subs.forEach((s,j)=>{ const off=(j-(n-1)/2)*this.cfg.pairGap; s.x=site.x+Math.cos(perp)*off; s.y=site.y+Math.sin(perp)*off; s.rot=perp; });
+          if(b.tt>=this.cfg.holdDur){ this.subs=this.subs.filter(s=>!b.subs.includes(s)); this.makeProducts(site.x,site.y,e.a); e.busy=null; this.done++; } }
+      }
+    } else {
+      for(const e of this.enz){ if(e.busy){ const site=this.site(e); this.subs=this.subs.filter(s=>!e.busy.subs.includes(s)); this.makeProducts(site.x,site.y,e.a,true); e.busy=null; this.done++; } }
+      while(this.started<target && this.instantOne()){}
+    }
+    this.draw();
+  }
+  move(dt){ const W=this.W,H=this.H, sp=this.cfg.subSpeed;
+    const wander=(p,max)=>{ p.vx+=(Math.random()-.5)*max*1.6*dt*4; p.vy+=(Math.random()-.5)*max*1.6*dt*4; const v=Math.hypot(p.vx,p.vy); if(v>max){p.vx*=max/v;p.vy*=max/v;}
+      p.x+=p.vx*dt; p.y+=p.vy*dt; p.rot+=p.vr*dt; if(p.x<14){p.x=14;p.vx=Math.abs(p.vx);} if(p.x>W-14){p.x=W-14;p.vx=-Math.abs(p.vx);} };
+    for(const s of this.subs){ if(s.st!=='free') continue; wander(s,sp); if(s.y<14){s.y=14;s.vy=Math.abs(s.vy);} if(s.y>H-14){s.y=H-14;s.vy=-Math.abs(s.vy);} }
+    for(const p of this.prods){
+      if(p.type==='o2'){ p.vy+=(-38-p.vy)*Math.min(1,dt*1.5); p.vx+=(Math.random()-.5)*30*dt; p.x+=p.vx*dt; p.y+=p.vy*dt; p.rot+=p.vr*dt; if(p.x<14){p.x=14;p.vx=Math.abs(p.vx);} if(p.x>W-14){p.x=W-14;p.vx=-Math.abs(p.vx);} }
+      else { wander(p,sp*0.9); if(p.y<14){p.y=14;p.vy=Math.abs(p.vy);} if(p.y>H-14){p.y=H-14;p.vy=-Math.abs(p.vy);} }
+    }
+    this.prods=this.prods.filter(p=>!(p.type==='o2'&&p.y<-14));
+    for(const e of this.enz){ e.ph+=dt*0.8; e.x=e.bx+Math.sin(e.ph)*10; e.y=e.by+Math.cos(e.ph*0.8)*8; e.a+= (e.busy?0:0.25*dt*(e.bx>W/2?1:-1)); }
+  }
+  fit(){ const w=this.c.clientWidth||520; const dpr=Math.min(2,window.devicePixelRatio||1); if(Math.abs(w-this.cw)>1||dpr!==this.dpr){ this.cw=w; this.dpr=dpr; this.c.width=Math.round(w*dpr); this.c.height=Math.round(w*this.H/this.W*dpr); } this.ctx.setTransform(this.c.width/this.W,0,0,this.c.height/this.H,0,0); }
+  draw(){ if(!this.c.offsetParent) return; this.fit(); const g=this.ctx, c=this.cfg;
+    g.clearRect(0,0,this.W,this.H); g.fillStyle='#F3F5FD'; g.fillRect(0,0,this.W,this.H);
+    if(c.kind==='cat'){ g.fillStyle='rgba(76,123,224,.10)'; g.fillRect(0,0,this.W,16); g.fillStyle='#27385B'; g.font='700 11px Tajawal, sans-serif'; g.textAlign='center'; g.fillText('↑ الأكسجين يغادر المحلول إلى الحقنة',this.W/2,12); }
+    for(const e of this.enz) this.drawEnzyme(e);
+    for(const p of this.prods) this.drawMol(p.type,p.x,p.y,p.rot);
+    for(const s of this.subs) this.drawMol(c.subType,s.x,s.y,s.rot);
+  }
+  drawEnzyme(e){ const g=this.ctx, R=this.cfg.R, a=e.a, w=0.42;
+    g.save(); g.beginPath(); g.moveTo(e.x+Math.cos(a+w)*R, e.y+Math.sin(a+w)*R); g.arc(e.x,e.y,R,a+w,a-w+Math.PI*2);
+    g.lineTo(e.x+Math.cos(a)*(R-15), e.y+Math.sin(a)*(R-15)); g.closePath();
+    g.fillStyle=this.cfg.enzColor; g.fill(); g.lineWidth=2.5; g.strokeStyle='#27385B'; g.stroke();
+    if(e.busy&&e.busy.ph==='hold'){ g.beginPath(); g.arc(e.x+Math.cos(a)*(R-6), e.y+Math.sin(a)*(R-6), 15, 0, Math.PI*2); g.strokeStyle='rgba(243,147,73,.9)'; g.lineWidth=3; g.stroke(); }
+    g.beginPath(); g.arc(e.x-Math.cos(a)*R*0.35, e.y-Math.sin(a)*R*0.35, 4, 0, Math.PI*2); g.fillStyle='rgba(255,255,255,.55)'; g.fill(); g.restore(); }
+  circ(x,y,r,fill,stroke){ const g=this.ctx; g.beginPath(); g.arc(x,y,r,0,Math.PI*2); g.fillStyle=fill; g.fill(); if(stroke){ g.lineWidth=1.2; g.strokeStyle=stroke; g.stroke(); } }
+  drawMol(type,x,y,rot){ const cs=Math.cos(rot), sn=Math.sin(rot);
+    const P=(u,v)=>[x+u*cs-v*sn, y+u*sn+v*cs];
+    if(type==='h2o2'){ let p=P(-11,-4); this.circ(p[0],p[1],3.2,'#fff','#27385B'); p=P(11,4); this.circ(p[0],p[1],3.2,'#fff','#27385B'); p=P(-5,0); this.circ(p[0],p[1],5.6,'#E0574A','#9E2F25'); p=P(5,0); this.circ(p[0],p[1],5.6,'#E0574A','#9E2F25'); }
+    else if(type==='h2o'){ let p=P(-7,-5); this.circ(p[0],p[1],3.3,'#fff','#27385B'); p=P(7,-5); this.circ(p[0],p[1],3.3,'#fff','#27385B'); p=P(0,0); this.circ(p[0],p[1],6,'#E0574A','#9E2F25'); }
+    else if(type==='o2'){ let p=P(-5,0); this.circ(p[0],p[1],6,'#4C7BE0','#27385B'); p=P(5,0); this.circ(p[0],p[1],6,'#4C7BE0','#27385B'); }
+    else if(type==='starch'){ for(let i=0;i<6;i++){ const p=P((i-2.5)*9, Math.sin(i*1.3+rot*2)*2.5); this.circ(p[0],p[1],4.6,'#5BAE8C','#27385B'); } }
+    else if(type==='maltose'){ let p=P(-4.5,0); this.circ(p[0],p[1],5,'#F3B562','#27385B'); p=P(4.5,0); this.circ(p[0],p[1],5,'#F3B562','#27385B'); }
+  }
+  counts(){ return {subs:this.subs.length, done:this.done}; }
+}
+
+/* ================= STATION 1 model ================= */
+const K1=0.015, VMAX=50, TPLAT=360, TEND1=420, STEP1=30;
+const F1=1/(1-Math.exp(-K1*TPLAT));
+function V1(t){ if(t<=0) return 0; if(t>=TPLAT) return VMAX; return VMAX*F1*(1-Math.exp(-K1*t)); }
+function dV1(t){ if(t<0||t>=TPLAT) return 0; return VMAX*F1*K1*Math.exp(-K1*t); }
+const MARKS1=[]; for(let m=STEP1;m<=TEND1;m+=STEP1) MARKS1.push(m);
+const N1=40;
+function target1(t){ const nS=Math.round(N1*(1-V1(t)/VMAX)); return Math.floor((N1-nS)/2); }
+const S1={pauseAt:true, showMol:false, mode:'avg'};
+const lens1=new Lens($('#lens1'),{kind:'cat',nSub:N1,per:2,nEnz:4,R:30,bindDur:0.45,holdDur:0.35,pairGap:12,subSpeed:46,subType:'h2o2',enzColor:'#6A4C9C',products:[{type:'h2o',n:2},{type:'o2',n:1}],seed:13});
+
+function initS1(){
+  Object.assign(S1,{t:0, phase:'setup', vialIn:false, sealed:false, mixed:false, awaiting:null, readings:{}, bubbles:[], emitAcc:0, sel:[], tanT:null, selItem:null, avgTries:{}, drag:null});
+  MARKS1.forEach(m=>S1.readings[m]={status:'pending',val:null,attempts:0});
+  lens1.reset(); $('#flaskLiquid').classList.remove('mixed');
+  renderApp1(); renderTable1(); drawChart1(); renderAnalysis1(); renderSteps1(); setMsg1('اقرئي الحجم من الحقنة عندما يتوقف المؤقت عند كل ٣٠ s، واكتبيه ثم اضغطي «تحقّق».','info');
+}
+function setMsg1(t,k){ const el=$('#r1msg'); el.textContent=t; el.className='msg '+(k||'info'); }
+
+/* ticks on syringe */
+(function(){ let h=''; for(let v=0;v<=60;v++){ const x=340+v*7; const L=v%10===0?18:(v%5===0?13:7);
+  h+=`<line class="tick-l" x1="${x}" x2="${x}" y1="142" y2="${142-L}"/>`; if(v%5===0) h+=`<text class="tick-n" x="${x}" y="93" text-anchor="middle">${ar(v)}</text>`; }
+  $('#ticks').innerHTML=h; })();
+
+const VIAL_HOME=[77,326], VIAL_IN=[269,326];
+function renderApp1(){
+  const vial=$('#vial'); let pos=S1.vialIn?VIAL_IN:VIAL_HOME, rot=S1.mixed?-72:0;
+  if(S1.drag&&S1.drag.what==='vial'){ pos=[VIAL_HOME[0]+S1.drag.dx, VIAL_HOME[1]+S1.drag.dy]; }
+  vial.setAttribute('transform',`translate(${pos[0]},${pos[1]}) rotate(${rot})`);
+  $('#vialLiq').style.display=S1.mixed?'none':'';
+  vial.classList.toggle('sel-on',S1.selItem==='vial');
+  $('#vialLbl').style.display=S1.vialIn?'none':'';
+  let sdx=0, sdy=S1.sealed?0:-62;
+  if(S1.drag&&S1.drag.what==='stopper'){ sdx=S1.drag.dx; sdy=-62+S1.drag.dy; }
+  $('#stopper').setAttribute('transform',`translate(${sdx},${sdy})`);
+  $('#stopper').classList.toggle('sel-on',S1.selItem==='stopper');
+  $('#stopLbl').style.display=S1.sealed?'none':'';
+  const top=128+sdy, sx=240+sdx; const d=`M${sx} ${top} C${sx} ${top-55}, 280 114, 318 120`;
+  $('#tubePath').setAttribute('d',d); $('#tubePathIn').setAttribute('d',d);
+  $('#flaskTarget').setAttribute('opacity', (S1.selItem||S1.drag)?1:0);
+  updateSyringe1();
+}
+function updateSyringe1(){
+  const V=S1.mixed?V1(S1.t):0, xp=340+V*7;
+  $('#plHead').setAttribute('x',xp.toFixed(2)); $('#plRod').setAttribute('x',(xp+10).toFixed(2));
+  $('#gas').setAttribute('width',Math.max(0,xp-332).toFixed(2));
+  $('#magUse').setAttribute('transform',`translate(680,250) scale(2.5) translate(${(-xp).toFixed(2)},-112)`);
+  $('#s1TimerTxt').textContent=mmss(S1.t);
+}
+function placeVial(){ if(S1.phase!=='setup'||S1.vialIn) return; S1.vialIn=true; S1.selItem=null; renderApp1(); renderSteps1(); toast('أحسنتِ! الأنبوب داخل الدورق ولم يختلط بعد. أغلقي الدورق بالسدادة.'); }
+function seal(){ if(!S1.vialIn){ toast('ضعي أنبوب الكاتاليز داخل الدورق أولًا.'); return; } if(S1.sealed) return; S1.sealed=true; S1.selItem=null; renderApp1(); renderSteps1(); toast('النظام محكم الآن: كل الأكسجين المتكوّن يدفع مكبس الحقنة. اضغطي «بدء» لإمالة الدورق وخلط الإنزيم.'); }
+makeDraggable({svg:$('#s1svg'), el:$('#vial'), canStart:()=>S1.phase==='setup'&&!S1.vialIn,
+  onMove:(dx,dy)=>{ S1.drag={what:'vial',dx,dy}; renderApp1(); },
+  onDrop:p=>{ S1.drag=null; if(inRect(p,[140,112,200,222])) placeVial(); else { renderApp1(); toast('أفلتي الأنبوب فوق الدورق.'); } },
+  onTap:()=>{ S1.selItem=S1.selItem==='vial'?null:'vial'; renderApp1(); if(S1.selItem) toast('اخترتِ أنبوب الكاتاليز. انقري الدورق لوضعه داخله.'); },
+  onKey:()=>placeVial()});
+makeDraggable({svg:$('#s1svg'), el:$('#stopper'), canStart:()=>S1.phase==='setup'&&!S1.sealed,
+  onMove:(dx,dy)=>{ S1.drag={what:'stopper',dx,dy}; renderApp1(); },
+  onDrop:p=>{ S1.drag=null; if(inRect(p,[150,90,180,150])) seal(); else { renderApp1(); toast('أفلتي السدادة فوق فوهة الدورق.'); } },
+  onTap:()=>{ if(!S1.vialIn){ toast('ضعي أنبوب الكاتاليز داخل الدورق قبل إغلاقه.'); return; } S1.selItem=S1.selItem==='stopper'?null:'stopper'; renderApp1(); if(S1.selItem) toast('اخترتِ السدادة. انقري الدورق لإغلاقه.'); },
+  onKey:()=>seal()});
+onActivate($('#flaskHit'),()=>{ if(S1.selItem==='vial') placeVial(); else if(S1.selItem==='stopper') seal(); else if(S1.phase==='setup') toast(!S1.vialIn?'انقري أنبوب الكاتاليز أولًا ثم انقري الدورق.':(!S1.sealed?'انقري السدادة ثم انقري الدورق.':'اضغطي «بدء» لخلط الإنزيم.')); });
+
+function renderSteps1(){ const li=$$('#s1Steps li'); const recorded=MARKS1.filter(m=>S1.readings[m].val!=null).length;
+  const st=[S1.vialIn, S1.sealed, S1.mixed, S1.phase==='done'||recorded===MARKS1.length, S1.phase==='done'&&Object.keys(S1.avgTries).length>0];
+  let cur=st.indexOf(false); li.forEach((el,i)=>{ el.classList.toggle('ok',st[i]); el.classList.toggle('cur',i===cur); }); }
+
+function start1(){
+  if(S1.phase==='done'){ toast('انتهت التجربة. يمكنك تحليل المنحنى، أو الضغط على «إعادة التجربة».'); return; }
+  if(!S1.vialIn){ toast('ضعي أنبوب الكاتاليز داخل الدورق أولًا (اسحبيه أو انقريه ثم انقري الدورق).'); return; }
+  if(!S1.sealed){ toast('أغلقي الدورق بالسدادة أولًا حتى لا يتسرّب الأكسجين.'); return; }
+  if(!S1.mixed){ S1.mixed=true; S1.t=0; S1.phase='running'; $('#flaskLiquid').classList.add('mixed'); renderApp1(); renderSteps1(); renderTable1(); drawChart1(); toast('مال الدورق واختلط الإنزيم بالمادة المتفاعلة: هذه لحظة الزمن صفر.'); return; }
+  if(S1.phase==='paused'){
+    if(S1.awaiting!=null){ const r=S1.readings[S1.awaiting]; if(r.status==='active'||r.status==='retry'){ r.status='missed'; setMsg1(`تجاوزتِ قراءة ${ar(S1.awaiting)} s دون تسجيل.`,'bad'); } S1.awaiting=null; renderTable1(); }
+    if(S1.t>=TEND1){ finish1(); return; }
+    S1.phase='running';
+  }
+}
+function pause1(){ if(S1.phase==='running') S1.phase='paused'; }
+function activateRow(m){ const r=S1.readings[m]; if(r.status==='pending') r.status='active'; S1.awaiting=m; renderTable1();
+  setMsg1(`توقّف المؤقت عند ${ar(m)} s. اقرئي حجم الأكسجين من الحقنة واكتبيه في الجدول.`,'info');
+  const inp=$(`#r1-${m}`); if(inp&&finePointer) inp.focus({preventScroll:true}); }
+function autoRecord(m){ const r=S1.readings[m]; if(r.val==null&&r.status!=='missed'){ r.val=Math.round(V1(m)); r.status='auto'; } }
+function advance1(dV){
+  let nt=S1.t+dV, changed=false;
+  for(const m of MARKS1){ if(m>S1.t+1e-9 && m<=nt+1e-9){ const r=S1.readings[m];
+      if(S1.pauseAt && r.val==null && r.status!=='missed'){ S1.t=m; S1.phase='paused'; activateRow(m); afterChange1(); return; }
+      else { autoRecord(m); changed=true; } } }
+  S1.t=Math.min(nt,TEND1); if(changed) afterChange1();
+  if(S1.t>=TEND1-1e-9 && S1.phase==='running') finish1();
+}
+function afterChange1(){ renderTable1(); drawChart1(); updateQ1Locks(); renderSteps1(); }
+function finish1(){ S1.phase='done'; S1.t=TEND1; renderSteps1(); renderTable1(); drawChart1(); updateQ1Locks(); updateHome();
+  setMsg1('ثبت حجم الغاز: نفدت المادة المتفاعلة. انقري نقطتين على المنحنى لتحليل المعدل، وأجيبي عن الأسئلة.','ok'); toast('ثبت حجم الأكسجين: لم يعد هناك بيروكسيد هيدروجين يتحلّل.'); }
+function next1(){
+  if(S1.phase==='setup'){ if(!S1.vialIn) placeVial(); else if(!S1.sealed) seal(); else start1(); return; }
+  if(S1.phase==='done'){ toast('اكتملت القراءات. حلّلي المنحنى بالنقر على نقطتين.'); return; }
+  if(S1.awaiting!=null){ const r=S1.readings[S1.awaiting]; if(r.status==='active'||r.status==='retry'){ r.status='missed'; } S1.awaiting=null; }
+  const m=MARKS1.find(x=>x>S1.t+1e-9); if(m==null){ finish1(); return; }
+  const wasPause=S1.pauseAt; S1.phase='running'; advance1(m-S1.t);
+  if(!wasPause && S1.phase==='running' && S1.t<TEND1) S1.phase='paused';
+}
+function checkReading1(m){
+  const r=S1.readings[m]; if(!(r.status==='active'||r.status==='retry')) return;
+  const inp=$(`#r1-${m}`); const v=parseNum(inp&&inp.value); if(v===null){ setMsg1('اكتبي القراءة رقمًا بوحدة mL، مثل ١٨.','bad'); return; }
+  const truth=Math.round(V1(m));
+  if(Math.abs(v-truth)<=1){ r.status='ok'; r.val=v; setMsg1(`قراءة صحيحة عند ${ar(m)} s. اضغطي «بدء» للمتابعة.`,'ok'); }
+  else { r.attempts++;
+    if(r.attempts===1){ r.status='retry'; setMsg1('القراءة غير دقيقة. انظري إلى الوجه الأمامي لمكبس الحقنة في المكبّر: كل شرطة صغيرة = ١ mL، والأرقام كل ٥ mL. حاولي مرة أخرى.','bad'); }
+    else { r.status='corrected'; r.val=truth; setMsg1(`القراءة الصحيحة ${ar(truth)} mL، وسُجّلت للمتابعة. لاحظي موضع الوجه الأمامي للمكبس.`,'bad'); } }
+  if(r.val!=null){ $('#bStart').classList.add('glow'); }
+  afterChange1();
+}
+function renderTable1(){
+  const rows=[`<tr><td>${ar(0)}</td><td>${ar(0)} <span class="note">(لحظة المزج)</span></td><td><span class="st wait">${S1.mixed?'بداية القياس':'—'}</span></td></tr>`];
+  for(const m of MARKS1){ const r=S1.readings[m]; let c2='', c3='';
+    if(r.status==='active'||r.status==='retry'){ c2=`<input id="r1-${m}" inputmode="decimal" autocomplete="off" aria-label="الحجم عند ${ar(m)} ثانية">`; c3=`<button class="btn small" data-chk="${m}">تحقّق</button>${r.status==='retry'?'<div class="st bad">حاولي مجددًا</div>':''}`; }
+    else if(r.status==='ok'){ c2=`<b>${ar(r.val,r.val%1?1:0)}</b>`; c3='<span class="st ok">✓ صحيحة</span>'; }
+    else if(r.status==='corrected'){ c2=`<b>${ar(r.val)}</b>`; c3='<span class="st bad">صُحّحت</span>'; }
+    else if(r.status==='auto'){ c2=`<b>${ar(r.val)}</b>`; c3='<span class="st auto">تسجيل تلقائي</span>'; }
+    else if(r.status==='missed'){ c2='—'; c3='<span class="st bad">فاتت</span>'; }
+    else { c2='<span class="muted">…</span>'; c3='<span class="st wait">لاحقًا</span>'; }
+    rows.push(`<tr class="${(r.status==='active'||r.status==='retry')?'active':''}"><td>${ar(m)}</td><td>${c2}</td><td>${c3}</td></tr>`); }
+  const old=$('#t1body').querySelector('input'); const keep=old?{id:old.id,v:old.value,f:document.activeElement===old}:null;
+  $('#t1body').innerHTML=rows.join('');
+  if(keep){ const n=$('#'+keep.id); if(n){ n.value=keep.v; if(keep.f) n.focus({preventScroll:true}); } }
+  const act=$('#t1body tr.active'); if(act && view==='s1'){ const w=act.closest('.tbl-wrap'); const top=act.offsetTop-w.clientHeight/2; w.scrollTop=Math.max(0,top); }
+}
+$('#t1body').addEventListener('click',e=>{ const b=e.target.closest('[data-chk]'); if(b) checkReading1(+b.dataset.chk); });
+$('#t1body').addEventListener('keydown',e=>{ if(e.key==='Enter'&&e.target.tagName==='INPUT'){ e.preventDefault(); checkReading1(+e.target.id.split('-')[1]); } });
+$('#pauseAt').addEventListener('change',e=>{ S1.pauseAt=e.target.checked; });
+
+/* ---- chart 1 ---- */
+const X1=t=>70+t/420*460, Y1=v=>310-v/60*270;
+function points1(){ if(!S1.mixed) return []; const pts=[{t:0,v:0}]; MARKS1.forEach(m=>{ const r=S1.readings[m]; if(r.val!=null) pts.push({t:m,v:r.val}); }); return pts; }
+function drawChart1(){
+  const pts=points1(); let h='';
+  for(let v=0;v<=60;v+=10){ h+=`<line class="grid" x1="70" x2="530" y1="${Y1(v)}" y2="${Y1(v)}"/><text class="tick" x="50" y="${Y1(v)+5}" text-anchor="middle">${ar(v)}</text>`; }
+  for(let t=0;t<=420;t+=60){ h+=`<line class="grid" x1="${X1(t)}" x2="${X1(t)}" y1="40" y2="310"/><text class="tick" x="${X1(t)}" y="330" text-anchor="middle">${ar(t)}</text>`; }
+  h+=`<line class="axis" x1="70" y1="310" x2="535" y2="310"/><line class="axis" x1="70" y1="310" x2="70" y2="34"/>`;
+  h+=`<text class="axt" x="300" y="358" text-anchor="middle">الزمن (s)</text><text class="axt" x="18" y="175" text-anchor="middle" transform="rotate(-90 18 175)">حجم الأكسجين المتجمّع (mL)</text>`;
+  if(pts.length>=2) h+=`<path class="curve" d="${monotonePath(pts.map(p=>[X1(p.t),Y1(p.v)]))}"/>`;
+  const byT={}; pts.forEach(p=>byT[p.t]=p);
+  if(S1.mode==='avg' && S1.sel.length===2){ const [a,b]=S1.sel.map(t=>byT[t]).sort((p,q)=>p.t-q.t);
+    if(a&&b){ h+=`<rect class="band" x="${X1(a.t)}" y="${Y1(b.v)}" width="${X1(b.t)-X1(a.t)}" height="${Math.max(0,Y1(a.v)-Y1(b.v))}"/>`;
+      h+=`<line class="secant" x1="${X1(a.t)}" y1="${Y1(a.v)}" x2="${X1(b.t)}" y2="${Y1(b.v)}"/>`;
+      h+=`<line class="dt" x1="${X1(a.t)}" y1="${Y1(a.v)}" x2="${X1(b.t)}" y2="${Y1(a.v)}"/>`;
+      h+=`<line class="dv" x1="${X1(b.t)}" y1="${Y1(a.v)}" x2="${X1(b.t)}" y2="${Y1(b.v)}"/>`;
+      h+=`<text class="ann-o" x="${Math.min(X1(b.t)+24,540)}" y="${(Y1(a.v)+Y1(b.v))/2+5}" text-anchor="middle">ΔV</text>`;
+      h+=`<text class="ann" x="${(X1(a.t)+X1(b.t))/2}" y="${Y1(a.v)+18}" text-anchor="middle">Δt</text>`; } }
+  if(S1.mode==='tan' && S1.tanT!=null && byT[S1.tanT]){ const p=byT[S1.tanT], s=dV1(p.t); const t0=Math.max(0,p.t-80), t1=Math.min(420,p.t+80);
+    const v0=Math.max(0,p.v+s*(t0-p.t)), v1=Math.min(60,p.v+s*(t1-p.t)); const ta=v0===0&&s>0? p.t-p.v/s : t0, tb=v1===60&&s>0? p.t+(60-p.v)/s : t1;
+    h+=`<line class="tan" x1="${X1(ta)}" y1="${Y1(p.v+s*(ta-p.t))}" x2="${X1(tb)}" y2="${Y1(p.v+s*(tb-p.t))}"/>`; }
+  if(S1.mixed && S1.phase!=='done') h+=`<line class="nowline" id="c1now" x1="${X1(S1.t)}" x2="${X1(S1.t)}" y1="40" y2="310"/>`;
+  for(const p of pts){ const sel=(S1.mode==='avg'&&S1.sel.includes(p.t))||(S1.mode==='tan'&&S1.tanT===p.t);
+    h+=`<g class="pt${sel?' sel':''}" data-t="${p.t}" tabindex="0" role="button" aria-label="نقطة عند ${ar(p.t)} ثانية وحجم ${ar(p.v)} مليلتر"><circle class="hit" cx="${X1(p.t)}" cy="${Y1(p.v)}" r="17"/><circle class="dot" cx="${X1(p.t)}" cy="${Y1(p.v)}" r="${sel?8:6.5}"/></g>`; }
+  if(!pts.length) h+=`<text class="ann" x="300" y="180" text-anchor="middle">تظهر النقاط هنا بعد التحقق من كل قراءة</text>`;
+  $('#c1').innerHTML=h;
+}
+function pickPoint1(t){
+  if(S1.mode==='avg'){ if(S1.sel.includes(t)) S1.sel=S1.sel.filter(x=>x!==t); else if(S1.sel.length>=2) S1.sel=[t]; else S1.sel.push(t); }
+  else S1.tanT=(S1.tanT===t?null:t);
+  drawChart1(); renderAnalysis1();
+}
+$('#c1').addEventListener('click',e=>{ const g=e.target.closest('.pt'); if(g) pickPoint1(+g.dataset.t); });
+$('#c1').addEventListener('keydown',e=>{ const g=e.target.closest('.pt'); if(g&&(e.key==='Enter'||e.key===' ')){ e.preventDefault(); pickPoint1(+g.dataset.t); } });
+function setMode1(m){ S1.mode=m; $('#m1avg').setAttribute('aria-pressed',m==='avg'); $('#m1tan').setAttribute('aria-pressed',m==='tan'); drawChart1(); renderAnalysis1(); }
+$('#m1avg').addEventListener('click',()=>setMode1('avg')); $('#m1tan').addEventListener('click',()=>setMode1('tan'));
+function valAt(t){ const p=points1().find(q=>q.t===t); return p?p.v:null; }
+function renderAnalysis1(){
+  const box=$('#an1'); const pts=points1();
+  if(pts.length<2){ box.innerHTML='<p>بعد تسجيل القراءات، انقري نقطتين على المنحنى لحساب <b>متوسط معدل التفاعل</b> خلال الفترة بينهما.</p>'; return; }
+  if(S1.mode==='tan'){
+    if(S1.tanT==null){ box.innerHTML='<p>انقري نقطة واحدة على المنحنى لرسم المماس عندها. <b>المعدل اللحظي</b> هو ميل المماس عند نقطة واحدة، أما <b>المتوسط</b> فيُحسب بين نقطتين خلال فترة.</p>'; return; }
+    const t=S1.tanT, s=dV1(t);
+    let extra = t===0 ? '<div class="explain"><b>المعدل الأولي:</b> معدل التفاعل عند بدايته. هنا يكون ميل المماس أكبر ما يمكن لأن تركيز المادة المتفاعلة أعلى ما يمكن.</div>'
+      : (s<0.005 ? '<div class="explain"><b>الجزء الأفقي:</b> ميل المماس صفر، أي أن معدل التفاعل صفر. نفدت المادة المتفاعلة فلا يتكوّن أكسجين إضافي، ويبقى الحجم ثابتًا ولا ينخفض.</div>'
+      : `<div class="explain">قارني: المعدل اللحظي عند البداية ≈ <span class="ltr">${ar(dV1(0),2)}</span> mL/s. عند هذه النقطة الحجم المتجمّع أكبر، لكن الميل أقل لأن تركيز المادة المتفاعلة أصبح أقل.</div>`);
+    box.innerHTML=`<p>المماس عند <b>t = ${ar(t)} s</b>. <b>المعدل اللحظي</b> عند هذه النقطة ≈ ميل المماس ≈ <b>${ar(s,2)} mL/s</b> <span class="note">(قيمة تقريبية من نموذج المحاكاة)</span>.</p><p class="note">الفرق: المتوسط = التغيّر في الحجم ÷ الزمن خلال فترة بين نقطتين؛ اللحظي = الميل عند نقطة واحدة.</p>${extra}`;
+    return; }
+  if(S1.sel.length<2){ box.innerHTML=`<p>${S1.sel.length===1?'اخترتِ نقطة واحدة. انقري نقطة ثانية لتحديد الفترة.':'انقري نقطتين على المنحنى لتحديد فترة زمنية، فتظهر الزيادة في الحجم مظلّلة.'}</p><p class="note">جرّبي فترة تبدأ من الصفر، ثم فترة لاحقة بالطول نفسه، وقارني.</p>`; return; }
+  const [t1,t2]=S1.sel.slice().sort((a,b)=>a-b); const v1=valAt(t1), v2=valAt(t2); const dVv=v2-v1, dT=t2-t1, rate=dVv/dT; const key=t1+'-'+t2;
+  const tr=S1.avgTries[key]||(S1.avgTries[key]={att:0,ok:false,show:false});
+  let ctx='';
+  if(tr.att>0||tr.show){
+    if(dVv===0) ctx='<div class="explain"><b>الجزء الأفقي:</b> لم يزدد الحجم خلال هذه الفترة، فالمعدل صفر. نفدت المادة المتفاعلة، فتوقف إنتاج الغاز وثبت الحجم.</div>';
+    else if(t1===0) ctx=`<div class="explain"><b>بداية المنحنى — المعدل الأولي:</b> معدل التفاعل عند بدايته. كلما كانت الفترة من الصفر أقصر اقترب المتوسط من المعدل الأولي (ميل المماس عند الصفر). في البداية يكون تركيز المادة المتفاعلة أعلى ما يمكن، فيكون الميل أكبر.</div>`;
+    else { const vb=valAt(STEP1); const r0=vb!=null? vb/STEP1 : null;
+      ctx=`<div class="explain"><b>جزء لاحق من المنحنى:</b> الحجم المتجمّع هنا أكبر (${ar(v2)} mL)، لكن المعدل أقل${r0!=null?` (≈ ${ar(rate,2)} مقابل ≈ ${ar(r0,2)} mL/s في أول ٣٠ s)`:''}، لأن المادة المتفاعلة المتبقية أقل فتقلّ فرص ارتباطها بالمواقع النشطة.</div>`; }
+  }
+  box.innerHTML=`<p>الفترة من <b>t₁ = ${ar(t1)} s</b> إلى <b>t₂ = ${ar(t2)} s</b>:</p>
+   <div class="kv"><span>الزيادة في حجم الأكسجين (ΔV) — المظلّلة</span><b>${ar(v2)} − ${ar(v1)} = ${ar(dVv,dVv%1?1:0)} mL</b></div>
+   <div class="kv"><span>الزمن المستغرق (Δt)</span><b>${ar(t2)} − ${ar(t1)} = ${ar(dT)} s</b></div>
+   <div class="row"><label for="avgIn">احسبي متوسط معدل التفاعل (mL/s):</label><input id="avgIn" inputmode="decimal" autocomplete="off" ${tr.ok||tr.att>=2?'disabled':''}><button class="btn small" id="avgChk" ${tr.ok||tr.att>=2?'disabled':''}>تحقّق</button>${(tr.att>0&&!tr.show)?'<button class="btn small soft" id="avgShow">إظهار طريقة الحساب</button>':''}</div>
+   <div id="avgFb">${tr.ok?'<div class="fb ok">إجابة صحيحة.</div>':(tr.att===1&&!tr.show?'<div class="fb hint">ليست دقيقة. قسّمي ΔV على Δt.</div>':'')}</div>
+   ${tr.show?`<div class="formula">متوسط معدل التفاعل = التغيّر في حجم الأكسجين ÷ الزمن المستغرق = ΔV ÷ Δt = ${ar(dVv,dVv%1?1:0)} ÷ ${ar(dT)} ≈ <b>${ar(rate,2)} mL/s</b></div><p class="note" style="margin-top:6px">هذا <b>متوسط</b> خلال فترة، وليس المعدل اللحظي عند نقطة. للمعدل اللحظي اختاري «المعدل اللحظي عند نقطة».</p>`:''}
+   ${ctx}`;
+  const inp=$('#avgIn');
+  const chk=()=>{ const v=parseNum(inp.value); if(v===null){ $('#avgFb').innerHTML='<div class="fb hint">اكتبي رقمًا، مثل ٠٫٥.</div>'; return; }
+    const ok=Math.abs(v-rate)<=Math.max(0.015,Math.abs(rate)*0.06); tr.att++;
+    if(ok){ tr.ok=true; tr.show=true; } else if(tr.att>=2){ tr.show=true; }
+    renderAnalysis1(); renderSteps1(); };
+  const b=$('#avgChk'); if(b) b.addEventListener('click',chk);
+  if(inp) inp.addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); chk(); } });
+  const sh=$('#avgShow'); if(sh) sh.addEventListener('click',()=>{ tr.show=true; renderAnalysis1(); });
+}
+
+/* bubbles */
+function tickBubbles1(dt,running){
+  if(running && S1.mixed){ const rate=dV1(S1.t); S1.emitAcc+=Math.min(rate*speed*2.2,reduceMotion?6:28)*dt;
+    while(S1.emitAcc>=1){ S1.emitAcc-=1; S1.bubbles.push({x:190+Math.random()*100, y:322+Math.random()*8, r:1.8+Math.random()*2.8, vy:45+Math.random()*40, ph:Math.random()*6}); } }
+  if(running){ for(const b of S1.bubbles){ b.y-=b.vy*dt; b.ph+=dt*5; } S1.bubbles=S1.bubbles.filter(b=>b.y>276); }
+  let h=''; for(const b of S1.bubbles) h+=`<circle class="bubble" cx="${(b.x+Math.sin(b.ph)*1.6).toFixed(1)}" cy="${b.y.toFixed(1)}" r="${b.r.toFixed(1)}"/>`;
+  $('#bubbles').innerHTML=h;
+}
+function updateLensCounters1(){
+  const c=lens1.counts(); $('#l1s').textContent=ar(c.subs); $('#l1p').textContent=ar(c.done); $('#l1w').textContent=ar(c.done*2);
+  const f=c.subs/N1; $('#l1o').style.width=(f*100).toFixed(0)+'%';
+  $('#l1oTxt').textContent=f>0.6?'عالية':(f>0.3?'متوسطة':(f>0?'منخفضة':'لا توجد مادة متفاعلة'));
+}
+
+/* ================= STATION 2 model ================= */
+const K2=0.0075, ABASE=0.05, TEND2=480, STEP2=60;
+const MARKS2=[]; for(let m=0;m<=TEND2;m+=STEP2) MARKS2.push(m);
+function A2(t){ return ABASE+(1-ABASE)*Math.exp(-K2*t); }
+function starch2(t){ return Math.exp(-K2*t); }
+const C_YEL=[196,138,46], C_BLUE=[28,32,86], C_CLOUD=[238,240,246];
+function iodColor(f){ const w=Math.pow(Math.max(0,Math.min(1,f)),0.6); return rgb(C_YEL.map((y,i)=>lerp(y,C_BLUE[i],w))); }
+const N2=8;
+function target2(t){ return N2-Math.round(N2*starch2(t)); }
+const S2={showMol:false};
+const lens2=new Lens($('#lens2'),{kind:'amy',nSub:N2,per:1,nEnz:3,R:30,bindDur:0.6,holdDur:0.5,pairGap:0,subSpeed:26,subType:'starch',enzColor:'#2F6F8F',products:[{type:'maltose',n:3}],seed:29});
+
+function initS2(){
+  Object.assign(S2,{t:0, phase:'setup', mixed:false, zeroed:false, tubes:{}, slot:null, readT:0, reading:null, sel:null, recorded:{}, drag:null, dropT:0, dropX:0});
+  lens2.reset(); renderApp2(); renderTable2(); drawChart2(); renderSteps2(); setMsg2('ابدئي التفاعل أولًا: اسحبي أنبوب الأميليز إلى كأس النشا، أو اضغطي «بدء».','info');
+  $('#bRec2').disabled=true; $('#bZero').classList.remove('glow');
+}
+function setMsg2(t,k){ const el=$('#r2msg'); el.textContent=t; el.className='msg '+(k||'info'); }
+const TUBE_X=i=>300+i*30;
+function renderApp2(){
+  const am=$('#amyl'); let p=[196,320]; if(S2.drag&&S2.drag.what==='amyl') p=[196+S2.drag.dx,320+S2.drag.dy];
+  am.setAttribute('transform',`translate(${p[0]},${p[1]})`); am.style.display=S2.mixed?'none':''; $('#amylLbl').style.display=S2.mixed?'none':'';
+  am.classList.toggle('sel-on',S2.sel==='amyl');
+  $('#beakerTarget').setAttribute('opacity',(S2.sel==='amyl'||(S2.drag&&S2.drag.what==='amyl'))?1:0);
+  $('#beakerLbl').textContent=S2.mixed?'مزيج التفاعل: نشا + أميليز':'محلول النشا';
+  const nTaken=Object.keys(S2.tubes).length; $('#beakerLiq').setAttribute('y',196+nTaken*3);
+  // rack (rebuilt only when its state changes, so focus and colour transitions survive)
+  const rk=JSON.stringify([MARKS2.map(m=>{const t=S2.tubes[m]; return t?(t.iod?1:0)+(t.measured?2:0)+1:0;}),S2.sel,S2.slot,S2.drag]);
+  if(rk!==renderApp2.key){ renderApp2.key=rk; renderRack(); }
+  $('#coloriTarget').setAttribute('opacity',(typeof S2.sel==='number'||(S2.drag&&S2.drag.what==='tube'))?1:0);
+  // colorimeter
+  const tb=S2.slot!=null?S2.tubes[S2.slot]:null;
+  $('#slotLiq').style.fill=tb?iodColor(tb.f):'transparent';
+  let T=1; if(tb){ T = S2.reading!=null ? Math.pow(10,-S2.reading) : 1; }
+  $('#beam3').setAttribute('opacity',(0.12+0.8*T).toFixed(2));
+  $('#scrTxt').textContent = !S2.zeroed ? '- - -' : (tb ? (S2.reading!=null ? ar(S2.reading,2) : '…') : ar(0,2));
+  $('#s2TimerTxt').textContent=mmss(S2.t);
+  $('#dropper').setAttribute('opacity',S2.dropT>0?1:0); $('#dropper').setAttribute('transform',`translate(${S2.dropX},266)`);
+}
+function renderRack(){
+  let h=''; MARKS2.forEach((m,i)=>{ const x=TUBE_X(i), tb=S2.tubes[m]; const inSlot=S2.slot===m;
+    const dragging=S2.drag&&S2.drag.what==='tube'&&S2.drag.m===m; const dx=dragging?S2.drag.dx:0, dy=dragging?S2.drag.dy:0;
+    const liq = tb? (tb.iod? iodColor(tb.f) : rgb(C_CLOUD)) : 'transparent';
+    h+=`<g class="rtube${tb&&tb.measured?' measured':''}${S2.sel===m?' sel-on':''}" data-m="${m}" transform="translate(${dx},${dy})" ${tb&&!inSlot?`tabindex="0" role="button" aria-label="عيّنة ${ar(m)} ثانية"`:''} style="${inSlot?'opacity:.25':''}">
+      <rect class="selbox" x="${x-14}" y="208" width="28" height="118" rx="8"/>
+      <rect class="rtube-glass" x="${x-9}" y="214" width="18" height="104" rx="8"/>
+      <rect class="rtube-liq" x="${x-7}" y="276" width="14" height="40" rx="6" style="fill:${liq}"/>
+    </g><text class="lbl-s" x="${x}" y="340" text-anchor="middle">${ar(m)}</text>`;
+    if(tb&&tb.measured) h+=`<text x="${x}" y="206" text-anchor="middle" style="fill:#1F7A52;font-weight:800;font-size:14px">✓</text>`; });
+  const foc=document.activeElement&&document.activeElement.closest&&document.activeElement.closest('.rtube'); const fm=foc?foc.dataset.m:null;
+  $('#rack').innerHTML=h;
+  if(fm!=null){ const n=$(`#rack .rtube[data-m="${fm}"]`); if(n&&n.hasAttribute('tabindex')) n.focus({preventScroll:true}); }
+}
+function renderSteps2(){ const li=$$('#s2Steps li'); const nRec=Object.keys(S2.recorded).length;
+  const st=[S2.mixed, S2.phase==='done', S2.zeroed, nRec===MARKS2.length, nRec===MARKS2.length&&RES.s2q1&&RES.s2q1.done];
+  const cur=st.indexOf(false); li.forEach((el,i)=>{ el.classList.toggle('ok',!!st[i]); el.classList.toggle('cur',i===cur); }); }
+function mix2(){ if(S2.mixed) return; S2.mixed=true; S2.t=0; S2.phase='running'; S2.sel=null; sample2(0); renderApp2(); renderSteps2(); updateHome();
+  setMsg2('بدأ التفاعل (الزمن صفر). تُسحب عيّنة متساوية كل ٦٠ s إلى أنبوب منفصل، وتُضاف إليها كمية ثابتة من اليود.','info'); toast('لحظة المزج = الزمن صفر. سُحبت أول عيّنة.'); }
+function sample2(m){ if(S2.tubes[m]) return; S2.tubes[m]={t:m,f:starch2(m),A:A2(m),iod:false,measured:false};
+  const i=MARKS2.indexOf(m); S2.dropX=TUBE_X(i); S2.dropT=0.9; renderApp2();
+  setTimeout(()=>{ if(S2.tubes[m]){ S2.tubes[m].iod=true; renderApp2(); renderTable2(); } }, reduceMotion?0:450); }
+function start2(){ if(!S2.mixed){ mix2(); return; } if(S2.phase==='paused') S2.phase='running'; else if(S2.phase==='done') toast('اكتمل أخذ العيّنات. قيسي امتصاص العيّنات بمقياس الألوان.'); }
+function pause2(){ if(S2.phase==='running') S2.phase='paused'; }
+function advance2(dV){ const nt=Math.min(TEND2,S2.t+dV); for(const m of MARKS2){ if(m<=nt+1e-9&&!S2.tubes[m]) sample2(m); } S2.t=nt;
+  if(S2.t>=TEND2-1e-9&&S2.phase!=='done'){ S2.phase='done'; renderSteps2(); setMsg2(S2.zeroed?'اكتمل أخذ العيّنات. ضعي كل عيّنة في مقياس الألوان وسجّلي قراءتها.':'اكتمل أخذ العيّنات. صفّري مقياس الألوان بأنبوب الماء المقطّر، ثم قيسي العيّنات.','info'); if(!S2.zeroed) $('#bZero').classList.add('glow'); } }
+function next2(){
+  if(!S2.mixed){ mix2(); return; }
+  if(S2.phase!=='done'){ const m=MARKS2.find(x=>x>S2.t+1e-9); if(m!=null){ advance2(m-S2.t); renderApp2(); return; } }
+  if(S2.slot!=null&&S2.reading!=null){ record2(); return; }
+  if(!S2.zeroed){ zero2(); return; }
+  const m=MARKS2.find(x=>S2.tubes[x]&&!S2.tubes[x].measured); if(m!=null){ insert2(m); return; }
+  toast('سجّلتِ كل القراءات. فسّري المنحنى وأجيبي عن الأسئلة.');
+}
+function zero2(){ S2.zeroed=true; $('#bZero').classList.remove('glow'); renderApp2(); renderSteps2(); toast('صُفّر الجهاز: امتصاص الماء المقطّر = ٠٫٠٠. أي امتصاص بعد ذلك سببه لون العيّنة.');
+  if(Object.keys(S2.tubes).length) setMsg2('الآن انقري عيّنة ثم انقري مقياس الألوان (أو اسحبيها إليه).','info'); }
+function insert2(m){ const tb=S2.tubes[m]; if(!tb||!tb.iod) return; if(!S2.zeroed){ toast('صفّري الجهاز أولًا بأنبوب الماء المقطّر.'); $('#bZero').classList.add('glow'); return; }
+  S2.slot=m; S2.sel=null; S2.reading=null; S2.readT=reduceMotion?0.05:0.8; $('#bRec2').disabled=true; renderApp2(); setMsg2(`عيّنة ${ar(m)} s داخل الجهاز… يمرّ الضوء عبرها إلى الكاشف.`,'info'); }
+function record2(){ if(S2.slot==null||S2.reading==null) return; const m=S2.slot; S2.recorded[m]=S2.reading; S2.tubes[m].measured=true; S2.slot=null; S2.reading=null; $('#bRec2').disabled=true; $('#bRec2').classList.remove('glow');
+  renderApp2(); renderTable2(); drawChart2(); renderSteps2(); updateQ2Locks(); updateHome();
+  const left=MARKS2.filter(x=>S2.tubes[x]&&!S2.tubes[x].measured).length; setMsg2(left?`سُجّلت القراءة. بقيت ${ar(left)} عيّنة جاهزة للقياس.`:(Object.keys(S2.recorded).length===MARKS2.length?'سُجّلت كل القراءات. لاحظي كيف ينخفض الامتصاص ثم يقترب من قيمة ثابتة.':'سُجّلت القراءة. انتظري العيّنة التالية.'),'ok'); }
+$('#bZero').addEventListener('click',zero2);
+$('#bRec2').addEventListener('click',record2);
+makeDraggable({svg:$('#s2svg'), el:$('#amyl'), canStart:()=>!S2.mixed,
+  onMove:(dx,dy)=>{ S2.drag={what:'amyl',dx,dy}; renderApp2(); },
+  onDrop:p=>{ S2.drag=null; if(inRect(p,[24,120,152,214])) mix2(); else { renderApp2(); toast('أفلتي أنبوب الأميليز فوق كأس النشا.'); } },
+  onTap:()=>{ S2.sel=S2.sel==='amyl'?null:'amyl'; renderApp2(); if(S2.sel) toast('اخترتِ الأميليز. انقري كأس النشا لإضافته.'); },
+  onKey:()=>mix2()});
+onActivate($('#beakerHit'),()=>{ if(S2.sel==='amyl') mix2(); else if(!S2.mixed) toast('انقري أنبوب الأميليز أولًا ثم انقري الكأس.'); });
+onActivate($('#colori'),()=>{ if(typeof S2.sel==='number') insert2(S2.sel); else if(!S2.zeroed) toast('صفّري الجهاز بأنبوب الماء المقطّر (الزر أسفل الجهاز).'); else toast('انقري إحدى العيّنات أولًا، ثم انقري مقياس الألوان.'); });
+/* tube drag (delegated) */
+(function(){ const svg=$('#s2svg'), rack=$('#rack');
+  rack.addEventListener('pointerdown',e=>{ const g=e.target.closest('.rtube'); if(!g) return; const m=+g.dataset.m; const tb=S2.tubes[m]; if(!tb||!tb.iod||S2.slot===m) return;
+    e.preventDefault(); const p0=svgPoint(svg,e); let moved=false; try{svg.setPointerCapture(e.pointerId);}catch(_){}
+    const mv=ev=>{ const p=svgPoint(svg,ev); const dx=p.x-p0.x, dy=p.y-p0.y; if(!moved&&Math.hypot(dx,dy)>7) moved=true; if(moved){ S2.drag={what:'tube',m,dx,dy}; renderApp2(); } };
+    const up=ev=>{ svg.removeEventListener('pointermove',mv); svg.removeEventListener('pointerup',up); svg.removeEventListener('pointercancel',up); const p=svgPoint(svg,ev);
+      if(moved){ S2.drag=null; if(inRect(p,[556,108,238,230])) insert2(m); else { renderApp2(); toast('أفلتي العيّنة فوق مقياس الألوان.'); } }
+      else { S2.sel=S2.sel===m?null:m; renderApp2(); if(S2.sel!=null) toast(`اخترتِ عيّنة ${ar(m)} s. انقري مقياس الألوان لقياسها.`); } };
+    svg.addEventListener('pointermove',mv); svg.addEventListener('pointerup',up); svg.addEventListener('pointercancel',up); });
+  rack.addEventListener('keydown',e=>{ const g=e.target.closest('.rtube'); if(g&&(e.key==='Enter'||e.key===' ')){ e.preventDefault(); insert2(+g.dataset.m); } });
+})();
+function renderTable2(){ let h=''; for(const m of MARKS2){ const tb=S2.tubes[m]; const rec=S2.recorded[m];
+    h+=`<tr><td>${ar(m)}</td><td>${tb&&tb.iod?`<span class="swatch" style="background:${iodColor(tb.f)}"></span>`:'<span class="muted">…</span>'}</td><td>${rec!=null?`<b>${ar(rec,2)}</b>`:(tb?'<span class="st wait">لم تُقَس</span>':'<span class="muted">…</span>')}</td></tr>`; }
+  $('#t2body').innerHTML=h; }
+const X2=t=>70+t/480*460, Y2=a=>310-a/1.2*270;
+function drawChart2(){ let h='';
+  for(let a=0;a<=1.2001;a+=0.2){ h+=`<line class="grid" x1="70" x2="530" y1="${Y2(a)}" y2="${Y2(a)}"/><text class="tick" x="46" y="${Y2(a)+5}" text-anchor="middle">${ar(a,1)}</text>`; }
+  for(let t=0;t<=480;t+=60){ h+=`<line class="grid" x1="${X2(t)}" x2="${X2(t)}" y1="40" y2="310"/><text class="tick" x="${X2(t)}" y="330" text-anchor="middle">${ar(t)}</text>`; }
+  h+=`<line class="axis" x1="70" y1="310" x2="535" y2="310"/><line class="axis" x1="70" y1="310" x2="70" y2="34"/>`;
+  h+=`<text class="axt" x="300" y="358" text-anchor="middle">الزمن (s)</text><text class="axt" x="16" y="175" text-anchor="middle" transform="rotate(-90 16 175)">الامتصاص (مؤشّر على النشا المتبقي)</text>`;
+  const pts=MARKS2.filter(m=>S2.recorded[m]!=null).map(m=>({t:m,a:S2.recorded[m]}));
+  if(pts.length>=2) h+=`<path class="curve" d="${monotonePath(pts.map(p=>[X2(p.t),Y2(p.a)]))}"/>`;
+  if(S2.mixed&&S2.phase!=='done') h+=`<line class="nowline" id="c2now" x1="${X2(S2.t)}" x2="${X2(S2.t)}" y1="40" y2="310"/>`;
+  for(const p of pts) h+=`<circle cx="${X2(p.t)}" cy="${Y2(p.a)}" r="6.5" fill="#fff" stroke="#513778" stroke-width="3"><title>${ar(p.t)} s : ${ar(p.a,2)}</title></circle>`;
+  if(!pts.length) h+=`<text class="ann" x="300" y="180" text-anchor="middle">تظهر النقاط هنا بعد تسجيل كل قراءة</text>`;
+  $('#c2').innerHTML=h; }
+function updateLensCounters2(){ const c=lens2.counts(); $('#l2s').textContent=ar(c.subs); $('#l2p').textContent=ar(c.done*3);
+  const f=c.subs/N2; $('#l2o').style.width=(f*100).toFixed(0)+'%'; $('#l2oTxt').textContent=f>0.6?'عالية':(f>0.3?'متوسطة':(f>0?'منخفضة':'لا يوجد نشا تقريبًا')); }
+$('#bWhy').addEventListener('click',()=>openModal());
+function openModal(){ $('#modalBack').hidden=false; $('#modalX').focus(); }
+function closeModal(){ $('#modalBack').hidden=true; $('#bWhy').focus(); }
+$('#modalX').addEventListener('click',closeModal);
+$('#modalBack').addEventListener('click',e=>{ if(e.target.id==='modalBack') closeModal(); });
+
+/* ================= Questions (shared attempt policy) ================= */
+const RES={};
+const LABELS={s1q1:'م١: الحجم والسرعة',s1q2:'م١: ميل المنحنى',s1q3:'م١: هل استُهلك الإنزيم؟',s1q4:'م١: الجزء الأفقي',s2q1:'م٢: انخفاض اللون',s2q2:'م٢: مقياس الألوان',s2q3:'م٢: تثبيت العيّنة واليود',s2q4:'م٢: اليود في المزيج',c1:'تحدٍّ ١: الفترة الأسرع',c2:'تحدٍّ ٢: تصحيح العبارة',c3:'تحدٍّ ٣: تفسير الامتصاص',c4:'تحدٍّ ٤: تصنيف الطريقتين'};
+function record(key,attempts,correct){ RES[key]={done:true,attempts,correct}; updateHome(); updateFinal(); }
+function makeMCQ(container,key,q){
+  const box=document.createElement('div'); box.className='q'; box.dataset.key=key;
+  box.innerHTML=`<h4>${q.q}</h4><div class="opts">${q.o.map((o,i)=>`<button class="opt" data-i="${i}">${o[0]}</button>`).join('')}</div><div class="fbs"></div>`;
+  container.appendChild(box); let att=0, done=false;
+  box.querySelector('.opts').addEventListener('click',e=>{ const b=e.target.closest('.opt'); if(!b||done||box.classList.contains('locked')) return; const i=+b.dataset.i; const ok=q.o[i][1]; att++;
+    const fbs=box.querySelector('.fbs');
+    if(ok){ b.classList.add('right'); done=true; fbs.innerHTML=`<div class="fb ok">${att===1?'أحسنتِ! إجابة صحيحة من المحاولة الأولى.':'أحسنتِ! إجابة صحيحة.'}</div><div class="fb exp"><b>التفسير العلمي:</b> ${q.e}</div>`; }
+    else if(att===1){ b.classList.add('wrong'); b.disabled=true; fbs.innerHTML=`<div class="fb hint"><b>تلميح:</b> ${q.h}</div>`; }
+    else { b.classList.add('wrong'); done=true; const ci=q.o.findIndex(o=>o[1]); box.querySelectorAll('.opt')[ci].classList.add('right'); fbs.innerHTML=`<div class="fb exp"><b>التفسير العلمي:</b> ${q.e}</div>`; }
+    if(done){ box.querySelectorAll('.opt').forEach(x=>x.disabled=true); record(key,att,ok); }
+  });
+  return box;
+}
+function lockQ(box,locked,msg){ box.classList.toggle('locked',locked); let lm=box.querySelector('.lockmsg'); if(locked){ if(!lm){ lm=document.createElement('p'); lm.className='lockmsg'; box.insertBefore(lm,box.querySelector('.opts')); } lm.textContent=msg; box.querySelector('.opts').hidden=true; } else { if(lm) lm.remove(); box.querySelector('.opts').hidden=false; } }
+
+const Q1={
+ s1q1:{q:'هل زيادة حجم الأكسجين المتجمّع تعني أن سرعة التفاعل تزداد؟',
+  o:[['نعم؛ فكلما زاد الحجم المتجمّع زادت سرعة التفاعل.',false],['لا؛ الحجم المتجمّع يزداد دائمًا، أما سرعة التفاعل فهي الزيادة في الحجم لكل وحدة زمن، وهي تقلّ مع مرور الزمن.',true],['لا؛ لأن حجم الغاز يبقى ثابتًا منذ البداية.',false]],
+  h:'قارني الزيادة في الحجم خلال أول ٣٠ s بالزيادة خلال ٣٠ s لاحقة في جدولك.',
+  e:'الحجم المتجمّع تراكمي فلا ينقص، لكن معدل التفاعل = التغيّر في الحجم ÷ الزمن. في أول ٣٠ s يزداد الحجم كثيرًا، وفي الفترات اللاحقة المساوية لها تصبح الزيادة أصغر؛ أي أن المعدل يقلّ مع أن الحجم الكلي أكبر.'},
+ s1q2:{q:'لماذا يقلّ ميل المنحنى مع مرور الزمن؟',
+  o:[['لأن الإنزيم يُستهلك فيقلّ عدد جزيئاته.',false],['لأن الحقنة تقاوم دخول الغاز كلما امتلأت.',false],['لأن تركيز بيروكسيد الهيدروجين يقلّ، فتقلّ فرص اصطدام جزيئاته بالمواقع النشطة وارتباطها بها.',true],['لأن الأكسجين يتفاعل مجددًا مكوّنًا بيروكسيد الهيدروجين.',false]],
+  h:'افتحي العدسة الجزيئية: ما الذي يتغيّر عدده، وما الذي يبقى ثابتًا؟',
+  e:'مع تقدّم التفاعل تتحوّل جزيئات المادة المتفاعلة إلى نواتج فيقلّ تركيزها، فيقلّ عدد معقّدات الإنزيم والمادة المتفاعلة المتكوّنة في كل ثانية، ويقلّ الأكسجين الناتج لكل وحدة زمن؛ لذلك يقلّ الميل. أما عدد جزيئات الإنزيم فيبقى ثابتًا.'},
+ s1q3:{q:'هل استُهلك الإنزيم (الكاتاليز) أثناء التفاعل؟',
+  o:[['لا؛ يرتبط بالمادة المتفاعلة مؤقتًا، ثم تتحرّر النواتج ويعود الموقع النشط جاهزًا لجزيئات أخرى.',true],['نعم؛ يتحوّل الإنزيم إلى ماء وأكسجين.',false],['نعم؛ يُستهلك نصفه في بداية التفاعل.',false]],
+  h:'تابعي إنزيمًا واحدًا في العدسة الجزيئية: ماذا يحدث له بعد تحرّر النواتج؟',
+  e:'الإنزيم عامل محفّز حيوي: يكوّن معقّد الإنزيم والمادة المتفاعلة، ثم تتحرّر النواتج ويبقى الإنزيم دون تغيّر فيُعاد استخدامه. لذلك تُكتب الكاتاليز فوق السهم في المعادلة، لا ضمن المتفاعلات أو النواتج.'},
+ s1q4:{q:'ماذا يعني الجزء الأفقي في نهاية المنحنى؟',
+  o:[['أن الإنزيم نفد فتوقّف التفاعل.',false],['أن الأكسجين بدأ يتسرّب من النظام فيقلّ حجمه.',false],['أن التفاعل في أسرع حالاته.',false],['أن بيروكسيد الهيدروجين نفد، فلا يتكوّن أكسجين إضافي ويثبت الحجم المتجمّع؛ أي أن معدل التفاعل صفر.',true]],
+  h:'الميل في الجزء الأفقي يساوي صفرًا. أيّ مادة لم يعد لها وجود في العدسة الجزيئية؟',
+  e:'عند نفاد المادة المتفاعلة لا يحدث تحلّل جديد، فيتوقف إنتاج الأكسجين ويبقى الحجم المتجمّع ثابتًا عند أعلى قيمة؛ ولا ينخفض لأن الغاز محفوظ في نظام محكم. الإنزيم ما زال موجودًا، لكن لا توجد مادة متفاعلة ترتبط بمواقعه النشطة.'}
+};
+const Q2={
+ s2q1:{q:'ماذا يدل انخفاض شدة اللون الأزرق في العيّنات المتتالية؟',
+  o:[['زيادة كمية النشا في المزيج.',false],['تناقص كمية النشا المتبقية، لأن الأميليز يحلّله إلى مالتوز.',true],['أن الأميليز استُهلك.',false],['أن اليود تبخّر من العيّنات.',false]],
+  h:'يعطي اليود اللون الأزرق القاتم مع مادة واحدة فقط في المزيج. ما هي؟',
+  e:'شدة اللون الأزرق القاتم تعتمد على كمية النشا في العيّنة. مع الزمن يحلّل الأميليز النشا إلى مالتوز، فتقلّ كمية النشا في كل عيّنة لاحقة ويضعف اللون، وعند غياب النشا يبقى لون اليود الأصفر البني.'},
+ s2q2:{q:'لماذا نستخدم مقياس الألوان بدل الاعتماد على النظر وحده؟',
+  o:[['لأنه يحلّل النشا أسرع من الأميليز.',false],['لأنه يعطي قراءة رقمية موضوعية يمكن تسجيلها ورسمها، ويميّز فروقًا صغيرة في شدة اللون قد لا تلاحظها العين.',true],['لأنه يقيس كمية الأميليز في العيّنة.',false]],
+  h:'فكّري في عيّنتين متقاربتين في اللون: هل تتفق طالبتان دائمًا على أيّهما أغمق؟',
+  e:'تقدير اللون بالعين ذاتي ويختلف من شخص لآخر ومع الإضاءة. مقياس الألوان يقيس كمية الضوء الممتص عند طول موجي مناسب ويعطي رقمًا، فنقارن العيّنات بدقة ونرسم منحنى كميًّا.'},
+ s2q3:{q:'لماذا نثبّت حجم العيّنة وكمية اليود في كل أنبوب؟',
+  o:[['لتصبح ألوان العيّنات أجمل.',false],['حتى يكون اختلاف الامتصاص ناتجًا عن اختلاف كمية النشا فقط، فتصبح المقارنة عادلة.',true],['لأن اليود الزائد يزيد كمية النشا.',false],['لتسريع تفاعل الأميليز داخل العيّنات.',false]],
+  h:'لو أضفنا قطرات يود أكثر إلى عيّنة واحدة، فهل سيتغيّر لونها حتى لو كان فيها النشا نفسه؟',
+  e:'حجم العيّنة وكمية اليود متغيّران يجب ضبطهما. لو اختلفا لتغيّرت شدة اللون والامتصاص لأسباب لا علاقة لها بتقدّم التفاعل، فلا نستطيع ربط الامتصاص بكمية النشا المتبقية.'},
+ s2q4:{q:'ما المشكلة في إضافة اليود إلى مزيج التفاعل منذ البداية؟',
+  o:[['لا مشكلة؛ هذه أدق طريقة دائمًا.',false],['أن اليود يحلّل النشا بدل الأميليز.',false],['أن وجود اليود في المزيج يبطّئ عمل الأميليز، فيصبح المعدل المقاس أقل من معدل التفاعل الحقيقي.',true]],
+  h:'افتحي زر «لماذا لا نضيف اليود مباشرة؟» وقارني الطريقتين.',
+  e:'خلط النشا والأميليز واليود في أنبوبة واحدة يسهّل المتابعة، لكنه يبطّئ التفاعل ويؤثر في المعدل المقاس. أخذ عيّنات منفصلة وإضافة اليود إليها يُبقي مزيج التفاعل الأصلي بلا يود.'}
+};
+const qBoxes={};
+Object.entries(Q1).forEach(([k,q])=>qBoxes[k]=makeMCQ($('#s1Q'),k,q));
+Object.entries(Q2).forEach(([k,q])=>qBoxes[k]=makeMCQ($('#s2Q'),k,q));
+function updateQ1Locks(){ const n=points1().length-1; const late=S1.t>=TPLAT+STEP1||S1.phase==='done';
+  ['s1q1','s1q2','s1q3'].forEach(k=>{ if(!RES[k]) lockQ(qBoxes[k], n<4, 'يُفتح السؤال بعد تسجيل ٤ قراءات على الأقل.'); });
+  if(!RES.s1q4) lockQ(qBoxes.s1q4, !late, 'يُفتح السؤال بعد أن يثبت حجم الغاز على المنحنى.'); }
+function updateQ2Locks(){ const n=Object.keys(S2.recorded).length; Object.keys(Q2).forEach(k=>{ if(!RES[k]) lockQ(qBoxes[k], n<3, 'يُفتح السؤال بعد تسجيل ٣ قراءات امتصاص على الأقل.'); }); }
+
+/* ================= Challenge ================= */
+(function drawCC1(){ const X=t=>70+t/420*460, Y=v=>290-v/60*250; let h='';
+  for(let v=0;v<=60;v+=10) h+=`<line class="grid" x1="70" x2="530" y1="${Y(v)}" y2="${Y(v)}"/><text class="tick" x="50" y="${Y(v)+5}" text-anchor="middle">${ar(v)}</text>`;
+  for(let t=0;t<=420;t+=60) h+=`<text class="tick" x="${X(t)}" y="310" text-anchor="middle">${ar(t)}</text>`;
+  h+=`<rect class="zone" x="${X(0)}" y="40" width="${X(60)-X(0)}" height="250"/><rect class="zone2" x="${X(150)}" y="40" width="${X(210)-X(150)}" height="250"/>`;
+  h+=`<text class="ann" x="${(X(0)+X(60))/2}" y="58" text-anchor="middle">الفترة أ</text><text class="ann-o" x="${(X(150)+X(210))/2}" y="58" text-anchor="middle">الفترة ب</text>`;
+  const P=[]; for(let t=0;t<=420;t+=5) P.push([X(t),Y(V1(t))]); h+=`<path class="curve" d="M${P.map(p=>p.map(v=>v.toFixed(1)).join(',')).join(' L')}"/>`;
+  h+=`<line class="axis" x1="70" y1="290" x2="535" y2="290"/><line class="axis" x1="70" y1="290" x2="70" y2="34"/>`;
+  h+=`<text class="axt" x="300" y="328" text-anchor="middle">الزمن (s)</text><text class="axt" x="16" y="165" text-anchor="middle" transform="rotate(-90 16 165)">حجم O₂ (mL)</text>`;
+  $('#cc1').innerHTML=h; })();
+makeMCQ($('#cq1'),'c1',{q:'الفترتان أ (من ٠ إلى ٦٠ s) و ب (من ١٥٠ إلى ٢١٠ s) متساويتان في المدة. أيّهما كان التفاعل فيها أسرع، ولماذا؟',
+  o:[['الفترة ب؛ لأن الحجم المتجمّع فيها أكبر.',false],['الفترة أ؛ لأن الحجم ارتفع فيها أكثر خلال الزمن نفسه (ميل أكبر)، إذ يكون تركيز المادة المتفاعلة مرتفعًا فتزداد فرص ارتباطها بالمواقع النشطة.',true],['الفترتان متساويتان في السرعة لأن مدتهما متساوية.',false],['الفترة ب؛ لأن الإنزيم تراكم فيها.',false]],
+  h:'لا تنظري إلى ارتفاع المنحنى، بل إلى مقدار الزيادة في الحجم داخل كل فترة مظلّلة.',
+  e:'في الفترة أ ارتفع الحجم نحو ٣٠ mL خلال ٦٠ s (≈ ٠٫٥ mL/s)، وفي الفترة ب ارتفع نحو ٣ mL فقط خلال ٦٠ s (≈ ٠٫٠٥ mL/s). الحجم المتجمّع في ب أكبر، لكن المعدل أقل لأن المادة المتفاعلة المتبقية أقل.'});
+makeMCQ($('#cq2'),'c2',{q:'طالبة كتبت: «يتوقف التفاعل لأن الإنزيم ينفد». اختاري العبارة الصحيحة البديلة.',
+  o:[['يتوقف التفاعل لأن الإنزيم يتحوّل إلى نواتج.',false],['يتوقف التفاعل لأن الأكسجين يملأ المواقع النشطة نهائيًا.',false],['يتوقف التفاعل لأن المادة المتفاعلة (بيروكسيد الهيدروجين) تنفد، أما الإنزيم فيبقى دون تغيّر ويمكن إعادة استخدامه.',true],['لا يتوقف التفاعل أبدًا، بل ينعكس فيقلّ حجم الغاز.',false]],
+  h:'الإنزيم يرتبط بالمادة المتفاعلة ثم يتحرّر. أيّ المادتين يقلّ عددها حتى يصل إلى الصفر؟',
+  e:'الإنزيم لا يُستهلك، فعدد جزيئاته ثابت طوال التفاعل. التفاعل يتوقف عندما تنفد المادة المتفاعلة، فلا يبقى ما يرتبط بالمواقع النشطة، ويثبت حجم الأكسجين دون أن ينخفض.'});
+
+/* c3 sentence builder */
+(function(){ const box=$('#cq3'); const ANS=['الأميليز','النشا','مالتوز','اللون الأزرق القاتم']; const BANK=['اليود','مالتوز','الأميليز','الأكسجين','اللون الأزرق القاتم','الكاتاليز','النشا'];
+  const fill=[null,null,null,null]; let selChip=null, selBlank=null, att=0, done=false;
+  box.innerHTML=`<p class="muted" style="margin-bottom:6px">أكملي التفسير: انقري كلمة ثم انقري الفراغ (أو اسحبي الكلمة إليه).</p>
+   <p class="sentence">ينخفض الامتصاص مع الزمن لأن <span class="blank" data-b="0" tabindex="0" role="button">١</span> يحلّل <span class="blank" data-b="1" tabindex="0" role="button">٢</span> إلى <span class="blank" data-b="2" tabindex="0" role="button">٣</span>، فيقلّ <span class="blank" data-b="3" tabindex="0" role="button">٤</span> الذي يتكوّن عند إضافة اليود إلى العيّنة.</p>
+   <div class="chips">${BANK.map((w,i)=>`<button class="chip" data-c="${i}">${w}</button>`).join('')}</div>
+   <div class="row" style="display:flex;gap:10px;margin-top:12px;flex-wrap:wrap"><button class="btn small primary" id="c3chk">تحقّق</button><button class="btn small soft" id="c3clr">مسح</button></div><div class="fbs"></div>`;
+  const render=()=>{ $$('.blank',box).forEach((b,i)=>{ b.textContent=fill[i]!=null?BANK[fill[i]]:ar(i+1); b.classList.toggle('filled',fill[i]!=null); b.classList.toggle('sel',selBlank===i); });
+    $$('.chip',box).forEach((c,i)=>{ c.classList.toggle('used',fill.includes(i)); c.classList.toggle('sel',selChip===i); }); };
+  const put=(ci,bi)=>{ const prev=fill.indexOf(ci); if(prev>=0) fill[prev]=null; fill[bi]=ci; selChip=null; selBlank=null; $$('.blank',box).forEach(b=>b.classList.remove('wrong','right')); render(); };
+  box.addEventListener('click',e=>{ if(done) return; const c=e.target.closest('.chip'), b=e.target.closest('.blank');
+    if(c){ const ci=+c.dataset.c; if(c._dragged){ c._dragged=false; return; } if(selBlank!=null) put(ci,selBlank); else { selChip=selChip===ci?null:ci; render(); } }
+    else if(b){ const bi=+b.dataset.b; if(selChip!=null) put(selChip,bi); else if(fill[bi]!=null){ fill[bi]=null; render(); } else { selBlank=selBlank===bi?null:bi; render(); } } });
+  box.addEventListener('keydown',e=>{ const b=e.target.closest('.blank'); if(b&&(e.key==='Enter'||e.key===' ')){ e.preventDefault(); b.click(); } });
+  // drag chips with pointer
+  box.addEventListener('pointerdown',e=>{ const c=e.target.closest('.chip'); if(!c||done) return; const ci=+c.dataset.c; const x0=e.clientX,y0=e.clientY; let ghost=null;
+    const mv=ev=>{ if(!ghost&&Math.hypot(ev.clientX-x0,ev.clientY-y0)>8){ ghost=c.cloneNode(true); Object.assign(ghost.style,{position:'fixed',pointerEvents:'none',zIndex:80,opacity:.9}); document.body.appendChild(ghost); }
+      if(ghost){ ghost.style.left=(ev.clientX-40)+'px'; ghost.style.top=(ev.clientY-24)+'px'; } };
+    const up=ev=>{ document.removeEventListener('pointermove',mv); document.removeEventListener('pointerup',up); if(ghost){ ghost.remove(); c._dragged=true; const el=document.elementFromPoint(ev.clientX,ev.clientY); const b=el&&el.closest&&el.closest('.blank'); if(b&&box.contains(b)) put(ci,+b.dataset.b); setTimeout(()=>c._dragged=false,0); } };
+    document.addEventListener('pointermove',mv); document.addEventListener('pointerup',up); });
+  $('#c3clr',box).addEventListener('click',()=>{ if(done) return; fill.fill(null); selChip=selBlank=null; $$('.blank',box).forEach(b=>b.classList.remove('wrong','right')); render(); });
+  $('#c3chk',box).addEventListener('click',()=>{ if(done) return; if(fill.includes(null)){ $('.fbs',box).innerHTML='<div class="fb hint">املئي الفراغات الأربعة أولًا.</div>'; return; }
+    att++; const okArr=fill.map((ci,i)=>BANK[ci]===ANS[i]); const ok=okArr.every(Boolean);
+    $$('.blank',box).forEach((b,i)=>{ b.classList.toggle('right',okArr[i]); b.classList.toggle('wrong',!okArr[i]); });
+    const exp='الأميليز إنزيم يحلّل النشا إلى مالتوز. اليود يكوّن مع النشا معقّدًا أزرق قاتمًا يمتص الضوء الذي يمرّره المرشّح بقوة. مع الزمن يقلّ النشا المتبقي في كل عيّنة، فيقلّ المعقّد الأزرق ويقلّ الامتصاص، حتى يقترب من قيمة صغيرة ثابتة يسببها لون اليود الأصفر البني. لذلك الامتصاص مؤشّر على كمية النشا المتبقية.';
+    if(ok){ done=true; $('.fbs',box).innerHTML=`<div class="fb ok">أحسنتِ!</div><div class="fb exp"><b>التفسير العلمي:</b> ${exp}</div>`; }
+    else if(att===1){ $('.fbs',box).innerHTML='<div class="fb hint"><b>تلميح:</b> الفراغات الحمراء تحتاج تعديلًا. أيّ إنزيم يعمل في هذه التجربة؟ وأيّ مادة تعطي مع اليود لونًا أزرق قاتمًا؟</div>'; }
+    else { done=true; ANS.forEach((w,i)=>fill[i]=BANK.indexOf(w)); render(); $$('.blank',box).forEach(b=>{b.classList.remove('wrong'); b.classList.add('right');}); $('.fbs',box).innerHTML=`<div class="fb exp"><b>التفسير العلمي:</b> ${exp}</div>`; }
+    if(done){ $('#c3chk',box).disabled=true; $('#c3clr',box).disabled=true; record('c3',att,ok); } });
+  render(); })();
+
+/* c4 classify */
+(function(){ const box=$('#cq4'); const CARDS=[['حجم الأكسجين المتجمّع في حقنة الغاز (تجربة الكاتاليز)','p'],['امتصاص لون النشا مع اليود في العيّنات (تجربة الأميليز)','r'],['القيمة المقيسة تزداد مع الزمن ثم تثبت','p'],['القيمة المقيسة تقلّ مع الزمن ثم تقترب من قيمة ثابتة','r']];
+  const place=CARDS.map(()=>null); let sel=null, att=0, done=false;
+  box.innerHTML=`<p class="muted">انقري بطاقة ثم انقري الصندوق المناسب (أو اسحبيها إليه).</p><div class="pool" id="c4pool"></div>
+   <div class="bins"><div class="bin" data-bin="p" tabindex="0" role="button"><h5>متابعة زيادة الناتج</h5></div><div class="bin" data-bin="r" tabindex="0" role="button"><h5>متابعة تناقص المادة المتفاعلة</h5></div></div>
+   <div class="row" style="display:flex;gap:10px;margin-top:12px;flex-wrap:wrap"><button class="btn small primary" id="c4chk">تحقّق</button></div><div class="fbs"></div>`;
+  const render=()=>{ const pool=$('#c4pool',box); pool.innerHTML=''; $$('.bin',box).forEach(b=>{ $$('.ccard',b).forEach(x=>x.remove()); b.classList.toggle('target',sel!=null); });
+    CARDS.forEach((c,i)=>{ const el=document.createElement('button'); el.className='ccard'+(sel===i?' sel':''); el.dataset.i=i; el.textContent=c[0];
+      if(place[i]==null) pool.appendChild(el); else $(`.bin[data-bin="${place[i]}"]`,box).appendChild(el); });
+    if(!place.includes(null)) pool.innerHTML='<span class="note">وُضعت كل البطاقات. اضغطي «تحقّق».</span>'; };
+  const drop=(i,bin)=>{ place[i]=bin; sel=null; render(); };
+  box.addEventListener('click',e=>{ if(done) return; const c=e.target.closest('.ccard'), b=e.target.closest('.bin');
+    if(c){ if(c._dragged) return; const i=+c.dataset.i; const inBin=c.closest('.bin'); if(inBin&&sel!=null&&sel!==i){ drop(sel,inBin.dataset.bin); return; } sel=sel===i?null:i; render(); return; }
+    if(b&&sel!=null) drop(sel,b.dataset.bin); });
+  box.addEventListener('keydown',e=>{ const b=e.target.closest('.bin'); if(b&&(e.key==='Enter'||e.key===' ')&&sel!=null){ e.preventDefault(); drop(sel,b.dataset.bin); } });
+  box.addEventListener('pointerdown',e=>{ const c=e.target.closest('.ccard'); if(!c||done) return; const i=+c.dataset.i; const x0=e.clientX,y0=e.clientY; let ghost=null;
+    const mv=ev=>{ if(!ghost&&Math.hypot(ev.clientX-x0,ev.clientY-y0)>8){ ghost=c.cloneNode(true); Object.assign(ghost.style,{position:'fixed',pointerEvents:'none',zIndex:80,opacity:.9,width:c.offsetWidth+'px'}); document.body.appendChild(ghost); }
+      if(ghost){ ghost.style.left=(ev.clientX-c.offsetWidth/2)+'px'; ghost.style.top=(ev.clientY-20)+'px'; } };
+    const up=ev=>{ document.removeEventListener('pointermove',mv); document.removeEventListener('pointerup',up); if(ghost){ ghost.remove(); c._dragged=true; const el=document.elementFromPoint(ev.clientX,ev.clientY); const b=el&&el.closest&&el.closest('.bin'); if(b&&box.contains(b)) drop(i,b.dataset.bin); else render(); } };
+    document.addEventListener('pointermove',mv); document.addEventListener('pointerup',up); });
+  $('#c4chk',box).addEventListener('click',()=>{ if(done) return; if(place.includes(null)){ $('.fbs',box).innerHTML='<div class="fb hint">ضعي البطاقات الأربع في الصندوقين أولًا.</div>'; return; }
+    att++; const okArr=place.map((p,i)=>p===CARDS[i][1]); const ok=okArr.every(Boolean); render();
+    const mark=()=>$$('.ccard',box).forEach(el=>{ const i=+el.dataset.i; el.classList.add(place[i]===CARDS[i][1]?'right':'wrong'); });
+    const exp='في تجربة الكاتاليز نتابع <b>زيادة ناتج</b>: الأكسجين يتجمّع فيزداد حجمه حتى يثبت عند نفاد المادة المتفاعلة. في تجربة الأميليز نتابع <b>تناقص مادة متفاعلة</b>: النشا يقلّ فيقلّ لون معقّده مع اليود وامتصاصه. الطريقتان تقيسان سير التفاعل نفسه من جهتين مختلفتين، والمعدل في الحالتين أكبر في البداية.';
+    if(ok){ done=true; mark(); $('.fbs',box).innerHTML=`<div class="fb ok">أحسنتِ!</div><div class="fb exp"><b>التفسير العلمي:</b> ${exp}</div>`; }
+    else if(att===1){ mark(); $('.fbs',box).innerHTML='<div class="fb hint"><b>تلميح:</b> اسألي عن كل بطاقة: هل القيمة المقيسة تزداد أم تقلّ مع الزمن؟ وهل هي ناتج أم مادة متفاعلة؟ انقري البطاقات الحمراء وانقليها.</div>'; }
+    else { done=true; CARDS.forEach((c,i)=>place[i]=c[1]); render(); $$('.ccard',box).forEach(el=>el.classList.add('right')); $('.fbs',box).innerHTML=`<div class="fb exp"><b>التفسير العلمي:</b> ${exp}</div>`; }
+    if(done){ $('#c4chk',box).disabled=true; record('c4',att,ok); } });
+  render(); })();
+
+/* ================= Results / print ================= */
+function statusText(r){ if(!r) return 'لم تُحاوَل'; if(r.correct&&r.attempts===1) return 'صحيحة من المحاولة الأولى'; if(r.correct) return 'صحيحة بعد التلميح'; return 'عُرض التفسير العلمي'; }
+function updateFinal(){ const ch=['c1','c2','c3','c4']; const n=ch.filter(k=>RES[k]).length; $('#home3').textContent=`${ar(n)} من ${ar(4)} أسئلة`;
+  const all=n===4; $('#cmpBox').hidden=!all; $('#cmpLock').hidden=all;
+  const keys=Object.keys(LABELS); $('#resBox').innerHTML=`<div class="res-list">${keys.map(k=>`<div class="res-item"><b>${LABELS[k]}</b>${statusText(RES[k])}</div>`).join('')}</div>
+   <p class="note" style="margin-top:8px">قراءات المحطة الأولى المسجّلة: ${ar(points1().length?points1().length-1:0)} من ${ar(MARKS1.length)} · قراءات المحطة الثانية: ${ar(Object.keys(S2.recorded||{}).length)} من ${ar(MARKS2.length)}</p>`; }
+function buildPrint(){
+  const p1=MARKS1.map(m=>{ const r=S1.readings[m]; return `<tr><td>${ar(m)}</td><td>${r.val!=null?ar(r.val,r.val%1?1:0):'—'}</td></tr>`; }).join('');
+  const p2=MARKS2.map(m=>`<tr><td>${ar(m)}</td><td>${S2.recorded[m]!=null?ar(S2.recorded[m],2):'—'}</td></tr>`).join('');
+  const qs=Object.keys(LABELS).map(k=>`<tr><td>${LABELS[k]}</td><td>${statusText(RES[k])}</td></tr>`).join('');
+  $('#printArea').innerHTML=`<h1>داخل مختبر دكستر: كيف نتابع سير التفاعل؟</h1><p>استقصاء سير تفاعل محفَّز بالإنزيم — أحياء الصف الحادي عشر · بيانات محاكاة تعليمية</p>
+   <h2>المحطة الأولى: حجم الأكسجين المتجمّع</h2><table><thead><tr><th>الزمن (s)</th><th>الحجم (mL)</th></tr></thead><tbody><tr><td>${ar(0)}</td><td>${ar(0)}</td></tr>${p1}</tbody></table>
+   <h2>المحطة الثانية: الامتصاص</h2><table><thead><tr><th>الزمن (s)</th><th>الامتصاص</th></tr></thead><tbody>${p2}</tbody></table>
+   <h2>الأسئلة</h2><table><thead><tr><th>السؤال</th><th>النتيجة</th></tr></thead><tbody>${qs}</tbody></table>
+   ${RES.c1&&RES.c2&&RES.c3&&RES.c4? '<h2>مقارنة بين التجربتين</h2>'+$('#cmpBox').innerHTML : ''}
+   <p style="margin-top:16pt">أ.إمتثال العطابي</p>`; }
+window.addEventListener('beforeprint',buildPrint);
+$('#bPrint').addEventListener('click',()=>{ buildPrint(); try{ window.print(); }catch(_){ toast('تعذّرت الطباعة هنا. انسخي النتائج بدلًا من ذلك.'); } });
+$('#bCopy').addEventListener('click',()=>{ const lines=['داخل مختبر دكستر — نتائجي (بيانات محاكاة تعليمية)','',"المحطة الأولى (الزمن s : الحجم mL):"];
+  lines.push('0 : 0'); MARKS1.forEach(m=>{ const r=S1.readings[m]; lines.push(`${m} : ${r.val!=null?r.val:'—'}`); });
+  lines.push('','المحطة الثانية (الزمن s : الامتصاص):'); MARKS2.forEach(m=>lines.push(`${m} : ${S2.recorded[m]!=null?S2.recorded[m].toFixed(2):'—'}`));
+  lines.push('','الأسئلة:'); Object.keys(LABELS).forEach(k=>lines.push(`${LABELS[k]}: ${statusText(RES[k])}`));
+  const txt=lines.join('\n');
+  const fallback=()=>{ const ta=document.createElement('textarea'); ta.value=txt; ta.style.cssText='position:fixed;inset:20% 10%;height:60%;width:80%;z-index:90;font:16px Tajawal'; document.body.appendChild(ta); ta.select(); toast('حدّدنا النص؛ انسخيه ثم انقري خارج المربع لإغلاقه.'); ta.addEventListener('blur',()=>ta.remove()); };
+  try{ navigator.clipboard.writeText(txt).then(()=>toast('نُسخت النتائج.'),fallback); }catch(_){ fallback(); } });
+
+/* ================= views, controls, loop ================= */
+function station(){ return view==='s1'?{start:start1,pause:pause1,next:next1,reset:initS1,S:S1}:(view==='s2'?{start:start2,pause:pause2,next:next2,reset:initS2,S:S2}:null); }
+function updateHome(){ const n1=points1().length?points1().length-1:0; $('#home1').textContent=S1.phase==='done'?`اكتملت · ${ar(n1)} قراءة`:(S1.mixed?`قيد التنفيذ · ${ar(n1)} قراءة`:'لم تبدأ بعد'); $('#dot1').hidden=S1.phase!=='done';
+  const n2=Object.keys(S2.recorded||{}).length; $('#home2').textContent=n2===MARKS2.length?'اكتملت':(S2.mixed?`قيد التنفيذ · ${ar(n2)} قراءة`:'لم تبدأ بعد'); $('#dot2').hidden=n2!==MARKS2.length; }
+const VIEWS={'home':'home','station-1':'s1','station-2':'s2','challenge':'ch'};
+function go(hash){ const v=VIEWS[hash]||'home'; if(view==='s1') pause1(); if(view==='s2') pause2();
+  view=v; $$('.view').forEach(s=>s.hidden=true); $('#view-'+v).hidden=false;
+  $$('.tab').forEach(t=>t.setAttribute('aria-current',VIEWS[t.dataset.go]===v?'page':'false'));
+  $('#controls').hidden=!(v==='s1'||v==='s2'); syncMolBtn(); $('#guideBox').hidden=true; $('#guideBtn').setAttribute('aria-expanded','false');
+  if(v==='ch') updateFinal(); window.scrollTo({top:0,behavior:'instant'}); }
+$$('[data-go]').forEach(b=>b.addEventListener('click',()=>{ const h=b.dataset.go; if(location.hash==='#'+h) go(h); else location.hash=h; }));
+window.addEventListener('hashchange',()=>go(location.hash.slice(1)));
+$('#bStart').addEventListener('click',()=>{ $('#bStart').classList.remove('glow'); const s=station(); s&&s.start(); });
+$('#bPause').addEventListener('click',()=>{ const s=station(); s&&s.pause(); });
+$('#bNext').addEventListener('click',()=>{ $('#bStart').classList.remove('glow'); const s=station(); s&&s.next(); });
+let resetArm=0;
+$('#bReset').addEventListener('click',()=>{ const s=station(); if(!s) return; const now=Date.now();
+  if(now-resetArm>3000){ resetArm=now; $('#bResetTxt').textContent='اضغطي مجددًا للتأكيد'; setTimeout(()=>{ if(Date.now()-resetArm>=2900) $('#bResetTxt').textContent='إعادة التجربة'; },3000); return; }
+  resetArm=0; $('#bResetTxt').textContent='إعادة التجربة'; s.reset(); updateHome(); updateQ1Locks(); updateQ2Locks(); toast('أُعيد ضبط التجربة. الأسئلة التي أجبتِ عنها محفوظة.'); });
+function syncMolBtn(){ const s=station(); const on=!!(s&&s.S.showMol); $('#bMol').setAttribute('aria-pressed',on); $('#bMolTxt').textContent=on?'إخفاء الجزيئات':'إظهار الجزيئات';
+  $('#s1LensPanel').hidden=!S1.showMol; $('#s2LensPanel').hidden=!S2.showMol; }
+$('#bMol').addEventListener('click',()=>{ const s=station(); if(!s) return; s.S.showMol=!s.S.showMol; syncMolBtn(); });
+$('#speedSel').addEventListener('change',e=>{ speed=+e.target.value; });
+$('#bFull').addEventListener('click',()=>{ const d=document; try{ if(!d.fullscreenElement){ const r=d.documentElement.requestFullscreen||d.documentElement.webkitRequestFullscreen; const pr=r&&r.call(d.documentElement); if(pr&&pr.catch) pr.catch(()=>toast('ملء الشاشة غير متاح في هذا العرض.')); if(!r) toast('ملء الشاشة غير متاح في هذا المتصفح.'); } else { (d.exitFullscreen||d.webkitExitFullscreen).call(d); } }catch(_){ toast('ملء الشاشة غير متاح في هذا العرض.'); } });
+document.addEventListener('fullscreenchange',()=>{ $('#bFullTxt').textContent=document.fullscreenElement?'الخروج من ملء الشاشة':'ملء الشاشة'; });
+document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ if(!$('#modalBack').hidden) closeModal(); $('#guideBox').hidden=true; $('#guideBtn').setAttribute('aria-expanded','false'); } });
+
+/* guide hints */
+function getHint(){
+  if(view==='home') return 'ابدئي بالمحطة الأولى «تتبّع الأكسجين»، ثم الثانية «فكّ شفرة اللون»، واختمي بتحدّي باحثات المختبر. في كل محطة أزرار التحكم أسفل الشاشة.';
+  if(view==='s1'){
+    if(!S1.vialIn) return 'اسحبي أنبوب الكاتاليز إلى داخل الدورق، أو انقري الأنبوب ثم انقري الدورق. سيبقى الإنزيم منفصلًا داخل الأنبوب حتى نُميل الدورق.';
+    if(!S1.sealed) return 'أغلقي الدورق بالسدادة الموصولة بالحقنة. النظام المحكم يجعل كل الأكسجين المتكوّن يذهب إلى الحقنة ولا يتسرّب.';
+    if(!S1.mixed) return 'عند الضغط على «بدء» يميل الأنبوب ويختلط الإنزيم بالمادة المتفاعلة. هذه اللحظة هي الزمن صفر.';
+    if(S1.awaiting!=null && S1.readings[S1.awaiting].val==null) return 'اقرئي موضع الوجه الأمامي لمكبس الحقنة (الجهة القريبة من الدورق). المكبّر يُظهر التدريج كبيرًا: كل شرطة صغيرة = ١ mL.';
+    if(S1.phase==='running') return 'راقبي الحقنة: هل يتحرك المكبس بالسرعة نفسها طوال الوقت؟ قارني ذلك بفقاعات الدورق.';
+    if(S1.phase==='done') return S1.showMol?'انقري نقطتين على المنحنى: مرة من البداية ومرة من جزء لاحق بالطول نفسه، وقارني المعدلين.':'انقري نقطتين على المنحنى لحساب متوسط المعدل، وجرّبي زر «إظهار الجزيئات» لتفسير ما ترينه.';
+    return 'اضغطي «بدء» للمتابعة، أو «خطوة تالية» للانتقال إلى القراءة التالية مباشرة.'; }
+  if(view==='s2'){
+    if(!S2.mixed) return 'اسحبي أنبوب الأميليز إلى كأس النشا (أو انقري الأنبوب ثم الكأس). لحظة المزج هي الزمن صفر.';
+    if(S2.phase!=='done' && !S2.zeroed) return 'تسحب المحاكاة عيّنة متساوية كل ٦٠ s وتضيف إليها كمية ثابتة من اليود. في أثناء الانتظار صفّري مقياس الألوان بأنبوب الماء المقطّر.';
+    if(!S2.zeroed) return 'صفّري مقياس الألوان أولًا بأنبوب الماء المقطّر، حتى يكون أي امتصاص بعد ذلك بسبب لون العيّنة.';
+    if(S2.slot!=null && S2.reading!=null) return 'ظهرت القراءة على الشاشة. اضغطي «سجّلي القراءة في الجدول» لتظهر نقطة على المنحنى.';
+    if(MARKS2.some(m=>S2.tubes[m]&&!S2.tubes[m].measured)) return 'انقري عيّنة من الحامل ثم انقري مقياس الألوان، أو اسحبيها إليه. قارني لونها بالعيّنة السابقة قبل القياس.';
+    return 'لاحظي شكل المنحنى: أين يكون الانحدار أكبر؟ ولماذا يقترب من قيمة ثابتة لا من الصفر؟'; }
+  return 'بعد أول خطأ يظهر تلميح، وبعد المحاولة الثانية يظهر التفسير العلمي. استعيني بمنحنياتك من المحطتين.';
+}
+$('#guideBtn').addEventListener('click',()=>{ const b=$('#guideBox'); const open=b.hidden; b.hidden=!open; $('#guideBtn').setAttribute('aria-expanded',open); if(open) $('#guideTxt').textContent=getHint(); });
+$('#guideX').addEventListener('click',()=>{ $('#guideBox').hidden=true; $('#guideBtn').setAttribute('aria-expanded','false'); });
+
+let last=performance.now();
+function loop(now){ const dt=Math.min(0.1,(now-last)/1000); last=now;
+  if(view==='s1'){ const run=S1.phase==='running'; if(run) advance1(dt*speed); updateSyringe1(); tickBubbles1(dt,run);
+    const nl=$('#c1now'); if(nl){ nl.setAttribute('x1',X1(S1.t)); nl.setAttribute('x2',X1(S1.t)); }
+    if(S1.showMol){ lens1.update(dt, S1.mixed?target1(S1.t):0, run); updateLensCounters1(); }
+    $('#ctlClock').textContent=`${ar(Math.floor(S1.t+1e-6))} s · ${mmss(S1.t)}`; }
+  else if(view==='s2'){ const run=S2.phase==='running'; if(run) advance2(dt*speed);
+    if(S2.dropT>0) S2.dropT=Math.max(0,S2.dropT-dt);
+    if(S2.slot!=null&&S2.reading==null){ S2.readT-=dt; if(S2.readT<=0){ S2.reading=Math.round(S2.tubes[S2.slot].A*100)/100; $('#bRec2').disabled=false; $('#bRec2').classList.add('glow'); setMsg2(`قراءة الجهاز للعيّنة ${ar(S2.slot)} s ظاهرة على الشاشة. سجّليها في الجدول.`,'info'); } }
+    renderApp2(); const nl=$('#c2now'); if(nl){ nl.setAttribute('x1',X2(S2.t)); nl.setAttribute('x2',X2(S2.t)); }
+    if(S2.showMol){ lens2.update(dt, S2.mixed?target2(S2.t):0, run); updateLensCounters2(); }
+    $('#ctlClock').textContent=`${ar(Math.floor(S2.t+1e-6))} s · ${mmss(S2.t)}`; }
+  requestAnimationFrame(loop); }
+
+initS1(); initS2(); updateQ1Locks(); updateQ2Locks(); updateFinal(); updateHome();
+go(location.hash.slice(1));
+requestAnimationFrame(loop);
+window.__lab={S1,S2,RES,V1,A2};
+})();
+</script>
+</body>
+</html>
